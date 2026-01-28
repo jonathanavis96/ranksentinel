@@ -1,0 +1,112 @@
+Ralph Verifier Report
+Time: 2026-01-29 00:04:15
+Git:  608fbc7
+AC:   /home/grafe/code/brain/tmp_rovodev_ranksentinel_out/workers/ralph/rules/AC.rules
+Approvals: /home/grafe/code/brain/tmp_rovodev_ranksentinel_out/workers/ralph/rules/MANUAL_APPROVALS.rules
+------------------------------------------------------------
+[PASS] Structure.Dirs.1
+  desc: src/ directory exists at project root (NOT ralph/src/)
+  cmd:  test -d ../src && echo yes
+  exit: 0
+  stdout: yes
+[PASS] Structure.Dirs.2
+  desc: bin/ directory exists at project root (NOT ralph/bin/)
+  cmd:  test -d ../bin && echo yes
+  exit: 0
+  stdout: yes
+[PASS] Structure.Dirs.3
+  desc: config/ directory exists
+  cmd:  test -d ../config && echo yes
+  exit: 0
+  stdout: yes
+[PASS] Structure.Dirs.4
+  desc: docs/ directory exists
+  cmd:  test -d ../docs && echo yes
+  exit: 0
+  stdout: yes
+[PASS] Structure.Gitignore.1
+  desc: .gitignore exists
+  cmd:  test -f ../.gitignore && echo yes
+  exit: 0
+  stdout: yes
+[PASS] Syntax.Bash.1
+  desc: All bin/*.sh scripts pass bash -n syntax check
+  cmd:  shopt -s nullglob; for f in ../bin/*.sh; do bash -n $f || exit 1; done; echo pass
+  exit: 0
+  stdout: pass
+[PASS] Syntax.JSON.1
+  desc: config/*.json files are valid JSON
+  cmd:  shopt -s nullglob; for f in ../config/*.json; do python3 -m json.tool \"$f\" >/dev/null || exit 1; done; echo valid
+  exit: 0
+  stdout: valid
+[PASS] Standards.Shebang.1
+  desc: All shell scripts have proper shebang
+  cmd:  shopt -s nullglob; for f in ../bin/*.sh; do head -1 $f | grep -q '#!/usr/bin/env bash' || exit 1; done; echo pass
+  exit: 0
+  stdout: pass
+[PASS] Standards.StrictMode.1
+  desc: All shell scripts use set -euo pipefail
+  cmd:  shopt -s nullglob; for f in ../bin/*.sh; do grep -q 'set -euo pipefail' $f || exit 1; done; echo pass
+  exit: 0
+  stdout: pass
+[PASS] Standards.Permissions.1
+  desc: All bin/*.sh scripts are executable
+  cmd:  find ../bin/ -name '*.sh' ! -perm -111 | wc -l | xargs
+  exit: 0
+  stdout: 0
+[PASS] Security.NoHardcodedSecrets.1
+  desc: No hardcoded passwords in scripts
+  cmd:  grep -RIn -E 'password\\s*=' ../bin ../src --include='*.sh' --include='*.py' 2>/dev/null | wc -l | xargs
+  exit: 0
+  stdout: 0
+[PASS] Security.NoHardcodedTokens.1
+  desc: No hardcoded API tokens in scripts
+  cmd:  grep -RIn -E 'api_token\\s*=' ../bin ../src --include='*.sh' --include='*.py' 2>/dev/null | wc -l | xargs
+  exit: 0
+  stdout: 0
+[PASS] Docs.README.1
+  desc: README.md exists
+  cmd:  test -f ../README.md && echo yes
+  exit: 0
+  stdout: yes
+[PASS] Docs.NEURONS.1
+  desc: ralph/NEURONS.md exists
+  cmd:  test -f NEURONS.md && echo yes
+  exit: 0
+  stdout: yes
+[PASS] Docs.THOUGHTS.1
+  desc: ralph/THOUGHTS.md exists
+  cmd:  test -f THOUGHTS.md && echo yes
+  exit: 0
+  stdout: yes
+[PASS] Protected.1
+  desc: loop.sh unchanged from baseline
+  cmd:  sha256sum loop.sh | cut -d' ' -f1 | diff -q - .verify/loop.sha256 >/dev/null 2>&1 && echo match || echo mismatch
+  exit: 0
+  stdout: match
+[PASS] Protected.2
+  desc: verifier.sh unchanged from baseline
+  cmd:  sha256sum verifier.sh | cut -d' ' -f1 | diff -q - .verify/verifier.sha256 >/dev/null 2>&1 && echo match || echo mismatch
+  exit: 0
+  stdout: match
+[PASS] Protected.3
+  desc: PROMPT.md unchanged from baseline
+  cmd:  sha256sum PROMPT.md | cut -d' ' -f1 | diff -q - .verify/prompt.sha256 >/dev/null 2>&1 && echo match || echo mismatch
+  exit: 0
+  stdout: match
+[PASS] VerifyMeta.1
+  desc: Verifier run_id.txt exists and is non-empty
+  cmd:  test -s .verify/run_id.txt && echo OK || echo FAIL
+  exit: 0
+  stdout: OK
+[WARN] Manual.Integration.1 (manual review)
+  desc: Core integration tested manually
+  instructions: Run main workflow end-to-end and verify expected behavior
+------------------------------------------------------------
+SUMMARY
+  PASS: 19
+  FAIL: 0
+  WARN: 1 (manual_warn=1)
+  SKIP: 0
+  Manual gate=block failures: 0
+  Hash guard: OK

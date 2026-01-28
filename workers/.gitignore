@@ -1,0 +1,10 @@
+# Ralph logs
+workers/workers/ralph/logs/
+
+# Local environment
+.env.local
+*.local
+
+# OS files
+.DS_Store
+Thumbs.db

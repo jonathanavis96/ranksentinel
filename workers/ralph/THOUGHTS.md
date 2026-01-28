@@ -1,118 +1,81 @@
-# THOUGHTS.md - [PROJECT_NAME] Vision
+# THOUGHTS.md — RankSentinel
 
-[REPLACE: Brief tagline describing your project in one sentence]
+Catch SEO regressions before traffic drops.
 
-## What This Project Does
+## What this project does
 
-[REPLACE: Describe your project's purpose. What problem does it solve? Who uses it? What value does it provide?]
+RankSentinel sends automated reports that highlight SEO regressions and high-signal site health issues.
 
-Example structure:
+It is designed to be set-and-forget:
 
-- **Primary Goal:** [Main objective of the project]
-- **Key Features:** [List 3-5 main features or capabilities]
-- **Target Users:** [Who benefits from this project]
-- **Integration Points:** [How it connects to other systems/tools]
+- VPS cron runs daily and weekly jobs
+- SQLite stores config and findings
+- Mailgun sends emails
+- PageSpeed Insights (PSI) provides performance metrics for key URLs only
 
-## Current Goals
+### Primary goal
 
-### Active Focus
+Provide a weekly email report that answers:
 
-[REPLACE: What is the project currently working on? What's the immediate priority?]
+1. What changed?
+2. What broke?
+3. What regressed?
+4. What should we do first?
 
-Example:
+### Key features (MVP)
 
-- Feature X implementation
-- Performance optimization in area Y
-- Refactoring module Z
-- Bug fixes in component W
+- Daily critical checks (low-noise):
+  - key page `noindex`
+  - canonical drift
+  - robots.txt breaking changes
+  - sitemap disappearance or large URL-count drop
+  - key-page 4xx/5xx spikes
+  - confirmed PSI regressions (two-run confirmation)
+- Weekly digest:
+  - robots.txt + sitemap diffs
+  - crawl sample (N=100)
+  - new 404 discovery + broken internal links
+  - title changes/duplicates (sample)
+  - prioritized recommendations
 
-### Definition of Done
+### Target users
 
-[REPLACE: Define what "complete" means for key deliverables. Be specific and measurable.]
+- Small SaaS teams without dedicated SEO engineering
+- Agencies managing multiple websites
+- Content sites where link rot and template changes impact traffic
 
-A task/feature in this project is complete when:
+## Non-goals (v1)
 
-#### ✅ [Category 1 - e.g., Functionality]
+- Generic page diffing as a product category
+- Competitor monitoring/scraping
+- Stealth anti-bot bypassing
+- Full dashboard UI (email first)
+- Search Console integration
 
-- [Specific criterion 1]
-- [Specific criterion 2]
-- [Specific criterion 3]
+## Success metrics
 
-#### ✅ [Category 2 - e.g., Testing]
+- Low noise: users do not ignore alerts
+- High signal: reports catch real regressions before business impact
+- Autonomous: cron jobs run without operator involvement on success
 
-- [Specific criterion 1]
-- [Specific criterion 2]
+## Source of truth docs
 
-#### ✅ [Category 3 - e.g., Documentation]
+Ralph must treat these as authoritative:
 
-- [Specific criterion 1]
-- [Specific criterion 2]
+1. `BOOTSTRAP.md` — operational spec (scope, schedule, schema outline, severity, normalization)
+2. `docs/SAMPLE_REPORT.md` — example report format
+3. `docs/RUNBOOK_VPS.md` — VPS deployment and cron
 
-#### ✅ [Category 4 - e.g., Integration]
+## Knowledge gap rule (project-local)
 
-- [Specific criterion 1]
-- [Specific criterion 2]
+If implementation is blocked by missing knowledge:
 
-## Success Metrics
+1. Create a project-local document: `docs/SKILL_REQUEST_<topic>.md`
+   - context
+   - what is needed
+   - constraints
+   - examples
+   - acceptance criteria
+2. Mark the task as blocked with an "If Blocked" note pointing to the doc
 
-[REPLACE: How do you measure if this project is successful? Define quantifiable metrics.]
-
-This project is successful when:
-
-1. **[Metric Category 1]** - [Specific measurable outcome]
-2. **[Metric Category 2]** - [Specific measurable outcome]
-3. **[Metric Category 3]** - [Specific measurable outcome]
-4. **[Metric Category 4]** - [Specific measurable outcome]
-5. **[Metric Category 5]** - [Specific measurable outcome]
-
-## Source Code Definition
-
-[REPLACE: Define what counts as "source code" vs reference materials in your project]
-
-For this project, "source code" means:
-
-- **`[directory/]`** - [Description of what lives here]
-- **`[directory/]`** - [Description of what lives here]
-- **`[file-pattern]`** - [Description of these files]
-- **`[directory/]`** - [Description of what lives here]
-
-**NOT source code:**
-
-- `[directory/]` - [Explanation why - e.g., "Generated files", "External dependencies", "Read-only reference"]
-
-## Knowledge Base Integration
-
-> **Brain Integration (Optional):** If `./brain/` exists, this project can leverage shared knowledge. Otherwise, the project works standalone.
-
-[REPLACE: How does this project use the brain repository's knowledge base?]
-
-**If brain repository is available**, this project can reference:
-
-- **Performance Patterns:** `./brain/skills/domains/frontend/react-patterns.md` (if applicable)
-- **Domain Conventions:** `./brain/skills/domains/[relevant-domain].md` (if applicable)
-- **Project Learnings:** `./brain/skills/projects/[this-project-slug].md` (project-specific patterns that might benefit other projects)
-
-**Standalone mode:** If brain is not present, rely on project-local documentation in `docs/` and standard best practices.
-
-## Technical Context
-
-[REPLACE: Key technical decisions, architecture choices, or constraints]
-
-### Technology Stack
-
-- **Language(s):** [e.g., TypeScript, Python, Bash]
-- **Framework(s):** [e.g., Next.js, React, Express]
-- **Key Libraries:** [List major dependencies]
-- **Infrastructure:** [e.g., Vercel, AWS, Docker]
-
-### Architecture Decisions
-
-- [Key decision 1 and rationale]
-- [Key decision 2 and rationale]
-- [Key decision 3 and rationale]
-
-### Constraints
-
-- [Technical constraint 1]
-- [Technical constraint 2]
-- [Business constraint 1]
+The intention is to later upstream this as a reusable Brain skill.
