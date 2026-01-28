@@ -144,6 +144,59 @@ This may cause duplicate content issues."""
     return None
 
 
+def check_title_change(
+    conn,
+    customer_id: int,
+    url: str,
+    current_title: str,
+) -> tuple[str, str] | None:
+    """Check if page title changed.
+
+    Returns (severity, details_md) tuple if change found, None otherwise.
+    """
+    prev = fetch_one(
+        conn,
+        "SELECT title FROM snapshots WHERE customer_id=? AND url=? "
+        "ORDER BY fetched_at DESC LIMIT 1",
+        (customer_id, url),
+    )
+
+    if not prev:
+        return None
+
+    prev_title = str(prev["title"] or "")
+    curr_title = current_title or ""
+
+    if prev_title != curr_title:
+        # Title changes are informational by default
+        severity = "info"
+
+        # Warning cases
+        if prev_title and not curr_title:
+            severity = "warning"
+            details = f"""Page title disappeared from key page.
+
+- **Previous:** `{prev_title}`
+- **Current:** `(empty)`
+- **URL:** `{url}`"""
+        elif curr_title and not prev_title:
+            details = f"""Page title was added to key page.
+
+- **Previous:** `(empty)`
+- **Current:** `{curr_title}`
+- **URL:** `{url}`"""
+        else:
+            details = f"""Page title changed on key page.
+
+- **Previous:** `{prev_title}`
+- **Current:** `{curr_title}`
+- **URL:** `{url}`"""
+
+        return (severity, details)
+
+    return None
+
+
 def fetch_psi_metrics(url: str, api_key: str, strategy: str = "mobile") -> dict[str, Any] | None:
     """Fetch PageSpeed Insights metrics for a URL.
 
@@ -399,6 +452,26 @@ def run(settings: Settings) -> None:
                             severity,
                             "indexability",
                             "Canonical URL changed",
+                            details,
+                            url,
+                            fetched_at,
+                        ),
+                    )
+
+                # Check for title change
+                title_result = check_title_change(conn, customer_id, url, data["title"])
+                if title_result:
+                    severity, details = title_result
+                    execute(
+                        conn,
+                        "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                        "VALUES(?,?,?,?,?,?,?,?)",
+                        (
+                            customer_id,
+                            "daily",
+                            severity,
+                            "content",
+                            "Page title changed",
                             details,
                             url,
                             fetched_at,

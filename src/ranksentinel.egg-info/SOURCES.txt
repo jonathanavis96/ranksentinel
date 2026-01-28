@@ -19,3 +19,4 @@ src/ranksentinel/runner/daily_checks.py
 src/ranksentinel/runner/normalization.py
 src/ranksentinel/runner/weekly_digest.py
 tests/test_http_client.py
+tests/test_normalization.py

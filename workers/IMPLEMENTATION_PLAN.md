@@ -26,7 +26,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Prioritized tasks
 
-### Phase 0 — Bootstrap verification and local run path (atomic)
+## Phase 0: Bootstrap verification and local run path (atomic)
 
 > Phase 0 is about making the repo runnable end-to-end locally with minimal behavior.
 > Each task below should be shippable in a single change-set and independently verifiable.
@@ -126,7 +126,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** daily/weekly only process customers with `status='active'`
   - **Validate:** flip a customer status and confirm it is skipped (no new findings for that customer)
 
-### Phase 1 — Core monitoring signals (SEO regressions) (atomic)
+## Phase 1: Core monitoring signals (SEO regressions) (atomic)
 
 > Phase 1 adds the first real SEO signals with normalization + severity, but keeps scope tight.
 
@@ -213,7 +213,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - canonical changes => warning/critical based on risk (spec-driven)
   - **Validate:** run daily against a controlled page change and confirm a finding is created with the expected severity
 
-### Phase 2 — Weekly crawl sample and link integrity (atomic)
+## Phase 2: Weekly crawl sample and link integrity (atomic)
 
 - [ ] **2.0** Pytest harness + fixtures for parsing/diff/noise logic
   - **Goal:** prevent regressions in SEO signal extraction/normalization.
@@ -271,7 +271,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** create findings summarizing source page -> broken target
   - **Validate:** controlled fixture with a broken link produces a finding
 
-### Phase 3 — PSI regressions (atomic)
+## Phase 3: PSI regressions (atomic)
 
 - [ ] **3.1** PSI client + response persistence
   - **Goal:** integrate PageSpeed Insights safely and store raw responses.
@@ -298,7 +298,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** confirmed vs unconfirmed state is recorded
   - **Validate:** first regression => unconfirmed; second regression => confirmed finding
 
-### Phase 4 — Email reporting (atomic)
+## Phase 4: Email reporting (atomic)
 
 - [ ] **4.1** Recommendation rules engine
   - **Goal:** deterministic mapping from finding type -> “what to do next” recommendation text.
@@ -331,7 +331,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** email includes only critical section + next actions
   - **Validate:** run daily with no critical findings => no delivery; introduce critical => delivery
 
-### Phase 5 — VPS readiness (atomic)
+## Phase 5: VPS readiness (atomic)
 
 - [ ] **5.1** Concurrency guard (lock)
   - **Goal:** prevent overlapping cron runs.
@@ -379,7 +379,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** reruns do not duplicate findings for the same change in the same period
   - **Validate:** re-run daily/weekly and confirm counts remain stable
 
-### Phase 6 — Markdown Lint Fixes
+## Phase 6: Markdown Lint Fixes
 
 > Fix markdown linting errors that could not be auto-fixed.
 
