@@ -1,1 +1,99 @@
-import hashlib\nimport json\nimport time\nfrom datetime import datetime, timezone\nfrom typing import Any\n\nimport requests\n\nfrom ranksentinel.config import Settings\nfrom ranksentinel.db import connect, execute, fetch_all, init_db\nfrom ranksentinel.runner.normalization import normalize_html_to_text\n\n\ndef now_iso() -> str:\n    return datetime.now(timezone.utc).isoformat()\n\n\ndef sha256_text(s: str) -> str:\n    return hashlib.sha256((s or \"\").encode(\"utf-8\")).hexdigest()\n\n\ndef retry(fn, attempts: int = 3, base_delay_s: float = 1.0):\n    last = None\n    for i in range(attempts):\n        try:\n            return fn()\n        except Exception as e:  # noqa: BLE001\n            last = e\n            time.sleep(base_delay_s * (2**i))\n    raise last  # type: ignore[misc]\n\n\ndef fetch_url(url: str, timeout_s: int = 20) -> dict[str, Any]:\n    resp = requests.get(\n        url,\n        timeout=timeout_s,\n        allow_redirects=True,\n        headers={\"User-Agent\": \"RankSentinel/0.1\"},\n    )\n    chain = [r.url for r in resp.history] + [resp.url]\n    ct = resp.headers.get(\"content-type\", \"\").lower()\n    html = resp.text if ct.startswith(\"text/html\") else \"\"\n    text = normalize_html_to_text(html) if html else \"\"\n    return {\n        \"status_code\": int(resp.status_code),\n        \"final_url\": resp.url,\n        \"redirect_chain\": chain,\n        \"content_hash\": sha256_text(text),\n    }\n\n\ndef run(settings: Settings) -> None:\n    \"\"\"Bootstrap-level daily run.\n\n    Full daily logic (robots/sitemap/canonical/noindex/severity/email) is implemented in later phases.\n    \"\"\"\n    conn = connect(settings)\n    try:\n        init_db(conn)\n        customers = fetch_all(conn, \"SELECT id FROM customers WHERE status='active'\")\n\n        for c in customers:\n            customer_id = int(c[\"id\"])\n            targets = fetch_all(\n                conn,\n                \"SELECT url FROM targets WHERE customer_id=? AND is_key=1\",\n                (customer_id,),\n            )\n            for t in targets:\n                url = str(t[\"url\"])\n                data = retry(lambda: fetch_url(url))\n                execute(\n                    conn,\n                    \"INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) \"\n                    \"VALUES(?,?,?,?,?,?,?,?)\",\n                    (\n                        customer_id,\n                        \"daily\",\n                        \"info\",\n                        \"bootstrap\",\n                        \"Daily check executed (bootstrap)\",\n                        \"\\n\".join(\n                            [\n                                f\"- URL: `{url}`\",\n                                f\"- Status: `{data['status_code']}`\",\n                                f\"- Final URL: `{data['final_url']}`\",\n                                f\"- Content hash: `{data['content_hash']}`\",\n                                f\"- Redirect chain: `{json.dumps(data['redirect_chain'])}`\",\n                            ]\n                        )\n                        + \"\\n\",\n                        url,\n                        now_iso(),\n                    ),\n                )\n    finally:\n        conn.close()\n
+import hashlib
+import json
+import time
+from datetime import datetime, timezone
+from typing import Any
+
+import requests
+
+from ranksentinel.config import Settings
+from ranksentinel.db import connect, execute, fetch_all, init_db
+from ranksentinel.runner.normalization import normalize_html_to_text
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def sha256_text(s: str) -> str:
+    return hashlib.sha256((s or "").encode("utf-8")).hexdigest()
+
+
+def retry(fn, attempts: int = 3, base_delay_s: float = 1.0):
+    last = None
+    for i in range(attempts):
+        try:
+            return fn()
+        except Exception as e:  # noqa: BLE001
+            last = e
+            time.sleep(base_delay_s * (2**i))
+    raise last  # type: ignore[misc]
+
+
+def fetch_url(url: str, timeout_s: int = 20) -> dict[str, Any]:
+    resp = requests.get(
+        url,
+        timeout=timeout_s,
+        allow_redirects=True,
+        headers={"User-Agent": "RankSentinel/0.1"},
+    )
+    chain = [r.url for r in resp.history] + [resp.url]
+    ct = resp.headers.get("content-type", "").lower()
+    html = resp.text if ct.startswith("text/html") else ""
+    text = normalize_html_to_text(html) if html else ""
+    return {
+        "status_code": int(resp.status_code),
+        "final_url": resp.url,
+        "redirect_chain": chain,
+        "content_hash": sha256_text(text),
+    }
+
+
+def run(settings: Settings) -> None:
+    """Bootstrap-level daily run.
+
+    Full daily logic (robots/sitemap/canonical/noindex/severity/email) is implemented in later phases.
+    """
+    conn = connect(settings)
+    try:
+        init_db(conn)
+        customers = fetch_all(conn, "SELECT id FROM customers WHERE status='active'")
+
+        for c in customers:
+            customer_id = int(c["id"])
+            targets = fetch_all(
+                conn,
+                "SELECT url FROM targets WHERE customer_id=? AND is_key=1",
+                (customer_id,),
+            )
+            for t in targets:
+                url = str(t["url"])
+                data = retry(lambda: fetch_url(url))
+                execute(
+                    conn,
+                    "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                    "VALUES(?,?,?,?,?,?,?,?)",
+                    (
+                        customer_id,
+                        "daily",
+                        "info",
+                        "bootstrap",
+                        "Daily check executed (bootstrap)",
+                        "\
+".join(
+                            [
+                                f"- URL: `{url}`",
+                                f"- Status: `{data['status_code']}`",
+                                f"- Final URL: `{data['final_url']}`",
+                                f"- Content hash: `{data['content_hash']}`",
+                                f"- Redirect chain: `{json.dumps(data['redirect_chain'])}`",
+                            ]
+                        )
+                        + "\
+",
+                        url,
+                        now_iso(),
+                    ),
+                )
+    finally:
+        conn.close()

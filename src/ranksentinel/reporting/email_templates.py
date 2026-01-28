@@ -12,12 +12,19 @@ class EmailMessage:
 def render_weekly_digest(customer_name: str, findings_md: Iterable[str]) -> EmailMessage:
     subject = f"RankSentinel Weekly Digest — {customer_name}"
 
-    body_md = "\n\n".join(findings_md) if findings_md else "No findings."
+    body_md = "
+
+".join(findings_md) if findings_md else "No findings."
 
     text = (
-        f"Weekly Digest for {customer_name}\n\n"
-        "Sections: Critical / Warning / Info\n\n"
-        f"{body_md}\n"
+        f"Weekly Digest for {customer_name}
+
+"
+        "Sections: Critical / Warning / Info
+
+"
+        f"{body_md}
+"
     )
 
     html = (

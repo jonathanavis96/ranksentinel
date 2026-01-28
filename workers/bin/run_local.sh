@@ -1,1 +1,4 @@
-../../scripts/run_local.sh
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+bash scripts/run_local.sh

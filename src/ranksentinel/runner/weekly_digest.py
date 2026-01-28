@@ -1,1 +1,40 @@
-from datetime import datetime, timezone\n\nfrom ranksentinel.config import Settings\nfrom ranksentinel.db import connect, execute, fetch_all, init_db\n\n\ndef now_iso() -> str:\n    return datetime.now(timezone.utc).isoformat()\n\n\ndef run(settings: Settings) -> None:\n    \"\"\"Bootstrap-level weekly run.\n\n    Full weekly digest logic is implemented in later phases.\n    \"\"\"\n    conn = connect(settings)\n    try:\n        init_db(conn)\n        customers = fetch_all(conn, \"SELECT id FROM customers WHERE status='active'\")\n\n        for c in customers:\n            customer_id = int(c[\"id\"])\n            execute(\n                conn,\n                \"INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) \"\n                \"VALUES(?,?,?,?,?,?,?,?)\",\n                (\n                    customer_id,\n                    \"weekly\",\n                    \"info\",\n                    \"bootstrap\",\n                    \"Weekly digest executed (bootstrap)\",\n                    \"This is the bootstrap weekly digest placeholder.\\n\",\n                    None,\n                    now_iso(),\n                ),\n            )\n    finally:\n        conn.close()\n
+from datetime import datetime, timezone
+
+from ranksentinel.config import Settings
+from ranksentinel.db import connect, execute, fetch_all, init_db
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def run(settings: Settings) -> None:
+    """Bootstrap-level weekly run.
+
+    Full weekly digest logic is implemented in later phases.
+    """
+    conn = connect(settings)
+    try:
+        init_db(conn)
+        customers = fetch_all(conn, "SELECT id FROM customers WHERE status='active'")
+
+        for c in customers:
+            customer_id = int(c["id"])
+            execute(
+                conn,
+                "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                "VALUES(?,?,?,?,?,?,?,?)",
+                (
+                    customer_id,
+                    "weekly",
+                    "info",
+                    "bootstrap",
+                    "Weekly digest executed (bootstrap)",
+                    "This is the bootstrap weekly digest placeholder.\
+",
+                    None,
+                    now_iso(),
+                ),
+            )
+    finally:
+        conn.close()

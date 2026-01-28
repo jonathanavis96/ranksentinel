@@ -1,1 +1,30 @@
-from pydantic import BaseModel, Field, HttpUrl\n\n\nclass CustomerCreate(BaseModel):\n    name: str = Field(min_length=1, max_length=200)\n\n\nclass CustomerOut(BaseModel):\n    id: int\n    name: str\n    status: str\n\n\nclass TargetCreate(BaseModel):\n    url: HttpUrl\n    is_key: bool = True\n\n\nclass TargetOut(BaseModel):\n    id: int\n    customer_id: int\n    url: str\n    is_key: bool\n\n\nclass CustomerSettingsPatch(BaseModel):\n    sitemap_url: HttpUrl | None = None\n    crawl_limit: int | None = Field(default=None, ge=1, le=5000)\n    psi_enabled: bool | None = None\n    psi_urls_limit: int | None = Field(default=None, ge=0, le=100)\n
+from pydantic import BaseModel, Field, HttpUrl
+
+
+class CustomerCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+
+
+class CustomerOut(BaseModel):
+    id: int
+    name: str
+    status: str
+
+
+class TargetCreate(BaseModel):
+    url: HttpUrl
+    is_key: bool = True
+
+
+class TargetOut(BaseModel):
+    id: int
+    customer_id: int
+    url: str
+    is_key: bool
+
+
+class CustomerSettingsPatch(BaseModel):
+    sitemap_url: HttpUrl | None = None
+    crawl_limit: int | None = Field(default=None, ge=1, le=5000)
+    psi_enabled: bool | None = None
+    psi_urls_limit: int | None = Field(default=None, ge=0, le=100)

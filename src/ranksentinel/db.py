@@ -1,1 +1,95 @@
-import sqlite3\nfrom pathlib import Path\nfrom typing import Any, Iterable\n\nfrom ranksentinel.config import Settings\n\n\nSCHEMA_SQL = \"\"\"\nPRAGMA journal_mode=WAL;\n\nCREATE TABLE IF NOT EXISTS customers (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL,\n  status TEXT NOT NULL CHECK(status IN ('active','past_due','canceled')),\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n);\n\nCREATE TABLE IF NOT EXISTS targets (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  customer_id INTEGER NOT NULL,\n  url TEXT NOT NULL,\n  is_key INTEGER NOT NULL DEFAULT 1,\n  created_at TEXT NOT NULL,\n  FOREIGN KEY(customer_id) REFERENCES customers(id)\n);\n\nCREATE TABLE IF NOT EXISTS settings (\n  customer_id INTEGER PRIMARY KEY,\n  sitemap_url TEXT,\n  crawl_limit INTEGER NOT NULL DEFAULT 100,\n  psi_enabled INTEGER NOT NULL DEFAULT 1,\n  psi_urls_limit INTEGER NOT NULL DEFAULT 5,\n  psi_confirm_runs INTEGER NOT NULL DEFAULT 2,\n  psi_perf_drop_threshold INTEGER NOT NULL DEFAULT 10,\n  psi_lcp_increase_threshold_ms INTEGER NOT NULL DEFAULT 500,\n  FOREIGN KEY(customer_id) REFERENCES customers(id)\n);\n\nCREATE TABLE IF NOT EXISTS findings (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  customer_id INTEGER NOT NULL,\n  run_type TEXT NOT NULL CHECK(run_type IN ('daily','weekly')),\n  severity TEXT NOT NULL CHECK(severity IN ('critical','warning','info')),\n  category TEXT NOT NULL,\n  title TEXT NOT NULL,\n  details_md TEXT NOT NULL,\n  url TEXT,\n  created_at TEXT NOT NULL,\n  FOREIGN KEY(customer_id) REFERENCES customers(id)\n);\n\nCREATE TABLE IF NOT EXISTS deliveries (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  customer_id INTEGER NOT NULL,\n  run_type TEXT NOT NULL CHECK(run_type IN ('daily','weekly')),\n  sent_at TEXT NOT NULL,\n  recipient TEXT NOT NULL,\n  subject TEXT NOT NULL,\n  provider TEXT NOT NULL,\n  provider_message_id TEXT,\n  status TEXT NOT NULL CHECK(status IN ('sent','skipped','failed')),\n  error TEXT,\n  FOREIGN KEY(customer_id) REFERENCES customers(id)\n);\n\"\"\"\n\n\ndef connect(settings: Settings) -> sqlite3.Connection:\n    db_path = Path(settings.RANKSENTINEL_DB_PATH)\n    db_path.parent.mkdir(parents=True, exist_ok=True)\n    conn = sqlite3.connect(str(db_path))\n    conn.row_factory = sqlite3.Row\n    return conn\n\n\ndef init_db(conn: sqlite3.Connection) -> None:\n    conn.executescript(SCHEMA_SQL)\n    conn.commit()\n\n\ndef fetch_all(conn: sqlite3.Connection, sql: str, params: Iterable[Any] = ()) -> list[sqlite3.Row]:\n    cur = conn.execute(sql, tuple(params))\n    return list(cur.fetchall())\n\n\ndef fetch_one(conn: sqlite3.Connection, sql: str, params: Iterable[Any] = ()) -> sqlite3.Row | None:\n    cur = conn.execute(sql, tuple(params))\n    return cur.fetchone()\n\n\ndef execute(conn: sqlite3.Connection, sql: str, params: Iterable[Any] = ()) -> int:\n    cur = conn.execute(sql, tuple(params))\n    conn.commit()\n    return int(cur.lastrowid)\n
+import sqlite3
+from pathlib import Path
+from typing import Any, Iterable
+
+from ranksentinel.config import Settings
+
+
+SCHEMA_SQL = """
+PRAGMA journal_mode=WAL;
+
+CREATE TABLE IF NOT EXISTS customers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('active','past_due','canceled')),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS targets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER NOT NULL,
+  url TEXT NOT NULL,
+  is_key INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+  customer_id INTEGER PRIMARY KEY,
+  sitemap_url TEXT,
+  crawl_limit INTEGER NOT NULL DEFAULT 100,
+  psi_enabled INTEGER NOT NULL DEFAULT 1,
+  psi_urls_limit INTEGER NOT NULL DEFAULT 5,
+  psi_confirm_runs INTEGER NOT NULL DEFAULT 2,
+  psi_perf_drop_threshold INTEGER NOT NULL DEFAULT 10,
+  psi_lcp_increase_threshold_ms INTEGER NOT NULL DEFAULT 500,
+  FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
+CREATE TABLE IF NOT EXISTS findings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER NOT NULL,
+  run_type TEXT NOT NULL CHECK(run_type IN ('daily','weekly')),
+  severity TEXT NOT NULL CHECK(severity IN ('critical','warning','info')),
+  category TEXT NOT NULL,
+  title TEXT NOT NULL,
+  details_md TEXT NOT NULL,
+  url TEXT,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
+CREATE TABLE IF NOT EXISTS deliveries (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER NOT NULL,
+  run_type TEXT NOT NULL CHECK(run_type IN ('daily','weekly')),
+  sent_at TEXT NOT NULL,
+  recipient TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  provider TEXT NOT NULL,
+  provider_message_id TEXT,
+  status TEXT NOT NULL CHECK(status IN ('sent','skipped','failed')),
+  error TEXT,
+  FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+"""
+
+
+def connect(settings: Settings) -> sqlite3.Connection:
+    db_path = Path(settings.RANKSENTINEL_DB_PATH)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db(conn: sqlite3.Connection) -> None:
+    conn.executescript(SCHEMA_SQL)
+    conn.commit()
+
+
+def fetch_all(conn: sqlite3.Connection, sql: str, params: Iterable[Any] = ()) -> list[sqlite3.Row]:
+    cur = conn.execute(sql, tuple(params))
+    return list(cur.fetchall())
+
+
+def fetch_one(conn: sqlite3.Connection, sql: str, params: Iterable[Any] = ()) -> sqlite3.Row | None:
+    cur = conn.execute(sql, tuple(params))
+    return cur.fetchone()
+
+
+def execute(conn: sqlite3.Connection, sql: str, params: Iterable[Any] = ()) -> int:
+    cur = conn.execute(sql, tuple(params))
+    conn.commit()
+    return int(cur.lastrowid)

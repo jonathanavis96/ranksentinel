@@ -1,1 +1,2 @@
-__all__ = [\"__version__\"]\n__version__ = \"0.1.0\"\n
+__all__ = ["__version__"]
+__version__ = "0.1.0"

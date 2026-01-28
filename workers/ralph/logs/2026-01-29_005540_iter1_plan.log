@@ -1,2 +1,3 @@
 :::ITER_START::: iter=1 run_id=run-1769640940-18771 ts=1769640940155
 :::CACHE_CONFIG::: mode=off scope=verify,read exported=1 iter=1 ts=1769640940156
+:::PHASE_START::: iter=1 phase=plan run_id=run-1769640940-18771 ts=1769640942752

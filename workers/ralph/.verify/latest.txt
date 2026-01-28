@@ -1,8 +1,8 @@
 Ralph Verifier Report
-Time: 2026-01-29 00:04:15
-Git:  608fbc7
-AC:   /home/grafe/code/brain/tmp_rovodev_ranksentinel_out/workers/ralph/rules/AC.rules
-Approvals: /home/grafe/code/brain/tmp_rovodev_ranksentinel_out/workers/ralph/rules/MANUAL_APPROVALS.rules
+Time: 2026-01-29 00:57:26
+Git:  d6febd2
+AC:   /home/grafe/code/ranksentinel/workers/ralph/rules/AC.rules
+Approvals: /home/grafe/code/ranksentinel/workers/ralph/rules/MANUAL_APPROVALS.rules
 ------------------------------------------------------------
 [PASS] Structure.Dirs.1
   desc: src/ directory exists at project root (NOT ralph/src/)
