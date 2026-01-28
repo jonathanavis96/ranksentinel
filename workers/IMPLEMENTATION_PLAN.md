@@ -265,7 +265,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** repeat 404s are deduped within a run (and ideally across runs once idempotency exists)
   - **Validate:** run weekly against fixture returning 404 and confirm finding
 
-- [ ] **2.7** Detect broken internal links
+- [x] **2.7** Detect broken internal links
   - **Goal:** find internal links that now lead to 4xx/5xx.
   - **AC:** for extracted internal links, check status for a capped subset to avoid blowups
   - **AC:** create findings summarizing source page -> broken target

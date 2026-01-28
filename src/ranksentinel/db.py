@@ -98,6 +98,20 @@ CREATE TABLE IF NOT EXISTS psi_results (
 );
 
 CREATE INDEX IF NOT EXISTS idx_psi_results_lookup ON psi_results(customer_id, url, fetched_at DESC);
+
+CREATE TABLE IF NOT EXISTS broken_links (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER NOT NULL,
+  source_url TEXT NOT NULL,
+  target_url TEXT NOT NULL,
+  status_code INTEGER NOT NULL,
+  error_message TEXT,
+  run_type TEXT NOT NULL CHECK(run_type IN ('daily','weekly')),
+  detected_at TEXT NOT NULL,
+  FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_broken_links_lookup ON broken_links(customer_id, run_type, detected_at DESC);
 """
 
 
