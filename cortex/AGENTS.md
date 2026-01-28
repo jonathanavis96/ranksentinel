@@ -36,3 +36,9 @@ Ralph executes tasks in:
 ## Best practice
 
 Use `bash cortex/snapshot.sh` to get current state quickly.
+
+## Planning note (Cortex)
+
+When editing `workers/IMPLEMENTATION_PLAN.md`, keep phase headers in the monitor-compatible format:
+
+- `## Phase <N>: <Description>`

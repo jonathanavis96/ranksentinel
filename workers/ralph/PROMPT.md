@@ -104,14 +104,4 @@ If you used undocumented knowledge/procedure/tooling:
 
 ## Project-Specific Notes
 
-### Implementation plan phase heading format (required)
-
-The task monitor (`workers/ralph/current_ralph_tasks.sh`) only recognizes phases when `workers/IMPLEMENTATION_PLAN.md` uses this exact heading pattern:
-
-- `## Phase <N>: <Description>`
-
-Example:
-
-- `## Phase 1: Core monitoring signals (SEO regressions) (atomic)`
-
-If headings use `###` instead of `##`, or use an em dash (`—`) instead of a colon (`:`), the monitor can incorrectly show `0/0` tasks.
+[Add any project-specific conventions, architecture decisions, or patterns here]
