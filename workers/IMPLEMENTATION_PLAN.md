@@ -141,7 +141,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** title change produces a finding with a before/after summary
   - **Validate:** run daily against a page you can safely control (or a local fixture) with a controlled title change and confirm a title-change finding is created
 
-- [ ] **1.7** Key-page tag extraction: meta robots + canonical
+- [x] **1.7** Key-page tag extraction: meta robots + canonical
   - **Goal:** detect indexability/canonicalization regressions.
   - **AC:** extract and persist:
     - meta robots (presence + content)

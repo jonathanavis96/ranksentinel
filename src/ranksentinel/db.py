@@ -37,6 +37,22 @@ CREATE TABLE IF NOT EXISTS settings (
   FOREIGN KEY(customer_id) REFERENCES customers(id)
 );
 
+CREATE TABLE IF NOT EXISTS snapshots (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER NOT NULL,
+  url TEXT NOT NULL,
+  run_type TEXT NOT NULL CHECK(run_type IN ('daily','weekly')),
+  fetched_at TEXT NOT NULL,
+  status_code INTEGER NOT NULL,
+  final_url TEXT NOT NULL,
+  redirect_chain TEXT NOT NULL,
+  title TEXT,
+  canonical TEXT,
+  meta_robots TEXT,
+  content_hash TEXT NOT NULL,
+  FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
 CREATE TABLE IF NOT EXISTS findings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   customer_id INTEGER NOT NULL,
