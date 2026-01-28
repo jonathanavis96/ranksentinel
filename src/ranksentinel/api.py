@@ -4,7 +4,13 @@ from fastapi import Depends, FastAPI, HTTPException
 
 from ranksentinel.config import Settings, get_settings
 from ranksentinel.db import connect, execute, fetch_all, fetch_one, init_db
-from ranksentinel.models import CustomerCreate, CustomerOut, CustomerSettingsPatch, TargetCreate, TargetOut
+from ranksentinel.models import (
+    CustomerCreate,
+    CustomerOut,
+    CustomerSettingsPatch,
+    TargetCreate,
+    TargetOut,
+)
 
 
 def now_iso() -> str:

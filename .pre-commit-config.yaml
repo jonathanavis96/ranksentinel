@@ -1,0 +1,201 @@
+# Pre-commit hooks for brain repository
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+#
+# These hooks run automatically before each commit to catch issues early.
+
+repos:
+  # ==========================================================================
+  # Shell Scripts
+  # ==========================================================================
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        name: shellcheck
+        description: Static analysis for shell scripts
+        args: ["-e", "SC1091"]  # Don't fail on sourced files that can't be found
+        files: \.(sh|bash)$
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.7.0-4
+    hooks:
+      - id: shfmt
+        name: shfmt
+        description: Shell script formatter (check only, no auto-fix)
+        args: ["-d", "-i", "2", "-ci"]  # diff mode, 2-space indent, case indent
+
+  # ==========================================================================
+  # Markdown
+  # ==========================================================================
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.39.0
+    hooks:
+      - id: markdownlint
+        name: markdownlint
+        description: Markdown linter
+        args: ["--config", ".markdownlint.yaml"]
+        files: \.md$
+        # Exclude generated/reference files
+        exclude: |
+          (?x)^(
+            references/.*|
+            .*THUNK\.md$|
+            .*IMPLEMENTATION_PLAN\.md$|
+            .*latest\.txt$
+          )$
+
+  # ==========================================================================
+  # Python (if any Python files exist)
+  # ==========================================================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.0
+    hooks:
+      - id: ruff
+        name: ruff
+        description: Ultra-fast Python linter
+        args: ["--fix", "--exit-non-zero-on-fix"]
+      - id: ruff-format
+        name: ruff-format
+        description: Python formatter
+
+  # ==========================================================================
+  # General file hygiene
+  # ==========================================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: trailing-whitespace
+        description: Remove trailing whitespace
+        exclude: |
+          (?x)^(
+            .*\.md$|
+            references/.*
+          )$
+      - id: end-of-file-fixer
+        name: end-of-file-fixer
+        description: Ensure files end with newline
+        exclude: references/.*
+      - id: check-yaml
+        name: check-yaml
+        description: Validate YAML syntax
+      - id: check-json
+        name: check-json
+        description: Validate JSON syntax
+      - id: check-merge-conflict
+        name: check-merge-conflict
+        description: Check for merge conflict markers
+      - id: check-added-large-files
+        name: check-added-large-files
+        description: Prevent giant files from being committed
+        args: ["--maxkb=500"]
+
+  # ==========================================================================
+  # Security
+  # ==========================================================================
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        name: detect-secrets
+        description: Detect secrets in code
+        exclude: |
+          (?x)^(
+            references/.*|
+            .*\.sha256$|
+            \.verify/.*|
+            .*\.log$
+          )$
+
+  # ==========================================================================
+  # Shell Script Unit Tests
+  # ==========================================================================
+  - repo: local
+    hooks:
+      - id: bats-tests
+        name: bats-tests
+        description: Run bats unit tests for shell scripts
+        entry: >
+          bash -c "if command -v bats >/dev/null 2>&1; then
+          bats tests/unit/*.bats;
+          else echo 'WARN bats not installed, skipping unit tests' >&2; exit 0;
+          fi"
+        language: system
+        pass_filenames: false
+        files: \.(sh|bash|bats)$
+
+  # ==========================================================================
+  # ==========================================================================
+  # Documentation Link Validation
+  # ==========================================================================
+  - repo: local
+    hooks:
+      - id: validate-links
+        name: validate-links
+        description: Validate internal markdown links resolve to existing files
+        entry: bash tools/validate_links.sh
+        language: system
+        files: \.md$
+        exclude: |
+          (?x)^(
+            .*THUNK\.md$|
+            .*IMPLEMENTATION_PLAN\.md$|
+            .*/PLAYBOOK_TEMPLATE\.md$|
+            skills/playbooks/README\.md$|
+            skills/conventions\.md$|
+            workers/ralph/README\.md$|
+            app/brain-map/frontend/node_modules/.*
+          )$
+
+      - id: validate-code-examples
+        name: validate-code-examples
+        description: Validate code examples in markdown documentation
+        entry: python3 tools/validate_examples.py
+        language: system
+        files: \.md$
+        exclude: |
+          (?x)^(
+            .*THUNK\.md$|
+            .*IMPLEMENTATION_PLAN\.md$|
+            .*/PLAYBOOK_TEMPLATE\.md$|
+            templates/.*|
+            README\.md$|
+            .*/anti-patterns/.*\.md$|
+            CONTRIBUTING\.md$
+          )$
+
+
+  # Protected File Hash Validation
+  # ==========================================================================
+  - repo: local
+    hooks:
+      - id: validate-protected-hashes
+        name: validate-protected-hashes
+        description: Validate SHA256 hashes for protected files
+        entry: bash tools/validate_protected_hashes.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: validate-doc-sync
+        name: validate-doc-sync
+        description: Validate documentation matches actual config files
+        entry: bash tools/validate_doc_sync.sh
+        language: system
+        pass_filenames: false
+        files: \.(md|yaml|sh)$
+
+# ==========================================================================
+# Configuration
+# ==========================================================================
+default_language_version:
+  python: python3
+
+# Skip hooks that require tools not installed
+default_install_hook_types: [pre-commit, commit-msg]
+
+# CI configuration - fail fast
+ci:
+  autofix_commit_msg: "style: auto-fix from pre-commit hooks"
+  autoupdate_commit_msg: "chore: update pre-commit hooks"

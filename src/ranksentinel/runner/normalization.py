@@ -32,7 +32,7 @@ def normalize_html_to_text(html: str) -> str:
 
 def extract_meta_robots(html: str) -> str:
     """Extract meta robots tag content.
-    
+
     Returns the content attribute value, or empty string if not present.
     """
     soup = BeautifulSoup(html or "", "html.parser")
@@ -44,7 +44,7 @@ def extract_meta_robots(html: str) -> str:
 
 def extract_canonical(html: str) -> str:
     """Extract canonical URL from link rel=canonical.
-    
+
     Returns the href attribute value, or empty string if not present.
     """
     soup = BeautifulSoup(html or "", "html.parser")

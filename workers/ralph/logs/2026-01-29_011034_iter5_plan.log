@@ -1,7 +1,0 @@
-:::ITER_START::: iter=5 run_id=run-1769640940-18771 ts=1769641834940
-:::CACHE_CONFIG::: mode=off scope=verify,read exported=1 iter=5 ts=1769641834942
-:::TOOL_START::: id=676dc2c0-6822-4db9-9304-1f9e21e06f5d tool=pre-commit cache_key=pre-commit|c4340be git_sha=c4340be ts=2026-01-28T23:10:35Z
-:::TOOL_END::: id=676dc2c0-6822-4db9-9304-1f9e21e06f5d result=PASS exit=0 duration_ms=185 ts=2026-01-28T23:10:35Z
-:::TOOL_START::: id=afceec15-04a7-4592-ac4f-96883bcbb44a tool=verifier cache_key=verifier-pre-build|c4340be git_sha=c4340be ts=2026-01-28T23:10:35Z
-:::TOOL_END::: id=afceec15-04a7-4592-ac4f-96883bcbb44a result=PASS exit=0 duration_ms=647 ts=2026-01-28T23:10:35Z
-:::PHASE_START::: iter=5 phase=build run_id=run-1769640940-18771 ts=1769641835871

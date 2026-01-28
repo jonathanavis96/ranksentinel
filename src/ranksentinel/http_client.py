@@ -11,7 +11,6 @@ Features:
 
 import time
 from enum import Enum
-from typing import Any
 
 import requests
 from requests.exceptions import (
@@ -121,9 +120,7 @@ def fetch_with_retry(
 
             # Check for HTTP errors (4xx, 5xx)
             if resp.status_code >= 400:
-                error_type = (
-                    ErrorType.HTTP_4XX if resp.status_code < 500 else ErrorType.HTTP_5XX
-                )
+                error_type = ErrorType.HTTP_4XX if resp.status_code < 500 else ErrorType.HTTP_5XX
                 return FetchResult(
                     status_code=resp.status_code,
                     final_url=resp.url,

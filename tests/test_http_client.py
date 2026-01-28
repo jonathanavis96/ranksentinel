@@ -1,7 +1,5 @@
 """Tests for HTTP client wrapper."""
 
-import pytest
-
 from ranksentinel.http_client import (
     ErrorType,
     FetchResult,

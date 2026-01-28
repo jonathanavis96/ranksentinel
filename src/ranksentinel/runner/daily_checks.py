@@ -5,7 +5,7 @@ from typing import Any
 
 from ranksentinel.config import Settings
 from ranksentinel.db import connect, execute, fetch_all, fetch_one, init_db
-from ranksentinel.http_client import fetch_text, fetch_with_retry
+from ranksentinel.http_client import fetch_text
 from ranksentinel.runner.normalization import (
     extract_canonical,
     extract_meta_robots,
@@ -23,20 +23,20 @@ def sha256_text(s: str) -> str:
 
 def fetch_url(url: str, timeout_s: int = 20) -> dict[str, Any]:
     """Fetch a URL and extract SEO-relevant metadata.
-    
+
     Uses http_client.fetch_text for consistent retry/timeout behavior.
     """
     result = fetch_text(url, timeout=timeout_s, attempts=3, base_delay=1.0)
-    
+
     if result.is_error:
         # Log the error and raise to maintain existing behavior
         raise Exception(f"Failed to fetch {url}: {result.error} ({result.error_type})")
-    
+
     html = result.body or ""
     text = normalize_html_to_text(html) if html else ""
     meta_robots = extract_meta_robots(html) if html else ""
     canonical = extract_canonical(html) if html else ""
-    
+
     return {
         "status_code": result.status_code,
         "final_url": result.final_url,
@@ -54,7 +54,7 @@ def check_noindex_regression(
     current_meta_robots: str,
 ) -> tuple[str, str] | None:
     """Check if noindex was newly introduced.
-    
+
     Returns (severity, details_md) tuple if regression found, None otherwise.
     """
     prev = fetch_one(
@@ -63,16 +63,16 @@ def check_noindex_regression(
         "ORDER BY fetched_at DESC LIMIT 1",
         (customer_id, url),
     )
-    
+
     if not prev:
         return None
-    
+
     prev_robots = str(prev["meta_robots"] or "")
     curr_robots = current_meta_robots or ""
-    
+
     prev_has_noindex = "noindex" in prev_robots.lower()
     curr_has_noindex = "noindex" in curr_robots.lower()
-    
+
     if not prev_has_noindex and curr_has_noindex:
         details = f"""Key page now has `noindex` directive.
 
@@ -82,7 +82,7 @@ def check_noindex_regression(
 
 This prevents search engines from indexing this page."""
         return ("critical", details)
-    
+
     return None
 
 
@@ -93,7 +93,7 @@ def check_canonical_drift(
     current_canonical: str,
 ) -> tuple[str, str] | None:
     """Check if canonical changed unexpectedly.
-    
+
     Returns (severity, details_md) tuple if drift found, None otherwise.
     """
     prev = fetch_one(
@@ -102,17 +102,17 @@ def check_canonical_drift(
         "ORDER BY fetched_at DESC LIMIT 1",
         (customer_id, url),
     )
-    
+
     if not prev:
         return None
-    
+
     prev_canonical = str(prev["canonical"] or "")
     curr_canonical = current_canonical or ""
-    
+
     if prev_canonical != curr_canonical:
         # Determine severity based on the change type
         severity = "warning"
-        
+
         # Critical cases
         if prev_canonical and not curr_canonical:
             severity = "critical"
@@ -135,52 +135,56 @@ This may cause duplicate content issues."""
 - **Previous:** `{prev_canonical}`
 - **Current:** `{curr_canonical}`
 - **URL:** `{url}`"""
-        
+
         return (severity, details)
-    
+
     return None
 
 
 def fetch_psi_metrics(url: str, api_key: str, strategy: str = "mobile") -> dict[str, Any] | None:
     """Fetch PageSpeed Insights metrics for a URL.
-    
+
     Uses http_client for consistent retry/timeout behavior.
     Returns dict with perf_score, lcp_ms, cls_score, inp_ms, and raw_json.
     Returns None if API call fails or API key is missing.
     """
     if not api_key:
         return None
-    
+
     # Build PSI URL with query parameters
     psi_url = (
         f"https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
         f"?url={url}&key={api_key}&strategy={strategy}&category=performance"
     )
-    
+
     result = fetch_text(psi_url, timeout=60, attempts=3, base_delay=2.0)
-    
+
     if result.is_error:
         print(f"PSI fetch failed for {url}: {result.error} ({result.error_type})")
         return None
-    
+
     try:
         data = json.loads(result.body or "{}")
-        
+
         # Extract metrics
         lighthouse = data.get("lighthouseResult", {})
         categories = lighthouse.get("categories", {})
         perf = categories.get("performance", {})
         perf_score = int(perf.get("score", 0) * 100) if perf.get("score") is not None else None
-        
+
         audits = lighthouse.get("audits", {})
         lcp_audit = audits.get("largest-contentful-paint", {})
         cls_audit = audits.get("cumulative-layout-shift", {})
         inp_audit = audits.get("interaction-to-next-paint", {})
-        
+
         lcp_ms = int(lcp_audit.get("numericValue", 0)) if lcp_audit.get("numericValue") else None
-        cls_score = float(cls_audit.get("numericValue", 0)) if cls_audit.get("numericValue") is not None else None
+        cls_score = (
+            float(cls_audit.get("numericValue", 0))
+            if cls_audit.get("numericValue") is not None
+            else None
+        )
         inp_ms = int(inp_audit.get("numericValue", 0)) if inp_audit.get("numericValue") else None
-        
+
         return {
             "perf_score": perf_score,
             "lcp_ms": lcp_ms,
@@ -201,10 +205,10 @@ def check_psi_regression(
     settings_row: dict[str, Any],
 ) -> tuple[str, str, str] | None:
     """Check for PSI performance regression with two-run confirmation.
-    
+
     Returns (severity, title, details_md) tuple if confirmed regression found.
     Returns None if no regression or not yet confirmed.
-    
+
     Logic:
     - First regression: mark as unconfirmed, no alert
     - Second consecutive regression: mark as confirmed, create critical finding
@@ -212,7 +216,7 @@ def check_psi_regression(
     perf_threshold = int(settings_row.get("psi_perf_drop_threshold", 10))
     lcp_threshold_ms = int(settings_row.get("psi_lcp_increase_threshold_ms", 500))
     confirm_runs = int(settings_row.get("psi_confirm_runs", 2))
-    
+
     # Get baseline (most recent non-regression result)
     baseline = fetch_one(
         conn,
@@ -221,31 +225,31 @@ def check_psi_regression(
         "ORDER BY fetched_at DESC LIMIT 1",
         (customer_id, url),
     )
-    
+
     if not baseline:
         # No baseline yet, this becomes the baseline
         return None
-    
+
     baseline_perf = baseline["perf_score"]
     baseline_lcp = baseline["lcp_ms"]
-    
+
     curr_perf = current_metrics.get("perf_score")
     curr_lcp = current_metrics.get("lcp_ms")
-    
+
     # Detect regression
     is_regression = False
     regression_type = None
-    
+
     if baseline_perf and curr_perf and (baseline_perf - curr_perf) >= perf_threshold:
         is_regression = True
         regression_type = "perf_score"
     elif baseline_lcp and curr_lcp and (curr_lcp - baseline_lcp) >= lcp_threshold_ms:
         is_regression = True
         regression_type = "lcp"
-    
+
     if not is_regression:
         return None
-    
+
     # Check for previous unconfirmed regression
     prev = fetch_one(
         conn,
@@ -254,7 +258,7 @@ def check_psi_regression(
         "ORDER BY fetched_at DESC LIMIT 1",
         (customer_id, url),
     )
-    
+
     if prev and prev["is_regression"] == 1 and prev["is_confirmed"] == 0:
         # Previous run was unconfirmed regression, now confirm it
         if confirm_runs <= 2:
@@ -279,7 +283,7 @@ This regression was confirmed across {confirm_runs} consecutive runs."""
 
 This regression was confirmed across {confirm_runs} consecutive runs."""
                 return ("critical", "PSI LCP regression (confirmed)", details)
-    
+
     # First regression or not yet confirmed
     return None
 
@@ -293,7 +297,7 @@ def run(settings: Settings) -> None:
 
         for c in customers:
             customer_id = int(c["id"])
-            
+
             # Get customer settings
             settings_row = fetch_one(
                 conn,
@@ -302,7 +306,7 @@ def run(settings: Settings) -> None:
                 "FROM settings WHERE customer_id=?",
                 (customer_id,),
             )
-            
+
             # Convert to dict with defaults
             if settings_row:
                 customer_settings = dict(settings_row)
@@ -314,18 +318,18 @@ def run(settings: Settings) -> None:
                     "psi_perf_drop_threshold": 10,
                     "psi_lcp_increase_threshold_ms": 500,
                 }
-            
+
             targets = fetch_all(
                 conn,
                 "SELECT url FROM targets WHERE customer_id=? AND is_key=1",
                 (customer_id,),
             )
-            
+
             # Track PSI-checked URLs (limit to psi_urls_limit)
             psi_count = 0
             psi_limit = int(customer_settings.get("psi_urls_limit", 5))
             psi_enabled = bool(customer_settings.get("psi_enabled", 1))
-            
+
             for t in targets:
                 url = str(t["url"])
                 try:
@@ -334,7 +338,7 @@ def run(settings: Settings) -> None:
                     print(f"Failed to fetch {url} for customer {customer_id}: {e}")
                     continue
                 fetched_at = now_iso()
-                
+
                 # Store snapshot
                 execute(
                     conn,
@@ -354,7 +358,7 @@ def run(settings: Settings) -> None:
                         data["content_hash"],
                     ),
                 )
-                
+
                 # Check for noindex regression
                 noindex_result = check_noindex_regression(
                     conn, customer_id, url, data["meta_robots"]
@@ -376,11 +380,9 @@ def run(settings: Settings) -> None:
                             fetched_at,
                         ),
                     )
-                
+
                 # Check for canonical drift
-                canonical_result = check_canonical_drift(
-                    conn, customer_id, url, data["canonical"]
-                )
+                canonical_result = check_canonical_drift(conn, customer_id, url, data["canonical"])
                 if canonical_result:
                     severity, details = canonical_result
                     execute(
@@ -398,28 +400,30 @@ def run(settings: Settings) -> None:
                             fetched_at,
                         ),
                     )
-                
+
                 # PSI checks (only for first N key URLs if enabled)
                 if psi_enabled and psi_count < psi_limit and settings.PSI_API_KEY:
                     psi_metrics = fetch_psi_metrics(url, settings.PSI_API_KEY)
-                    
+
                     if psi_metrics:
                         # Determine regression state
                         regression_result = check_psi_regression(
                             conn, customer_id, url, psi_metrics, customer_settings
                         )
-                        
+
                         is_regression = 0
                         is_confirmed = 0
                         regression_type = None
-                        
+
                         if regression_result:
                             # Confirmed regression
                             is_regression = 1
                             is_confirmed = 1
                             severity, title, details = regression_result
-                            regression_type = "perf_score" if "Performance score" in title else "lcp"
-                            
+                            regression_type = (
+                                "perf_score" if "Performance score" in title else "lcp"
+                            )
+
                             # Create finding
                             execute(
                                 conn,
@@ -445,22 +449,34 @@ def run(settings: Settings) -> None:
                                 "ORDER BY fetched_at DESC LIMIT 1",
                                 (customer_id, url),
                             )
-                            
+
                             if baseline:
                                 baseline_perf = baseline["perf_score"]
                                 baseline_lcp = baseline["lcp_ms"]
                                 curr_perf = psi_metrics.get("perf_score")
                                 curr_lcp = psi_metrics.get("lcp_ms")
-                                perf_threshold = int(customer_settings.get("psi_perf_drop_threshold", 10))
-                                lcp_threshold_ms = int(customer_settings.get("psi_lcp_increase_threshold_ms", 500))
-                                
-                                if baseline_perf and curr_perf and (baseline_perf - curr_perf) >= perf_threshold:
+                                perf_threshold = int(
+                                    customer_settings.get("psi_perf_drop_threshold", 10)
+                                )
+                                lcp_threshold_ms = int(
+                                    customer_settings.get("psi_lcp_increase_threshold_ms", 500)
+                                )
+
+                                if (
+                                    baseline_perf
+                                    and curr_perf
+                                    and (baseline_perf - curr_perf) >= perf_threshold
+                                ):
                                     is_regression = 1
                                     regression_type = "perf_score"
-                                elif baseline_lcp and curr_lcp and (curr_lcp - baseline_lcp) >= lcp_threshold_ms:
+                                elif (
+                                    baseline_lcp
+                                    and curr_lcp
+                                    and (curr_lcp - baseline_lcp) >= lcp_threshold_ms
+                                ):
                                     is_regression = 1
                                     regression_type = "lcp"
-                        
+
                         # Store PSI result
                         execute(
                             conn,
@@ -482,7 +498,7 @@ def run(settings: Settings) -> None:
                                 psi_metrics.get("raw_json"),
                             ),
                         )
-                        
+
                         psi_count += 1
     finally:
         conn.close()
