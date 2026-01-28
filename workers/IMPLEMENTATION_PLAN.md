@@ -270,3 +270,23 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** `docs/RUNBOOK_VPS.md` commands match the scripts that actually exist
   - **AC:** runbook includes log locations and DB location per BOOTSTRAP
   - **Validate:** follow runbook on a clean machine (or local simulation) without guesswork
+
+### Phase 6 — Markdown Lint Fixes
+
+> Fix markdown linting errors that could not be auto-fixed.
+
+- [ ] **6.1** Fix MD013 line-length errors in BOOTSTRAP.md
+  - **AC:** `markdownlint BOOTSTRAP.md` passes (no MD013 errors)
+  - **Files:** BOOTSTRAP.md (4 lines: 3, 16, 21, 239, 242)
+
+- [ ] **6.2** Fix MD013 line-length errors in brain/skills/conventions.md
+  - **AC:** `markdownlint brain/skills/conventions.md` passes (no MD013 errors)
+  - **Files:** brain/skills/conventions.md (3 lines: 5, 70, 184)
+
+- [ ] **6.3** Fix MD013 line-length errors in documentation-anti-patterns.md
+  - **AC:** `markdownlint brain/skills/domains/anti-patterns/documentation-anti-patterns.md` passes (no MD013 errors)
+  - **Files:** brain/skills/domains/anti-patterns/documentation-anti-patterns.md (10 lines: 5, 7, 21, 42, 75, 147, 167, 217, 286, 324)
+
+- [ ] **6.4** Fix MD024 duplicate heading errors in documentation-anti-patterns.md
+  - **AC:** `markdownlint brain/skills/domains/anti-patterns/documentation-anti-patterns.md` passes (no MD024 errors)
+  - **Files:** brain/skills/domains/anti-patterns/documentation-anti-patterns.md (20 duplicate heading instances)
