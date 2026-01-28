@@ -397,3 +397,39 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 - [ ] **6.4** Fix MD024 duplicate heading errors in documentation-anti-patterns.md
   - **AC:** `markdownlint brain/skills/domains/anti-patterns/documentation-anti-patterns.md` passes (no MD024 errors)
   - **Files:** brain/skills/domains/anti-patterns/documentation-anti-patterns.md (20 duplicate heading instances)
+
+- [ ] **6.5** Fix MD013 in cortex/CORTEX_SYSTEM_PROMPT.md
+  - **AC:** `markdownlint cortex/CORTEX_SYSTEM_PROMPT.md` passes (no MD013 errors)
+
+- [ ] **6.6** Fix MD013 in cortex/DECISIONS.md
+  - **AC:** `markdownlint cortex/DECISIONS.md` passes (no MD013 errors)
+
+- [ ] **6.7** Fix MD013 in cortex/GAP_CAPTURE.md
+  - **AC:** `markdownlint cortex/GAP_CAPTURE.md` passes (no MD013 errors)
+
+- [ ] **6.8** Fix MD013 in cortex/IMPLEMENTATION_PLAN.md
+  - **AC:** `markdownlint cortex/IMPLEMENTATION_PLAN.md` passes (no MD013 errors)
+
+- [ ] **6.9** Fix MD013 in cortex/THOUGHTS.md
+  - **AC:** `markdownlint cortex/THOUGHTS.md` passes (no MD013 errors)
+
+- [ ] **6.10** Fix MD013 in docs/RUNBOOK_VPS.md
+  - **AC:** `markdownlint docs/RUNBOOK_VPS.md` passes (no MD013 errors)
+
+- [ ] **6.11** Fix MD034 in docs/SAMPLE_REPORT.md
+  - **AC:** `markdownlint docs/SAMPLE_REPORT.md` passes (no MD034 errors)
+
+- [ ] **6.12** Fix MD013 in NEURONS.md
+  - **AC:** `markdownlint NEURONS.md` passes (no MD013 errors)
+
+- [ ] **6.13** Fix MD013 and MD029 in README.md
+  - **AC:** `markdownlint README.md` passes (no MD013 or MD029 errors)
+
+- [ ] **6.14** Fix MD013 in workers/docs/RUNBOOK_VPS.md
+  - **AC:** `markdownlint workers/docs/RUNBOOK_VPS.md` passes (no MD013 errors)
+
+- [ ] **6.15** Fix MD034 in workers/docs/SAMPLE_REPORT.md
+  - **AC:** `markdownlint workers/docs/SAMPLE_REPORT.md` passes (no MD034 errors)
+
+- [ ] **6.16** Fix MD013 in workers/IMPLEMENTATION_PLAN.md
+  - **AC:** `markdownlint workers/IMPLEMENTATION_PLAN.md` passes (no MD013 errors)
