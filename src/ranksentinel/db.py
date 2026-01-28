@@ -79,6 +79,25 @@ CREATE TABLE IF NOT EXISTS deliveries (
   error TEXT,
   FOREIGN KEY(customer_id) REFERENCES customers(id)
 );
+
+CREATE TABLE IF NOT EXISTS psi_results (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER NOT NULL,
+  url TEXT NOT NULL,
+  run_type TEXT NOT NULL CHECK(run_type IN ('daily','weekly')),
+  fetched_at TEXT NOT NULL,
+  perf_score INTEGER,
+  lcp_ms INTEGER,
+  cls_score REAL,
+  inp_ms INTEGER,
+  is_regression INTEGER NOT NULL DEFAULT 0,
+  is_confirmed INTEGER NOT NULL DEFAULT 0,
+  regression_type TEXT,
+  raw_json TEXT,
+  FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_psi_results_lookup ON psi_results(customer_id, url, fetched_at DESC);
 """
 
 

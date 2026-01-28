@@ -90,11 +90,72 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `! grep -n 'bash scripts/run_daily\.sh' scripts/run_daily.sh`
     - `! grep -n 'bash scripts/run_weekly\.sh' scripts/run_weekly.sh`
 
+- [ ] **0.8** HTTP client wrapper (shared)
+  - **Goal:** one consistent fetch layer (timeouts, retries/backoff, UA, redirects, gzip) used everywhere.
+  - **AC:** feature code does not call `requests.get()` / `httpx.get()` directly (uses wrapper)
+  - **AC:** wrapper exposes a small API (e.g., `fetch_text(url)`, `fetch_bytes(url)`) and returns:
+    - status code
+    - final URL after redirects
+    - body
+    - error classification (timeout, dns, conn, http_4xx, http_5xx)
+  - **Validate:**
+    - `python -c "import ranksentinel; print('ok')"`
+    - run daily with an intentionally bad URL in settings and confirm logs show retries/backoff and error classification
+
+- [ ] **0.9** URL normalization utilities (shared)
+  - **Goal:** canonical URL rules used everywhere (strip fragments, normalize trailing slash policy, lower-case scheme/host, resolve relatives).
+  - **AC:** code exposes `normalize_url(base_url, url)` (or equivalent) and it is used by:
+    - sitemap URL extraction
+    - link extraction
+    - findings subjects (key pages, broken links)
+  - **Validate:** `pytest -q` includes a URL normalization test module with 15–20 cases
+
+- [ ] **0.10** Per-customer isolation (job loop safety)
+  - **Goal:** one customer failing does not abort the whole daily/weekly run.
+  - **AC:** errors are caught per customer and recorded (DB + logs), then the runner continues
+  - **AC:** job exit code reflects overall success/failure policy (decide in Phase 5.4)
+  - **Validate:** configure two customers where one fails (bad URL) and confirm the other still produces findings
+
+- [ ] **0.11** Structured logging + run_id
+  - **Goal:** every run has `run_id` and logs include `run_id`, `customer_id`, `stage`, `elapsed_ms`.
+  - **AC:** daily/weekly scripts emit a single end-of-run `SUMMARY` line for cron readability
+  - **Validate:** run daily and confirm logs contain `run_id=` and end with a `SUMMARY` line
+
+- [ ] **0.12** Customer status gating everywhere
+  - **Goal:** skip non-active customers in runners (e.g., `past_due`, `canceled`).
+  - **AC:** daily/weekly only process customers with `status='active'`
+  - **Validate:** flip a customer status and confirm it is skipped (no new findings for that customer)
+
 ### Phase 1 — Core monitoring signals (SEO regressions) (atomic)
 
 > Phase 1 adds the first real SEO signals with normalization + severity, but keeps scope tight.
 
-- [ ] **1.1** Robots fetch + persist raw artifact
+- [ ] **1.0** Observation/artifact baseline model
+  - **Goal:** define where “latest known value” lives per (customer, kind, subject) so diffs are deterministic.
+  - **AC:** DB has a mechanism/table to store the latest snapshot per (customer, kind, subject)
+  - **AC:** runner code can load “previous snapshot” and compare to “current snapshot” for each kind
+  - **Validate:** run the same job twice and confirm the second run can load a baseline without crashing
+
+- [ ] **1.1** Idempotent only-on-change rule
+  - **Goal:** prevent finding spam by only writing findings when something meaningful changes.
+  - **AC:** unchanged robots/sitemap/title/canonical/meta robots creates **0** new findings
+  - **AC:** cosmetic-only changes are ignored (whitespace, comment-only, ordering-only where applicable)
+  - **Validate:** run daily twice against an unchanged site and confirm findings count remains stable
+
+- [ ] **1.2** Diff summary engine (human readable)
+  - **Goal:** produce short diffs for SEO-relevant fields, with normalization to avoid cosmetic diffs.
+  - **AC:** robots diffs ignore whitespace and comment-only changes
+  - **AC:** sitemap diffs ignore reorder-only changes
+  - **AC:** diff summary is stored in the finding payload (or text column) and is readable in email
+  - **Validate:** fixture tests cover robots + sitemap + title + canonical diff summaries
+
+- [ ] **1.3** Finding dedupe keys (early)
+  - **Goal:** make runs safe to retry and avoid duplicates for the same change within the same period.
+  - **AC:** each finding has a deterministic `dedupe_key` (customer + kind + subject + artifact_sha + day/week)
+  - **AC:** reruns do not duplicate findings for the same change in the same period
+  - **Validate:** run the same job twice and verify counts don’t increase unexpectedly
+
+- [ ] **1.4** Robots fetch + persist raw artifact
   - **Goal:** reliably fetch `robots.txt` and store the raw content + sha for later diffs.
   - **AC:** daily run fetches `<site>/robots.txt` for each customer (or configured base URL)
   - **AC:** a `findings` (or artifact) row is recorded with:
@@ -105,7 +166,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - run `bash scripts/run_daily.sh`
     - confirm DB rows exist for robots findings (example): `sqlite3 ranksentinel.sqlite3 "select kind, count(*) from findings group by kind;"`
 
-- [ ] **1.2** Robots diff + severity (Disallow risk)
+- [ ] **1.5** Robots diff + severity (Disallow risk)
   - **Goal:** detect meaningful robots changes and assign severity without noise.
   - **AC:** when robots content changes, a new finding is created containing a diff summary
   - **AC:** severity rules exist for high-risk changes (e.g., new `Disallow: /` or expanded disallow patterns)
@@ -113,7 +174,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:**
     - run daily twice with a controlled fixture (or temporary override) and confirm: no change => no new finding; change => finding with severity
 
-- [ ] **1.3** Sitemap fetch + persist raw artifact
+- [ ] **1.6** Sitemap fetch + persist raw artifact
   - **Goal:** fetch sitemap (configured per customer) and store raw content + sha.
   - **AC:** daily run fetches `settings.sitemap_url` and stores raw body + sha
   - **AC:** missing/unreachable sitemap produces a finding with `severity = critical` (per BOOTSTRAP intent)
@@ -121,7 +182,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `bash scripts/run_daily.sh`
     - `sqlite3 ranksentinel.sqlite3 "select kind, severity, count(*) from findings group by kind, severity;"`
 
-- [ ] **1.4** Sitemap URL count + delta severity
+- [ ] **1.7** Sitemap URL count + delta severity
   - **Goal:** compute sitemap URL count and detect big drops without false positives.
   - **AC:** URL count is extracted from sitemap XML (supports sitemap index + urlset)
   - **AC:** store URL count as a numeric field (or JSON in finding payload)
@@ -129,19 +190,19 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:**
     - run weekly or daily twice with changed sitemap content and confirm correct delta + severity
 
-- [ ] **1.5** Key-page HTML fetch + normalization snapshot
+- [ ] **1.8** Key-page HTML fetch + normalization snapshot
   - **Goal:** fetch key targets and persist normalized text/HTML snapshot for tag extraction.
   - **AC:** for targets where `is_key=true`, runner fetches HTML with retries/backoff
   - **AC:** stores sha of normalized content (using existing `normalize_html_to_text` where appropriate)
   - **Validate:** run daily and confirm a per-key-page record exists (use `sqlite3 ranksentinel.sqlite3 "select kind, count(*) from findings group by kind;"` or inspect logs depending on implementation)
 
-- [ ] **1.6** Key-page tag extraction: title
+- [ ] **1.9** Key-page tag extraction: title
   - **Goal:** detect meaningful `<title>` changes on key pages.
   - **AC:** extracted title is stored per key URL per run
   - **AC:** title change produces a finding with a before/after summary
   - **Validate:** run daily against a page you can safely control (or a local fixture) with a controlled title change and confirm a title-change finding is created
 
-- [x] **1.7** Key-page tag extraction: meta robots + canonical
+- [ ] **1.10** Key-page tag extraction: meta robots + canonical
   - **Goal:** detect indexability/canonicalization regressions.
   - **AC:** extract and persist:
     - meta robots (presence + content)
@@ -153,13 +214,30 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ### Phase 2 — Weekly crawl sample and link integrity (atomic)
 
-- [ ] **2.1** Sitemap parsing utility: enumerate canonical URL list
+- [ ] **2.0** Pytest harness + fixtures for parsing/diff/noise logic
+  - **Goal:** prevent regressions in SEO signal extraction/normalization.
+  - **AC:** `pytest -q` runs in CI/local and covers at least ~10 tests
+  - **AC:** fixtures exist for:
+    - robots.txt bodies (comment/whitespace cases)
+    - sitemap XML (`urlset` + sitemap index)
+    - HTML pages (title, canonical, meta robots)
+    - PSI JSON (minimal representative samples)
+  - **Validate:** `pytest -q`
+
+- [ ] **2.1** Robots rules parser + crawl gate
+  - **Goal:** weekly crawl sampling must not fetch disallowed URLs.
+  - **AC:** robots is fetched once per customer per run and parsed into allow/deny rules
+  - **AC:** sampled URLs are filtered through robots rules before fetch
+  - **AC:** if robots fetch fails: default behavior is explicitly chosen and documented (skip crawl OR restrict crawl to explicitly-allowed key URLs)
+  - **Validate:** fixture robots rules block `/private`; confirm those URLs are skipped by the sampler/fetcher
+
+- [ ] **2.2** Sitemap parsing utility: enumerate canonical URL list
   - **Goal:** share sitemap parsing for sampling + later signals.
   - **AC:** code exposes `list_sitemap_urls(sitemap_xml) -> list[str]` (or equivalent)
   - **AC:** supports sitemap index files
   - **Validate:** unit test or small local script + `pytest` (if tests exist) OR verify via runner logs
 
-- [ ] **2.2** Crawl sampler: stable + rotating slice (N=100)
+- [ ] **2.3** Crawl sampler: stable + rotating slice (N=100)
   - **Goal:** deterministic sampling to reduce noise while still covering breadth.
   - **AC:** each weekly run selects:
     - stable slice (same URLs each week)
@@ -168,25 +246,25 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** sampler is deterministic given a seed (customer_id + week start)
   - **Validate:** run weekly twice in same week => same sample; next week => rotated portion changes
 
-- [ ] **2.3** Weekly fetcher: polite crawl with retries + timeouts
+- [ ] **2.4** Weekly fetcher: polite crawl with retries + timeouts
   - **Goal:** fetch sampled pages safely (no stealth, respect robots intent).
   - **AC:** requests have timeouts, retry/backoff (3 attempts), and a sane UA
   - **AC:** per-run max pages is enforced
   - **Validate:** run weekly and confirm it completes under limit and records fetch statuses
 
-- [ ] **2.4** Link extraction from HTML (internal only)
+- [ ] **2.5** Link extraction from HTML (internal only)
   - **Goal:** extract internal links from crawled pages.
   - **AC:** extracts `<a href>` links, resolves relative URLs, filters to same host
   - **AC:** normalizes URLs (strip fragments, normalize trailing slash policy)
   - **Validate:** controlled HTML fixture produces expected link set
 
-- [ ] **2.5** Detect new 404s from sampled crawl
+- [ ] **2.6** Detect new 404s from sampled crawl
   - **Goal:** detect newly-broken pages and prioritize as SEO regressions.
   - **AC:** any sampled URL returning 404 creates a finding
   - **AC:** repeat 404s are deduped within a run (and ideally across runs once idempotency exists)
   - **Validate:** run weekly against fixture returning 404 and confirm finding
 
-- [ ] **2.6** Detect broken internal links
+- [ ] **2.7** Detect broken internal links
   - **Goal:** find internal links that now lead to 4xx/5xx.
   - **AC:** for extracted internal links, check status for a capped subset to avoid blowups
   - **AC:** create findings summarizing source page -> broken target
@@ -221,26 +299,32 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ### Phase 4 — Email reporting (atomic)
 
-- [ ] **4.1** Weekly report composer (no send)
+- [ ] **4.1** Recommendation rules engine
+  - **Goal:** deterministic mapping from finding type -> “what to do next” recommendation text.
+  - **AC:** each critical/warning finding kind has a short recommended action
+  - **AC:** sorting is stable: severity first, then impact
+  - **Validate:** unit test that given a findings list returns a stable ordered recommendation list
+
+- [ ] **4.2** Weekly report composer (no send)
   - **Goal:** generate the weekly digest text/HTML from findings.
   - **AC:** output matches `docs/SAMPLE_REPORT.md` sectioning (Critical/Warning/Info)
-  - **AC:** includes prioritized recommendations derived from finding kinds
+  - **AC:** includes prioritized recommendations derived from finding kinds (via the recommendation rules engine)
   - **Validate:** run weekly and print report to stdout or save to a local file (no email yet)
 
-- [ ] **4.2** Mailgun client + deliveries logging
+- [ ] **4.3** Mailgun client + deliveries logging
   - **Goal:** send an email and record the delivery attempt.
   - **AC:** `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_FROM`, `MAILGUN_TO` used from env/settings
   - **AC:** deliveries table records status + provider message id + timestamps
   - **Validate:** run weekly with Mailgun configured and confirm deliveries row inserted
   - **If Blocked:** create `docs/SKILL_REQUEST_Mailgun.md` (auth, rate limits, error handling)
 
-- [ ] **4.3** Weekly digest sends via Mailgun
+- [ ] **4.4** Weekly digest sends via Mailgun
   - **Goal:** connect report composer to Mailgun send.
   - **AC:** weekly run sends exactly one email per active customer
   - **AC:** failures do not crash the whole run (per-customer isolation)
   - **Validate:** run weekly and confirm one delivery per customer
 
-- [ ] **4.4** Daily critical email gating
+- [ ] **4.5** Daily critical email gating
   - **Goal:** keep daily alerts low-noise.
   - **AC:** daily run sends email only if critical findings exist for that run
   - **AC:** email includes only critical section + next actions
@@ -248,13 +332,53 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ### Phase 5 — VPS readiness (atomic)
 
-- [ ] **5.1** Finding idempotency key + dedupe logic
-  - **Goal:** make jobs safe to re-run (cron retries, manual reruns).
-  - **AC:** each finding has a deterministic `dedupe_key` (customer + kind + subject + artifact_sha + day/week)
-  - **AC:** inserts are idempotent (no duplicate rows on rerun)
-  - **Validate:** run the same job twice and verify counts don’t increase unexpectedly
+- [ ] **5.1** Concurrency guard (lock)
+  - **Goal:** prevent overlapping cron runs.
+  - **AC:** daily and weekly scripts acquire a lock (file lock) and exit non-zero or no-op if locked
+  - **Validate:** start one run, start second => second exits quickly with clear log
 
-- [ ] **5.2** Concurrency guard (lock)
+- [ ] **5.2** Exit-code + “silent on success” contract
+  - **Goal:** cron runs should be quiet unless there’s a failure or a customer email is sent.
+  - **AC:** on success: minimal output (startup + SUMMARY line)
+  - **AC:** on failure: clear single-line failure summary + non-zero exit
+  - **Validate:** run a success and a forced failure and check exit codes and output
+
+- [ ] **5.3** Log path standardization
+  - **Goal:** scripts write logs to predictable locations (especially on VPS).
+  - **AC:** run scripts accept `RANKSENTINEL_LOG_DIR` (or documented default)
+  - **AC:** runbook and scripts agree on log location
+  - **Validate:** run daily and confirm log file appears where configured
+
+- [ ] **5.4** Operator failure alerting (optional)
+  - **Goal:** make failures visible without spamming customers.
+  - **AC:** optional `OPERATOR_EMAIL` receives failure notifications (no secrets in content)
+  - **AC:** failures are logged with actionable context
+  - **Validate:** force an error and confirm operator path triggers
+
+- [ ] **5.5** Retention/cleanup job
+  - **Goal:** DB doesn’t grow forever.
+  - **AC:** a cleanup command deletes old findings/artifacts beyond retention policy
+  - **AC:** retention defaults are documented (e.g., 90 days) and configurable
+  - **Validate:** seed old rows; run cleanup; verify deletion
+
+- [ ] **5.6** DB migration stance
+  - **Goal:** explicitly decide “no migrations yet” vs “minimal migration tool”.
+  - **AC:** decision is documented (in plan or `DECISIONS.md`) and repeatable
+  - **Validate:** documented + agreed approach
+
+- [ ] **5.7** Cron runbook validation against real commands
+  - **Goal:** ensure docs match reality.
+  - **AC:** `docs/RUNBOOK_VPS.md` commands match the scripts that actually exist
+  - **AC:** runbook includes log locations and DB location per BOOTSTRAP
+  - **Validate:** follow runbook on a clean machine (or local simulation) without guesswork
+
+- [ ] **5.8** Finding idempotency/deduping finalization
+  - **Goal:** ensure all finding kinds use dedupe keys consistently.
+  - **AC:** dedupe is applied across all finding kinds (robots, sitemap, key pages, crawl)
+  - **AC:** reruns do not duplicate findings for the same change in the same period
+  - **Validate:** re-run daily/weekly and confirm counts remain stable
+
+- [ ] **5.9** Concurrency guard (lock) (legacy placeholder)
   - **Goal:** prevent overlapping cron runs.
   - **AC:** daily and weekly scripts acquire a lock (file lock) and exit non-zero or no-op if locked
   - **Validate:** start one run, start second => second exits quickly with clear log
