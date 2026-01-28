@@ -197,7 +197,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** stores sha of normalized content (using existing `normalize_html_to_text` where appropriate)
   - **Validate:** run daily and confirm a per-key-page record exists (use `sqlite3 ranksentinel.sqlite3 "select kind, count(*) from findings group by kind;"` or inspect logs depending on implementation)
 
-- [ ] **1.9** Key-page tag extraction: title
+- [x] **1.9** Key-page tag extraction: title
   - **Goal:** detect meaningful `<title>` changes on key pages.
   - **AC:** extracted title is stored per key URL per run
   - **AC:** title change produces a finding with a before/after summary
