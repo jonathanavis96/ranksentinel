@@ -291,7 +291,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** regression creates a finding with before/after values
   - **Validate:** simulate metric change and confirm correct severity
 
-- [ ] **3.4** Two-run confirmation for PSI regressions
+- [x] **3.4** Two-run confirmation for PSI regressions
   - **Goal:** avoid alerting on PSI flakiness.
   - **AC:** a regression only becomes alertable after it appears in 2 consecutive runs
   - **AC:** confirmed vs unconfirmed state is recorded
@@ -377,23 +377,6 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** dedupe is applied across all finding kinds (robots, sitemap, key pages, crawl)
   - **AC:** reruns do not duplicate findings for the same change in the same period
   - **Validate:** re-run daily/weekly and confirm counts remain stable
-
-- [ ] **5.9** Concurrency guard (lock) (legacy placeholder)
-  - **Goal:** prevent overlapping cron runs.
-  - **AC:** daily and weekly scripts acquire a lock (file lock) and exit non-zero or no-op if locked
-  - **Validate:** start one run, start second => second exits quickly with clear log
-
-- [ ] **5.3** Operator failure alerting (optional)
-  - **Goal:** make failures visible without spamming customers.
-  - **AC:** optional `OPERATOR_EMAIL` receives failure notifications (no secrets in content)
-  - **AC:** failures are logged with actionable context
-  - **Validate:** force an error and confirm operator path triggers
-
-- [ ] **5.4** Cron runbook validation against real commands
-  - **Goal:** ensure docs match reality.
-  - **AC:** `docs/RUNBOOK_VPS.md` commands match the scripts that actually exist
-  - **AC:** runbook includes log locations and DB location per BOOTSTRAP
-  - **Validate:** follow runbook on a clean machine (or local simulation) without guesswork
 
 ### Phase 6 — Markdown Lint Fixes
 
