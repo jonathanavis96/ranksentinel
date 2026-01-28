@@ -90,7 +90,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `! grep -n 'bash scripts/run_daily\.sh' scripts/run_daily.sh`
     - `! grep -n 'bash scripts/run_weekly\.sh' scripts/run_weekly.sh`
 
-- [ ] **0.8** HTTP client wrapper (shared)
+- [x] **0.8** HTTP client wrapper (shared)
   - **Goal:** one consistent fetch layer (timeouts, retries/backoff, UA, redirects, gzip) used everywhere.
   - **AC:** feature code does not call `requests.get()` / `httpx.get()` directly (uses wrapper)
   - **AC:** wrapper exposes a small API (e.g., `fetch_text(url)`, `fetch_bytes(url)`) and returns:
