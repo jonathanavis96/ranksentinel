@@ -333,7 +333,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Phase 5: VPS readiness (atomic)
 
-- [ ] **5.1** Concurrency guard (lock)
+- [x] **5.1** Concurrency guard (lock)
   - **Goal:** prevent overlapping cron runs.
   - **AC:** daily and weekly scripts acquire a lock (file lock) and exit non-zero or no-op if locked
   - **Validate:** start one run, start second => second exits quickly with clear log

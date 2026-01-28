@@ -9,4 +9,4 @@ if [ -d .venv ]; then
   source .venv/bin/activate
 fi
 
-python3 -m ranksentinel.runner.daily_checks
+python3 src/ranksentinel/runner/__main__daily.py
