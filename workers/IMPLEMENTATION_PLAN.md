@@ -80,7 +80,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `bash scripts/run_weekly.sh`
     - `sqlite3 ranksentinel.sqlite3 "select count(*) from findings;"`
 
-- [ ] **0.7** Cron-ready scripts: executable + non-recursive + single source of truth
+- [x] **0.7** Cron-ready scripts: executable + non-recursive + single source of truth
   - **Goal:** avoid drift/duplication and ensure scripts are safe for cron.
   - **AC:** `scripts/run_daily.sh` and `scripts/run_weekly.sh` are executable (`test -x ...`)
   - **AC:** neither script calls itself (no recursion)
