@@ -4,6 +4,7 @@ src/ranksentinel/__init__.py
 src/ranksentinel/api.py
 src/ranksentinel/config.py
 src/ranksentinel/db.py
+src/ranksentinel/http_client.py
 src/ranksentinel/models.py
 src/ranksentinel.egg-info/PKG-INFO
 src/ranksentinel.egg-info/SOURCES.txt
@@ -17,3 +18,4 @@ src/ranksentinel/runner/__init__.py
 src/ranksentinel/runner/daily_checks.py
 src/ranksentinel/runner/normalization.py
 src/ranksentinel/runner/weekly_digest.py
+tests/test_http_client.py

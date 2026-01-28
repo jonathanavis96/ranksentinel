@@ -1,13 +1,11 @@
 import hashlib
 import json
-import time
 from datetime import datetime, timezone
 from typing import Any
 
-import requests
-
 from ranksentinel.config import Settings
 from ranksentinel.db import connect, execute, fetch_all, fetch_one, init_db
+from ranksentinel.http_client import fetch_text, fetch_with_retry
 from ranksentinel.runner.normalization import (
     extract_canonical,
     extract_meta_robots,
@@ -23,34 +21,26 @@ def sha256_text(s: str) -> str:
     return hashlib.sha256((s or "").encode("utf-8")).hexdigest()
 
 
-def retry(fn, attempts: int = 3, base_delay_s: float = 1.0):
-    last = None
-    for i in range(attempts):
-        try:
-            return fn()
-        except Exception as e:  # noqa: BLE001
-            last = e
-            time.sleep(base_delay_s * (2**i))
-    raise last  # type: ignore[misc]
-
-
 def fetch_url(url: str, timeout_s: int = 20) -> dict[str, Any]:
-    resp = requests.get(
-        url,
-        timeout=timeout_s,
-        allow_redirects=True,
-        headers={"User-Agent": "RankSentinel/0.1"},
-    )
-    chain = [r.url for r in resp.history] + [resp.url]
-    ct = resp.headers.get("content-type", "").lower()
-    html = resp.text if ct.startswith("text/html") else ""
+    """Fetch a URL and extract SEO-relevant metadata.
+    
+    Uses http_client.fetch_text for consistent retry/timeout behavior.
+    """
+    result = fetch_text(url, timeout=timeout_s, attempts=3, base_delay=1.0)
+    
+    if result.is_error:
+        # Log the error and raise to maintain existing behavior
+        raise Exception(f"Failed to fetch {url}: {result.error} ({result.error_type})")
+    
+    html = result.body or ""
     text = normalize_html_to_text(html) if html else ""
     meta_robots = extract_meta_robots(html) if html else ""
     canonical = extract_canonical(html) if html else ""
+    
     return {
-        "status_code": int(resp.status_code),
-        "final_url": resp.url,
-        "redirect_chain": chain,
+        "status_code": result.status_code,
+        "final_url": result.final_url,
+        "redirect_chain": result.redirect_chain,
         "content_hash": sha256_text(text),
         "meta_robots": meta_robots,
         "canonical": canonical,
@@ -154,24 +144,27 @@ This may cause duplicate content issues."""
 def fetch_psi_metrics(url: str, api_key: str, strategy: str = "mobile") -> dict[str, Any] | None:
     """Fetch PageSpeed Insights metrics for a URL.
     
+    Uses http_client for consistent retry/timeout behavior.
     Returns dict with perf_score, lcp_ms, cls_score, inp_ms, and raw_json.
     Returns None if API call fails or API key is missing.
     """
     if not api_key:
         return None
     
+    # Build PSI URL with query parameters
+    psi_url = (
+        f"https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
+        f"?url={url}&key={api_key}&strategy={strategy}&category=performance"
+    )
+    
+    result = fetch_text(psi_url, timeout=60, attempts=3, base_delay=2.0)
+    
+    if result.is_error:
+        print(f"PSI fetch failed for {url}: {result.error} ({result.error_type})")
+        return None
+    
     try:
-        psi_url = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
-        params = {
-            "url": url,
-            "key": api_key,
-            "strategy": strategy,
-            "category": "performance",
-        }
-        
-        resp = requests.get(psi_url, params=params, timeout=60)
-        resp.raise_for_status()
-        data = resp.json()
+        data = json.loads(result.body or "{}")
         
         # Extract metrics
         lighthouse = data.get("lighthouseResult", {})
@@ -195,8 +188,8 @@ def fetch_psi_metrics(url: str, api_key: str, strategy: str = "mobile") -> dict[
             "inp_ms": inp_ms,
             "raw_json": json.dumps(data),
         }
-    except Exception as e:  # noqa: BLE001
-        print(f"PSI fetch failed for {url}: {e}")
+    except (json.JSONDecodeError, KeyError, ValueError) as e:
+        print(f"PSI response parsing failed for {url}: {e}")
         return None
 
 
@@ -302,7 +295,7 @@ def run(settings: Settings) -> None:
             customer_id = int(c["id"])
             
             # Get customer settings
-            customer_settings = fetch_one(
+            settings_row = fetch_one(
                 conn,
                 "SELECT psi_enabled, psi_urls_limit, psi_confirm_runs, "
                 "psi_perf_drop_threshold, psi_lcp_increase_threshold_ms "
@@ -310,8 +303,10 @@ def run(settings: Settings) -> None:
                 (customer_id,),
             )
             
-            # Use defaults if settings not found
-            if not customer_settings:
+            # Convert to dict with defaults
+            if settings_row:
+                customer_settings = dict(settings_row)
+            else:
                 customer_settings = {
                     "psi_enabled": 1,
                     "psi_urls_limit": 5,
@@ -333,7 +328,11 @@ def run(settings: Settings) -> None:
             
             for t in targets:
                 url = str(t["url"])
-                data = retry(lambda: fetch_url(url))
+                try:
+                    data = fetch_url(url)
+                except Exception as e:  # noqa: BLE001
+                    print(f"Failed to fetch {url} for customer {customer_id}: {e}")
+                    continue
                 fetched_at = now_iso()
                 
                 # Store snapshot
@@ -402,7 +401,7 @@ def run(settings: Settings) -> None:
                 
                 # PSI checks (only for first N key URLs if enabled)
                 if psi_enabled and psi_count < psi_limit and settings.PSI_API_KEY:
-                    psi_metrics = retry(lambda: fetch_psi_metrics(url, settings.PSI_API_KEY))
+                    psi_metrics = fetch_psi_metrics(url, settings.PSI_API_KEY)
                     
                     if psi_metrics:
                         # Determine regression state
