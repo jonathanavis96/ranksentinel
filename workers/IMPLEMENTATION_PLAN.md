@@ -142,12 +142,13 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** cosmetic-only changes are ignored (whitespace, comment-only, ordering-only where applicable)
   - **Validate:** run daily twice against an unchanged site and confirm findings count remains stable
 
-- [ ] **1.2** Diff summary engine (human readable)
+- [x] **1.2** Diff summary engine (human readable)
   - **Goal:** produce short diffs for SEO-relevant fields, with normalization to avoid cosmetic diffs.
   - **AC:** robots diffs ignore whitespace and comment-only changes
   - **AC:** sitemap diffs ignore reorder-only changes
   - **AC:** diff summary is stored in the finding payload (or text column) and is readable in email
   - **Validate:** fixture tests cover robots + sitemap + title + canonical diff summaries
+  - **Completed:** Added `extract_title()`, `normalize_robots_txt()`, and `diff_summary()` functions with comprehensive test coverage (23 tests passing). Title extraction integrated into daily_checks.py.
 
 - [ ] **1.3** Finding dedupe keys (early)
   - **Goal:** make runs safe to retry and avoid duplicates for the same change within the same period.

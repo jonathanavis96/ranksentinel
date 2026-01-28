@@ -9,6 +9,7 @@ from ranksentinel.http_client import fetch_text
 from ranksentinel.runner.normalization import (
     extract_canonical,
     extract_meta_robots,
+    extract_title,
     normalize_html_to_text,
 )
 
@@ -36,6 +37,7 @@ def fetch_url(url: str, timeout_s: int = 20) -> dict[str, Any]:
     text = normalize_html_to_text(html) if html else ""
     meta_robots = extract_meta_robots(html) if html else ""
     canonical = extract_canonical(html) if html else ""
+    title = extract_title(html) if html else ""
 
     return {
         "status_code": result.status_code,
@@ -44,6 +46,7 @@ def fetch_url(url: str, timeout_s: int = 20) -> dict[str, Any]:
         "content_hash": sha256_text(text),
         "meta_robots": meta_robots,
         "canonical": canonical,
+        "title": title,
     }
 
 
@@ -343,8 +346,8 @@ def run(settings: Settings) -> None:
                 execute(
                     conn,
                     "INSERT INTO snapshots(customer_id,url,run_type,fetched_at,status_code,"
-                    "final_url,redirect_chain,canonical,meta_robots,content_hash) "
-                    "VALUES(?,?,?,?,?,?,?,?,?,?)",
+                    "final_url,redirect_chain,title,canonical,meta_robots,content_hash) "
+                    "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                     (
                         customer_id,
                         url,
@@ -353,6 +356,7 @@ def run(settings: Settings) -> None:
                         data["status_code"],
                         data["final_url"],
                         json.dumps(data["redirect_chain"]),
+                        data["title"],
                         data["canonical"],
                         data["meta_robots"],
                         data["content_hash"],

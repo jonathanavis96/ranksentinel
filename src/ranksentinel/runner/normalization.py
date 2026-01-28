@@ -52,3 +52,59 @@ def extract_canonical(html: str) -> str:
     if canonical and canonical.get("href"):
         return str(canonical.get("href")).strip()
     return ""
+
+
+def extract_title(html: str) -> str:
+    """Extract page title from <title> tag.
+
+    Returns the title text content, or empty string if not present.
+    """
+    soup = BeautifulSoup(html or "", "html.parser")
+    title = soup.find("title")
+    if title and title.string:
+        return str(title.string).strip()
+    return ""
+
+
+def normalize_robots_txt(content: str) -> str:
+    """Normalize robots.txt content to ignore cosmetic differences.
+
+    - Strips whitespace
+    - Removes comment-only lines
+    - Preserves directive order (order matters in robots.txt)
+    """
+    lines = []
+    for line in (content or "").splitlines():
+        line = line.strip()
+        # Skip empty lines and comment-only lines
+        if not line or line.startswith("#"):
+            continue
+        # Remove inline comments (preserve directive, remove comment)
+        if "#" in line:
+            line = line.split("#", 1)[0].strip()
+        if line:  # Only add if there's content after removing comments
+            lines.append(line)
+    return "\n".join(lines)
+
+
+def diff_summary(before: str, after: str, label: str = "content") -> str:
+    """Generate a human-readable diff summary.
+
+    Returns a markdown-formatted diff showing additions and removals.
+    """
+    before_lines = set((before or "").splitlines())
+    after_lines = set((after or "").splitlines())
+
+    added = after_lines - before_lines
+    removed = before_lines - after_lines
+
+    if not added and not removed:
+        return ""
+
+    parts = []
+    if removed:
+        parts.append("**Removed:**\n```\n" + "\n".join(sorted(removed)) + "\n```")
+    if added:
+        parts.append("**Added:**\n```\n" + "\n".join(sorted(added)) + "\n```")
+
+    return "\n\n".join(parts)
