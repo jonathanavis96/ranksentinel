@@ -209,8 +209,11 @@ class TestPublicLeads:
 class TestPublicStartMonitoring:
     """Tests for /public/start-monitoring endpoint."""
     
-    def test_start_monitoring_success(self, client):
-        """Test successful monitoring start for new customer."""
+    def test_start_monitoring_success(self, client, tmp_path):
+        """Test successful trial provisioning for new customer."""
+        from ranksentinel.db import connect, fetch_one
+        from ranksentinel.config import Settings
+        
         payload = {
             "email": "monitor@example.com",
             "domain": "monitor.com",
@@ -225,6 +228,21 @@ class TestPublicStartMonitoring:
         assert data["success"] is True
         assert "customer_id" in data
         assert data["customer_id"] is not None
+        assert "trial" in data["message"].lower()
+        
+        # Verify customer created with trial status (use test db path)
+        db_path = tmp_path / "test.db"
+        test_settings = Settings(RANKSENTINEL_DB_PATH=str(db_path))
+        conn = connect(test_settings)
+        customer = fetch_one(conn, "SELECT * FROM customers WHERE id=?", (data["customer_id"],))
+        assert customer["status"] == "trial"
+        
+        # Verify trial limits applied
+        settings_row = fetch_one(conn, "SELECT * FROM settings WHERE customer_id=?", (data["customer_id"],))
+        assert settings_row["crawl_limit"] == 50  # Trial limit
+        assert settings_row["psi_enabled"] == 1
+        assert settings_row["psi_urls_limit"] == 1  # Trial limit
+        conn.close()
     
     def test_start_monitoring_minimal(self, client):
         """Test monitoring start with minimal required fields."""
@@ -275,7 +293,7 @@ class TestPublicStartMonitoring:
         assert data["success"] is True
     
     def test_start_monitoring_already_active(self, client):
-        """Test starting monitoring for already active customer."""
+        """Test starting monitoring for already trial customer."""
         payload = {
             "email": "already-active@example.com",
             "domain": "already-active.com",
@@ -290,7 +308,7 @@ class TestPublicStartMonitoring:
         assert response2.status_code == 200
         data = response2.json()
         assert data["success"] is True
-        assert "already" in data["message"].lower()
+        assert ("already" in data["message"].lower() or "trial" in data["message"].lower())
     
     def test_start_monitoring_invalid_email(self, client):
         """Test monitoring start with invalid email."""
@@ -318,3 +336,87 @@ class TestPublicStartMonitoring:
         assert response.status_code == 200
         data = response.json()
         assert data["success"] is True
+    
+    def test_start_monitoring_trial_limits_key_pages(self, client, tmp_path):
+        """Test that trial enforces 5 key page limit."""
+        from ranksentinel.db import connect, fetch_all
+        from ranksentinel.config import Settings
+        
+        # Try to submit 10 key pages
+        key_pages = "\n".join([f"https://example.com/page{i}" for i in range(1, 11)])
+        
+        payload = {
+            "email": "trial-limits@example.com",
+            "domain": "example.com",
+            "key_pages": key_pages,
+        }
+        
+        response = client.post("/public/start-monitoring", json=payload)
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        
+        # Verify only 5 targets were created (trial limit)
+        db_path = tmp_path / "test.db"
+        test_settings = Settings(RANKSENTINEL_DB_PATH=str(db_path))
+        conn = connect(test_settings)
+        targets = fetch_all(conn, "SELECT * FROM targets WHERE customer_id=?", (data["customer_id"],))
+        assert len(targets) == 5  # Trial limit enforced
+        conn.close()
+    
+    def test_start_monitoring_sends_trial_confirmation(self, client, monkeypatch):
+        """Test that trial confirmation email is sent on customer provisioning."""
+        from unittest.mock import Mock, MagicMock
+        
+        # Mock MailgunClient
+        mock_send_email = Mock()
+        mock_mailgun_instance = MagicMock()
+        mock_mailgun_instance.send_email = mock_send_email
+        
+        mock_mailgun_class = Mock(return_value=mock_mailgun_instance)
+        
+        # Patch MailgunClient where it's imported
+        monkeypatch.setattr("ranksentinel.mailgun.MailgunClient", mock_mailgun_class)
+        
+        # Configure test settings with Mailgun credentials
+        from ranksentinel.config import Settings, get_settings
+        test_settings = Settings(
+            RANKSENTINEL_DB_PATH=":memory:",
+            MAILGUN_API_KEY="test-key",
+            MAILGUN_DOMAIN="test.mailgun.org",
+        )
+        
+        def override_get_settings():
+            return test_settings
+        
+        app.dependency_overrides[get_settings] = override_get_settings
+        
+        # Make request
+        payload = {
+            "email": "trial-email@example.com",
+            "domain": "example.com",
+        }
+        
+        response = client.post("/public/start-monitoring", json=payload)
+        
+        # Verify response
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert "trial" in data["message"].lower()
+        
+        # Verify email was sent
+        assert mock_send_email.called, "MailgunClient.send_email should have been called"
+        call_args = mock_send_email.call_args
+        assert call_args is not None
+        
+        # Check email parameters
+        assert call_args.kwargs["to"] == "trial-email@example.com"
+        assert "trial" in call_args.kwargs["subject"].lower()
+        assert "example.com" in call_args.kwargs["subject"]
+        assert "7-day trial" in call_args.kwargs["text"]
+        assert "Daily critical alerts" in call_args.kwargs["text"]
+        
+        # Clean up
+        app.dependency_overrides.clear()

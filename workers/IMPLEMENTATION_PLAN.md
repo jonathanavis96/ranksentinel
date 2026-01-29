@@ -353,7 +353,7 @@ Brain skills (open those relevant to the current item):
   - **If Blocked:** Store lead only and log a TODO for email send.
   - **Completed:** 2026-01-30 - Added `render_sample_report()` email template, updated endpoint to send sample report with CTA to start monitoring, tests verify email sending and graceful failure handling.
 
-- [ ] **9.2** Implement `POST /public/start-monitoring` with immediate trial provisioning
+- [x] **9.2** Implement `POST /public/start-monitoring` with immediate trial provisioning
   - **Goal:** Deliver instant value while controlling abuse.
   - **Status model:** `trial` → `paywalled` → `previously_interested` → `active`.
   - **Trial limits (confirmed):**
@@ -364,6 +364,7 @@ Brain skills (open those relevant to the current item):
     - Weekly digest: on (limited by caps)
   - **AC:** Customer is provisioned as `trial`, jobs scheduled under trial limits, confirmation email sent.
   - **If Blocked:** Provision customer record only and queue jobs later.
+  - **Completed:** 2026-01-30 - Updated database schema to support trial/paywalled/previously_interested statuses, implemented trial provisioning endpoint with 5 key page limit, 50 URL crawl limit, 1 PSI page limit, added `render_trial_confirmation()` email template, tests verify trial status creation, limit enforcement, and confirmation email sending.
 
 ### Task 10: Trial expiry + paywall campaign emails
 

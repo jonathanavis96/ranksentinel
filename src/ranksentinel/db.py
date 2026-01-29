@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS customers (
   name TEXT NOT NULL,
   email_raw TEXT,
   email_canonical TEXT,
-  status TEXT NOT NULL CHECK(status IN ('active','past_due','canceled')),
+  status TEXT NOT NULL CHECK(status IN ('trial','paywalled','previously_interested','active','past_due','canceled')),
   digest_weekday INTEGER,
   digest_time_local TEXT,
   digest_timezone TEXT,

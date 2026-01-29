@@ -310,12 +310,16 @@ def create_lead(payload: LeadCreate, conn=Depends(get_conn), settings: Settings 
 
 
 @app.post("/public/start-monitoring", response_model=StartMonitoringResponse)
-def start_monitoring(payload: StartMonitoringRequest, conn=Depends(get_conn)):
+def start_monitoring(payload: StartMonitoringRequest, conn=Depends(get_conn), settings: Settings = Depends(get_settings)):
     """
-    Public endpoint for immediate monitoring start from website form.
+    Public endpoint for immediate trial provisioning from website form.
     
-    Creates an active customer and immediately begins monitoring.
+    Creates a trial customer with limited monitoring caps and sends confirmation email.
+    Trial limits: 3-5 key pages, 25-50 sitemap URLs, 0-1 PSI pages, critical-only daily checks.
     """
+    from ranksentinel.mailgun import MailgunClient
+    from ranksentinel.reporting.email_templates import render_trial_confirmation
+    
     ts = now_iso()
     
     # Validate email format (basic check)
@@ -339,21 +343,38 @@ def start_monitoring(payload: StartMonitoringRequest, conn=Depends(get_conn)):
     )
     
     if existing:
-        # Customer already exists, just return success
+        # Customer already exists, return appropriate message based on status
         customer_id = existing["id"]
+        status = existing["status"]
+        
+        if status == "trial":
+            message = "Your trial is already active!"
+        elif status in ("paywalled", "previously_interested"):
+            message = "Welcome back! Your monitoring is reactivating."
+        else:
+            message = "Your monitoring is already set up!"
+        
         return StartMonitoringResponse(
             success=True,
-            message="Your monitoring is already set up!",
+            message=message,
             customer_id=customer_id,
         )
     else:
-        # Create new active customer with both raw and canonical email
+        # Create new trial customer with both raw and canonical email
         customer_id = execute(
             conn,
             "INSERT INTO customers(name,email_raw,email_canonical,status,created_at,updated_at) VALUES(?,?,?,?,?,?)",
-            (email_raw, email_raw, email_canonical, "active", ts, ts),
+            (email_raw, email_raw, email_canonical, "trial", ts, ts),
         )
         execute(conn, "INSERT OR IGNORE INTO settings(customer_id) VALUES(?)", (customer_id,))
+    
+    # Apply trial limits to settings
+    # Key pages max: 5, Sitemap crawl: 50 URLs, PSI: 1 page
+    execute(
+        conn,
+        "UPDATE settings SET crawl_limit=?, psi_enabled=?, psi_urls_limit=? WHERE customer_id=?",
+        (50, 1, 1, customer_id),
+    )
     
     # Store domain as sitemap_url
     sitemap_url = domain if domain.startswith("http") else f"https://{domain}"
@@ -363,9 +384,12 @@ def start_monitoring(payload: StartMonitoringRequest, conn=Depends(get_conn)):
         (sitemap_url, customer_id),
     )
     
-    # If key pages provided, store them as targets
+    # If key pages provided, store them as targets (limit to 5 for trial)
     if payload.key_pages:
         key_pages_list = [url.strip() for url in payload.key_pages.split("\n") if url.strip()]
+        # Enforce trial limit of 5 key pages
+        key_pages_list = key_pages_list[:5]
+        
         for url in key_pages_list:
             # Check if target already exists
             existing_target = fetch_one(
@@ -380,9 +404,28 @@ def start_monitoring(payload: StartMonitoringRequest, conn=Depends(get_conn)):
                     (customer_id, url, True, ts),
                 )
     
+    # Send trial confirmation email (if Mailgun configured)
+    email_sent = False
+    if settings.MAILGUN_API_KEY and settings.MAILGUN_DOMAIN:
+        try:
+            mailgun_client = MailgunClient(settings)
+            message = render_trial_confirmation(domain, email_raw)
+            
+            mailgun_client.send_email(
+                to=email_raw,
+                subject=message.subject,
+                text=message.text,
+                html=message.html,
+            )
+            email_sent = True
+        except Exception as e:
+            # Log error but don't fail the request
+            # TODO: Add proper logging
+            print(f"Failed to send trial confirmation email: {e}")
+    
     return StartMonitoringResponse(
         success=True,
-        message="Your site monitoring has started!",
+        message="Your 7-day trial has started! Check your email for details.",
         customer_id=customer_id,
     )
 

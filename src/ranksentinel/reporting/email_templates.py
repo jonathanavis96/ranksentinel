@@ -147,6 +147,92 @@ def render_first_insight(
     return EmailMessage(subject=subject, text=text, html=html)
 
 
+def render_trial_confirmation(domain: str, email: str) -> EmailMessage:
+    """Render trial confirmation email for new trial customers."""
+    subject = f"🎉 Your RankSentinel trial has started for {domain}"
+    
+    text = f"""
+Welcome to RankSentinel!
+
+Your 7-day trial is now active for {domain}.
+
+What happens next:
+• Daily critical alerts: You'll receive immediate notifications for high-severity issues
+• Weekly digest: Every week, we'll send a comprehensive report of changes and recommendations
+• Trial limits: Up to 5 key pages, 50 sitemap URLs, and 1 PSI page
+
+Your trial includes:
+✓ Robots.txt monitoring
+✓ Sitemap change detection
+✓ 404 error tracking
+✓ Broken link detection
+✓ Page speed insights
+✓ Critical SEO alerts
+
+After 7 days or your first weekly digest, you can upgrade to continue monitoring.
+
+Questions? Just reply to this email.
+
+Happy monitoring!
+The RankSentinel Team
+"""
+    
+    html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 28px;">🎉 Welcome to RankSentinel!</h1>
+    </div>
+    
+    <div style="background: white; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px;">
+        <p style="font-size: 18px; margin-top: 0;">Your 7-day trial is now active for <strong>{domain}</strong></p>
+        
+        <h2 style="color: #667eea; font-size: 20px; margin-top: 30px;">What happens next:</h2>
+        <ul style="line-height: 1.8;">
+            <li><strong>Daily critical alerts:</strong> Immediate notifications for high-severity issues</li>
+            <li><strong>Weekly digest:</strong> Comprehensive reports of changes and recommendations</li>
+            <li><strong>Trial limits:</strong> Up to 5 key pages, 50 sitemap URLs, and 1 PSI page</li>
+        </ul>
+        
+        <h2 style="color: #667eea; font-size: 20px; margin-top: 30px;">Your trial includes:</h2>
+        <ul style="line-height: 1.8;">
+            <li>✓ Robots.txt monitoring</li>
+            <li>✓ Sitemap change detection</li>
+            <li>✓ 404 error tracking</li>
+            <li>✓ Broken link detection</li>
+            <li>✓ Page speed insights</li>
+            <li>✓ Critical SEO alerts</li>
+        </ul>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin: 30px 0;">
+            <p style="margin: 0; font-size: 14px; color: #666;">
+                After 7 days or your first weekly digest, you can upgrade to continue monitoring.
+            </p>
+        </div>
+        
+        <p style="margin-top: 30px;">Questions? Just reply to this email.</p>
+        
+        <p style="margin-top: 30px; color: #666;">
+            Happy monitoring!<br>
+            <strong>The RankSentinel Team</strong>
+        </p>
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
+        <p>RankSentinel - Autonomous SEO monitoring for your website</p>
+    </div>
+</body>
+</html>
+"""
+    
+    return EmailMessage(subject=subject, text=text, html=html)
+
+
 def render_sample_report(domain: str) -> EmailMessage:
     """Render a sample report email for lead capture.
 
