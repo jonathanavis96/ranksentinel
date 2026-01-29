@@ -121,7 +121,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** A simulated 429 response is retried and can succeed on a later attempt.
   - **Validate:** Add/extend unit tests (e.g., `tests/test_http_client.py`) using a mocked transport.
 
-- [ ] **0-R.2a** Define weekly snapshot persistence schema (run_id-linked, supports errors)
+- [x] **0-R.2a** Define weekly snapshot persistence schema (run_id-linked, supports errors)
   - **Goal:** Make weekly crawl auditability possible and enable "New vs Resolved" later.
   - **Files:** `src/ranksentinel/db.py`, `BOOTSTRAP.md` (if spec update needed)
   - **Proposed schema (MVP):**
