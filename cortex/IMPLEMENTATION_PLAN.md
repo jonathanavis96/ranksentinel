@@ -46,6 +46,142 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Note:** Manual validation required per Manual.Integration.1
   - **If Blocked:** Requires human operator to run end-to-end workflow test and validate behavior. Cannot be automated by Ralph. Human should test daily/weekly runs and mark [x] when satisfied.
 
+## Phase 0-S: Sitemap parser robustness (real-world compatibility)
+
+> Motivation: some real sites publish sitemaps using the Google namespace `http://www.google.com/schemas/sitemap/0.84` (example observed: `https://www.cesnet.co.za/googlesitemap`).
+> Current behavior: weekly run logs `reason=No URLs found in sitemap` because `list_sitemap_urls()` only recognizes `sitemaps.org` or no-namespace.
+
+- [ ] **0-S.1** Make `list_sitemap_urls()` namespace-agnostic (support Google 0.84 urlset)
+  - **Goal:** Extract `<loc>` values even when `<urlset>` uses non-standard namespaces.
+  - **Files:** `src/ranksentinel/runner/sitemap_parser.py`
+  - **Implementation guidance:**
+    - Prefer matching by local-name (ignore namespace) rather than hardcoding `ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}`.
+    - Ensure behavior continues to support:
+      - `urlset` with `sitemaps.org/0.9`
+      - `urlset` with no namespace
+      - `urlset` with `google.com/schemas/sitemap/0.84`
+      - `sitemapindex` with `sitemaps.org/0.9` and no namespace
+    - Keep the function tolerant: return `[]` on parse errors.
+  - **AC:** For a sitemap with `<urlset xmlns="http://www.google.com/schemas/sitemap/0.84">`, returns list of URLs.
+  - **Validate:** `pytest -q tests/test_list_sitemap_urls.py`
+
+- [ ] **0-S.2** Extend tests for Google 0.84 namespace (urlset)
+  - **Goal:** Prevent regressions; lock in support for Google 0.84 namespace.
+  - **Files:** `tests/test_list_sitemap_urls.py`
+  - **AC:** Add a unit test that uses the Google 0.84 namespace and asserts URLs are extracted.
+  - **Validate:** `pytest -q tests/test_list_sitemap_urls.py`
+
+- [ ] **0-S.3** Make `extract_url_count()` namespace-agnostic (support Google 0.84 urlset)
+  - **Goal:** URL counting must work on Google 0.84 sitemaps too.
+  - **Files:** `src/ranksentinel/runner/sitemap_parser.py`, `tests/test_sitemap_url_count.py`
+  - **AC:** For the same Google 0.84 sitemap sample, `extract_url_count()` returns correct `url_count` and `sitemap_type='urlset'`.
+  - **Validate:** `pytest -q tests/test_sitemap_url_count.py`
+
+- [ ] **0-S.4** Add a regression fixture test using a captured cesnet-style sitemap sample
+  - **Goal:** Ensure end-to-end sitemap parsing works on a realistic sample payload.
+  - **Files:** add a small XML fixture under `tests/fixtures/` (or inline in test if preferred), then test via `list_sitemap_urls()`.
+  - **AC:** The fixture includes the Google 0.84 namespace and at least 2 `<url><loc>...` entries.
+  - **Validate:** `pytest -q`
+
+## Phase 0-H: Human go-live checklist (required to start charging)
+
+> This section is intentionally **human-owned**. These items are the practical prerequisites to operate RankSentinel reliably and accept payments.
+
+### 0-H.1 Domain + DNS
+
+- [ ] **0-H.1.1** Acquire a primary domain for the product (e.g., `ranksentinel.com`)
+  - **AC:** You control DNS for the domain
+
+- [ ] **0-H.1.2** Create a dedicated sending subdomain for email (recommended: `mg.<yourdomain>`)
+  - **Example:** `mg.ranksentinel.com`
+  - **AC:** Subdomain exists in DNS provider
+
+- [ ] **0-H.1.3** (Optional but recommended) Create an app/API subdomain
+  - **Example:** `api.ranksentinel.com`
+  - **AC:** You can point it to the VPS later
+
+### 0-H.2 VPS (Hostinger) provisioning
+
+- [ ] **0-H.2.1** Purchase/provision Hostinger VPS
+  - **AC:** You have SSH access
+  - **AC:** You can install Python 3.11+ and run cron
+
+- [ ] **0-H.2.2** Configure server basics
+  - **AC:** OS updates applied
+  - **AC:** SSH keys configured (disable password login if possible)
+  - **AC:** Firewall enabled (only ports you need)
+  - **AC:** Timezone + NTP configured
+
+### 0-H.3 Deploy RankSentinel to VPS
+
+- [ ] **0-H.3.1** Clone repo to VPS (recommended path `/opt/ranksentinel`)
+  - **Validate:** Follow `docs/RUNBOOK_VPS.md`
+
+- [ ] **0-H.3.2** Create `.env` on VPS from `.env.example`
+  - **AC:** `.env` exists at `/opt/ranksentinel/.env`
+  - **AC:** `.env` is not committed to git
+
+- [ ] **0-H.3.3** Install + smoke test
+  - **AC:** `bash scripts/run_daily.sh` runs on VPS
+  - **AC:** `bash scripts/run_weekly.sh` runs on VPS
+  - **AC:** Logs are written under `/opt/ranksentinel/logs/`
+
+### 0-H.4 Mailgun setup (email delivery)
+
+- [ ] **0-H.4.1** Create Mailgun account + choose plan
+  - **AC:** You have an API key
+
+- [ ] **0-H.4.2** Add & verify the sending domain/subdomain in Mailgun
+  - **AC:** DNS records added (SPF, DKIM, tracking) and domain verifies successfully
+
+- [ ] **0-H.4.3** Configure Mailgun env vars on VPS
+  - **AC:** `.env` contains:
+    - `MAILGUN_API_KEY`
+    - `MAILGUN_DOMAIN`
+    - `MAILGUN_FROM`
+
+- [ ] **0-H.4.4** Send a real test email end-to-end
+  - **AC:** Run weekly with Mailgun configured
+  - **AC:** At least one email is received successfully
+  - **AC:** A `deliveries` row is recorded with `status='sent'` (or clear `failed` with error)
+
+### 0-H.5 Scheduling + monitoring
+
+- [ ] **0-H.5.1** Set up cron on VPS
+  - **AC:** Cron entries match `docs/RUNBOOK_VPS.md`
+  - **AC:** Daily schedule + weekly schedule both present
+
+- [ ] **0-H.5.2** Operator alerting on job failure
+  - **AC:** `RANKSENTINEL_OPERATOR_EMAIL` is set (optional but recommended)
+  - **AC:** You have a procedure to check logs when alerted
+
+- [ ] **0-H.5.3** Backups
+  - **AC:** Nightly backup of `ranksentinel.sqlite3` exists (simple `cp` to dated file is acceptable for MVP)
+  - **AC:** You can restore from backup
+
+### 0-H.6 First paying customer readiness
+
+- [ ] **0-H.6.1** Define your MVP offer + price
+  - **AC:** Clear pricing (e.g., per site / per month)
+
+- [ ] **0-H.6.2** Create a Stripe account (or alternative) and a way to accept payment
+  - **AC:** Payment link or checkout exists
+
+- [ ] **0-H.6.3** Document onboarding inputs you need from a customer
+  - **AC:** You know how you will collect:
+    - website domain
+    - sitemap URL
+    - key pages (targets)
+    - email recipients
+    - crawl limits
+
+- [ ] **0-H.6.4** Onboard 1 real site end-to-end
+  - **AC:** Customer exists in DB
+  - **AC:** Targets exist in DB
+  - **AC:** Settings include a valid `sitemap_url`
+  - **AC:** Weekly run generates weekly snapshots and sends digest
+
+
 ## Phase 0: Bootstrap verification and local run path (atomic)
 
 > Phase 0 is about making the repo runnable end-to-end locally with minimal behavior.
@@ -382,24 +518,24 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** failures are logged with actionable context
   - **Validate:** force an error and confirm operator path triggers
 
-- [ ] **5.5** Retention/cleanup job
+- [x] **5.5** Retention/cleanup job
   - **Goal:** DB doesn’t grow forever.
   - **AC:** a cleanup command deletes old findings/artifacts beyond retention policy
   - **AC:** retention defaults are documented (e.g., 90 days) and configurable
   - **Validate:** seed old rows; run cleanup; verify deletion
 
-- [ ] **5.6** DB migration stance
+- [x] **5.6** DB migration stance
   - **Goal:** explicitly decide “no migrations yet” vs “minimal migration tool”.
   - **AC:** decision is documented (in plan or `DECISIONS.md`) and repeatable
   - **Validate:** documented + agreed approach
 
-- [ ] **5.7** Cron runbook validation against real commands
+- [x] **5.7** Cron runbook validation against real commands
   - **Goal:** ensure docs match reality.
   - **AC:** `docs/RUNBOOK_VPS.md` commands match the scripts that actually exist
   - **AC:** runbook includes log locations and DB location per BOOTSTRAP
   - **Validate:** follow runbook on a clean machine (or local simulation) without guesswork
 
-- [ ] **5.8** Finding idempotency/deduping finalization
+- [x] **5.8** Finding idempotency/deduping finalization
   - **Goal:** ensure all finding kinds use dedupe keys consistently.
   - **AC:** dedupe is applied across all finding kinds (robots, sitemap, key pages, crawl)
   - **AC:** reruns do not duplicate findings for the same change in the same period

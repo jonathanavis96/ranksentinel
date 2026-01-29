@@ -51,7 +51,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 > Motivation: some real sites publish sitemaps using the Google namespace `http://www.google.com/schemas/sitemap/0.84` (example observed: `https://www.cesnet.co.za/googlesitemap`).
 > Current behavior: weekly run logs `reason=No URLs found in sitemap` because `list_sitemap_urls()` only recognizes `sitemaps.org` or no-namespace.
 
-- [ ] **0-S.1** Make `list_sitemap_urls()` namespace-agnostic (support Google 0.84 urlset)
+- [x] **0-S.1** Make `list_sitemap_urls()` namespace-agnostic (support Google 0.84 urlset)
   - **Goal:** Extract `<loc>` values even when `<urlset>` uses non-standard namespaces.
   - **Files:** `src/ranksentinel/runner/sitemap_parser.py`
   - **Implementation guidance:**
