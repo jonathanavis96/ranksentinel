@@ -188,7 +188,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - run daily twice with a controlled fixture (or temporary override) and confirm: no change => no new finding; change => finding with severity
   - **Completed:** Implemented check_robots_txt_change() with normalize_robots_txt() to ignore cosmetic changes. Severity logic: critical for new site-wide Disallow: /, warning for new/changed disallow rules, info for other changes. Uses only-on-change pattern (stores artifacts only when SHA changes). Generates diff_summary() showing additions/removals. Added 7 comprehensive tests covering: no baseline, cosmetic changes ignored, critical site-wide disallow, warning for new rules, warning for changed rules, info for non-disallow changes, and diff content verification. Updated test_robots_fetch.py to match only-on-change behavior. All 20 robots-related tests pass.
 
-- [ ] **1.6** Sitemap fetch + persist raw artifact
+- [x] **1.6** Sitemap fetch + persist raw artifact
   - **Goal:** fetch sitemap (configured per customer) and store raw content + sha.
   - **AC:** daily run fetches `settings.sitemap_url` and stores raw body + sha
   - **AC:** missing/unreachable sitemap produces a finding with `severity = critical` (per BOOTSTRAP intent)

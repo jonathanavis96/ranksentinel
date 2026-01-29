@@ -209,6 +209,32 @@ def check_title_change(
     return None
 
 
+def fetch_sitemap(sitemap_url: str, timeout_s: int = 20) -> dict[str, Any]:
+    """Fetch sitemap content and return raw body.
+    
+    Uses http_client.fetch_text for consistent retry/timeout behavior.
+    Returns dict with status_code, body, and error info.
+    """
+    result = fetch_text(sitemap_url, timeout=timeout_s, attempts=3, base_delay=1.0)
+    
+    if result.is_error:
+        return {
+            "is_error": True,
+            "error": result.error,
+            "error_type": result.error_type,
+            "status_code": result.status_code,
+            "body": None,
+        }
+    
+    return {
+        "is_error": False,
+        "error": None,
+        "error_type": None,
+        "status_code": result.status_code,
+        "body": result.body or "",
+    }
+
+
 def check_robots_txt_change(
     conn,
     customer_id: int,
@@ -485,6 +511,75 @@ def run(settings: Settings) -> None:
                             from urllib.parse import urlparse
                             parsed = urlparse(str(first_target["url"]))
                             robots_base_url = f"{parsed.scheme}://{parsed.netloc}"
+
+                    # Fetch and store sitemap artifact
+                    sitemap_url = customer_settings.get("sitemap_url")
+                    if sitemap_url:
+                        try:
+                            with log_stage(run_id, "fetch_sitemap", customer_id=customer_id, url=sitemap_url):
+                                sitemap_result = fetch_sitemap(str(sitemap_url))
+                            
+                            if not sitemap_result["is_error"]:
+                                sitemap_content = sitemap_result["body"] or ""
+                                sitemap_sha = sha256_text(sitemap_content)
+                                fetched_at = now_iso()
+                                
+                                # Check if sitemap changed before storing
+                                prev_sitemap_artifact = get_latest_artifact(conn, customer_id, "sitemap", str(sitemap_url))
+                                
+                                # Only store if changed
+                                if not prev_sitemap_artifact or prev_sitemap_artifact["artifact_sha"] != sitemap_sha:
+                                    store_artifact(
+                                        conn, customer_id, "sitemap", str(sitemap_url),
+                                        sitemap_sha, sitemap_content, fetched_at
+                                    )
+                                    
+                                    log_structured(
+                                        run_id, customer_id=customer_id, stage="fetch_sitemap",
+                                        status="success", url=sitemap_url, sha=sitemap_sha[:12]
+                                    )
+                            else:
+                                # Missing or unreachable sitemap - create critical finding
+                                fetched_at = now_iso()
+                                period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                dedupe_key = generate_finding_dedupe_key(
+                                    customer_id, "daily", "indexability", "Sitemap unreachable", None, period
+                                )
+                                
+                                details = f"""Sitemap could not be fetched.
+
+- **URL:** `{sitemap_url}`
+- **Error:** {sitemap_result['error']}
+- **Error Type:** {sitemap_result['error_type']}
+
+This may prevent search engines from discovering your pages."""
+                                
+                                execute(
+                                    conn,
+                                    "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                    "VALUES(?,?,?,?,?,?,?,?,?)",
+                                    (
+                                        customer_id,
+                                        "daily",
+                                        "critical",
+                                        "indexability",
+                                        "Sitemap unreachable",
+                                        details,
+                                        None,
+                                        dedupe_key,
+                                        fetched_at,
+                                    ),
+                                )
+                                
+                                log_structured(
+                                    run_id, customer_id=customer_id, stage="fetch_sitemap",
+                                    status="error", url=sitemap_url, error=sitemap_result['error']
+                                )
+                        except Exception as e:  # noqa: BLE001
+                            log_structured(
+                                run_id, customer_id=customer_id, stage="fetch_sitemap",
+                                status="error", url=sitemap_url, error=str(e)
+                            )
 
                     if robots_base_url:
                         robots_url = f"{robots_base_url}/robots.txt"
