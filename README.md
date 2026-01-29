@@ -47,7 +47,13 @@ python3 -m venv .venv
 ./.venv/bin/pip install -e ".[dev]"
 ```
 
-2) Copy environment file:
+2) Run tests:
+
+```bash
+./.venv/bin/pytest -q
+```
+
+3) Copy environment file:
 
 ```bash
 cp .env.example .env
