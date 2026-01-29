@@ -7,6 +7,8 @@ from ranksentinel.http_client import fetch_text
 from ranksentinel.runner.link_checker import find_broken_links
 from ranksentinel.runner.logging_utils import generate_run_id, log_stage, log_structured, log_summary
 from ranksentinel.runner.normalization import normalize_url
+from ranksentinel.runner.page_fetcher import fetch_pages
+from ranksentinel.runner.sitemap_parser import list_sitemap_urls
 
 
 def now_iso() -> str:
@@ -149,6 +151,74 @@ def run(settings: Settings) -> None:
             
             try:
                 with log_stage(run_id, "process_customer", customer_id=customer_id):
+                    # Fetch customer settings (sitemap_url, crawl_limit)
+                    settings_row = fetch_one(
+                        conn,
+                        "SELECT sitemap_url, crawl_limit FROM settings WHERE customer_id=?",
+                        (customer_id,)
+                    )
+                    
+                    if not settings_row or not settings_row["sitemap_url"]:
+                        log_structured(
+                            run_id,
+                            run_type="weekly",
+                            stage="skip_customer",
+                            status="info",
+                            customer_id=customer_id,
+                            reason="No sitemap_url configured"
+                        )
+                        continue
+                    
+                    sitemap_url = settings_row["sitemap_url"]
+                    crawl_limit = settings_row["crawl_limit"] or 100
+                    
+                    # Fetch sitemap and extract URLs
+                    with log_stage(run_id, "fetch_sitemap", customer_id=customer_id):
+                        sitemap_result = fetch_text(sitemap_url, timeout=20, attempts=3)
+                        
+                        if not sitemap_result.ok:
+                            log_structured(
+                                run_id,
+                                run_type="weekly",
+                                stage="fetch_sitemap",
+                                status="error",
+                                customer_id=customer_id,
+                                error=sitemap_result.error,
+                            )
+                            continue
+                        
+                        urls = list_sitemap_urls(sitemap_result.body)
+                        
+                        if not urls:
+                            log_structured(
+                                run_id,
+                                run_type="weekly",
+                                stage="fetch_sitemap",
+                                status="warning",
+                                customer_id=customer_id,
+                                reason="No URLs found in sitemap"
+                            )
+                            continue
+                    
+                    # Fetch sampled pages (up to crawl_limit)
+                    fetch_results = fetch_pages(
+                        run_id=run_id,
+                        customer_id=customer_id,
+                        urls=urls,
+                        crawl_limit=crawl_limit,
+                    )
+                    
+                    log_structured(
+                        run_id,
+                        run_type="weekly",
+                        stage="fetch_complete",
+                        status="info",
+                        customer_id=customer_id,
+                        total_urls=len(urls),
+                        fetched_count=len(fetch_results),
+                        success_count=sum(1 for r in fetch_results if r.ok),
+                    )
+                    
                     # Detect broken internal links
                     with log_stage(run_id, "detect_broken_links", customer_id=customer_id):
                         detect_broken_internal_links(
