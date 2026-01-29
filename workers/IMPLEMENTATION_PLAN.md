@@ -37,7 +37,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** `BOOTSTRAP.md` includes cron examples pointing at `scripts/run_daily.sh` and `scripts/run_weekly.sh`
   - **Validate:** `ls -la BOOTSTRAP.md docs/SAMPLE_REPORT.md docs/RUNBOOK_VPS.md`
 
-- [ ] **0.2** Python env + install succeeds
+- [x] **0.2** Python env + install succeeds
   - **Goal:** the package installs cleanly into a fresh venv.
   - **AC:** `python3 -m venv .venv` succeeds
   - **AC:** `./.venv/bin/pip install -U pip` succeeds
