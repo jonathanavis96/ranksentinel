@@ -653,16 +653,16 @@ if [[ "$RUNNER" == "rovodev" ]]; then
   if [[ -n "$RESOLVED_MODEL" ]]; then
     TEMP_CONFIG="/tmp/rovodev_config_$$_$(date +%s).yml"
 
-    # Copy base config and override modelId
-    if [[ -f "$HOME/.rovodev/config.yml" ]]; then
-      sed "s|^  modelId:.*|  modelId: $RESOLVED_MODEL|" "$HOME/.rovodev/config.yml" >"$TEMP_CONFIG"
-    else
-      cat >"$TEMP_CONFIG" <<EOFCONFIG
+    # IMPORTANT: acli rovodev run --config-file expects a minimal run config
+    # (version + agent...). Do NOT copy ~/.rovodev/config.yml (it contains extra
+    # top-level keys that break parsing).
+    cat >"$TEMP_CONFIG" <<EOFCONFIG
 version: 1
 agent:
-  modelId: $RESOLVED_MODEL
+  modelId: ${RESOLVED_MODEL}
+  streaming: true
+  temperature: 0.3
 EOFCONFIG
-    fi
     CONFIG_FLAG="--config-file $TEMP_CONFIG"
     echo "Using model: $RESOLVED_MODEL"
   fi
