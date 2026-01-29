@@ -351,7 +351,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** failures do not crash the whole run (per-customer isolation)
   - **Validate:** run weekly and confirm one delivery per customer
 
-- [ ] **4.5** Daily critical email gating
+- [x] **4.5** Daily critical email gating
   - **Goal:** keep daily alerts low-noise.
   - **AC:** daily run sends email only if critical findings exist for that run
   - **AC:** email includes only critical section + next actions
