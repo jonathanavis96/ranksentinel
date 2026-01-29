@@ -145,3 +145,23 @@ class TestListSitemapUrls:
         assert len(result) == 100
         assert "https://example.com/page0" in result
         assert "https://example.com/page99" in result
+
+    def test_urlset_google_084_namespace(self):
+        """Test urlset with Google 0.84 namespace returns URLs."""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.google.com/schemas/sitemap/0.84">
+  <url>
+    <loc>https://example.com/page1</loc>
+  </url>
+  <url>
+    <loc>https://example.com/page2</loc>
+  </url>
+  <url>
+    <loc>https://example.com/page3</loc>
+  </url>
+</urlset>"""
+        result = list_sitemap_urls(xml)
+        assert len(result) == 3
+        assert "https://example.com/page1" in result
+        assert "https://example.com/page2" in result
+        assert "https://example.com/page3" in result

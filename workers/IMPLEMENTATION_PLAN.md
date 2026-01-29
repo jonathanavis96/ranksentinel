@@ -65,7 +65,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** For a sitemap with `<urlset xmlns="http://www.google.com/schemas/sitemap/0.84">`, returns list of URLs.
   - **Validate:** `pytest -q tests/test_list_sitemap_urls.py`
 
-- [ ] **0-S.2** Extend tests for Google 0.84 namespace (urlset)
+- [x] **0-S.2** Extend tests for Google 0.84 namespace (urlset)
   - **Goal:** Prevent regressions; lock in support for Google 0.84 namespace.
   - **Files:** `tests/test_list_sitemap_urls.py`
   - **AC:** Add a unit test that uses the Google 0.84 namespace and asserts URLs are extracted.
