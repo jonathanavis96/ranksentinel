@@ -4,15 +4,88 @@ from datetime import datetime, timezone
 from ranksentinel.config import Settings
 from ranksentinel.db import connect, execute, fetch_all, fetch_one, generate_finding_dedupe_key, init_db
 from ranksentinel.http_client import fetch_text
+from ranksentinel.reporting.severity import CRITICAL
+from ranksentinel.runner.finding_utils import insert_finding
 from ranksentinel.runner.link_checker import find_broken_links
 from ranksentinel.runner.logging_utils import generate_run_id, log_stage, log_structured, log_summary
 from ranksentinel.runner.normalization import normalize_url
-from ranksentinel.runner.page_fetcher import fetch_pages
+from ranksentinel.runner.page_fetcher import PageFetchResult, fetch_pages
 from ranksentinel.runner.sitemap_parser import list_sitemap_urls
 
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def detect_new_404s(
+    conn,
+    run_id: str,
+    customer_id: int,
+    fetch_results: list[PageFetchResult],
+    period: str,
+) -> None:
+    """Detect newly-broken pages (404s) from sampled crawl.
+    
+    Args:
+        conn: Database connection
+        run_id: Unique run identifier
+        customer_id: Customer ID
+        fetch_results: List of page fetch results
+        period: Period identifier (e.g., '2026-W05')
+    """
+    # Track 404s seen in this run for deduplication
+    seen_404s = set()
+    
+    for result in fetch_results:
+        if result.is_404:
+            # Normalize URL for deduplication (use result.url as both base and url since it's already absolute)
+            normalized_url = normalize_url(result.url, result.url)
+            
+            # Skip if already seen in this run
+            if normalized_url in seen_404s:
+                log_structured(
+                    run_id,
+                    run_type="weekly",
+                    stage="detect_404s",
+                    status="deduped_in_run",
+                    customer_id=customer_id,
+                    url=normalized_url,
+                )
+                continue
+            
+            seen_404s.add(normalized_url)
+            
+            # Create finding for this 404
+            insert_finding(
+                conn=conn,
+                run_id=run_id,
+                customer_id=customer_id,
+                run_type="weekly",
+                severity=CRITICAL,
+                category="indexability",
+                title=f"Page not found (404): {normalized_url}",
+                details_md=f"The page at `{normalized_url}` returned a 404 status code during the weekly crawl sample.",
+                url=normalized_url,
+                period=period,
+            )
+            
+            log_structured(
+                run_id,
+                run_type="weekly",
+                stage="detect_404s",
+                status="found",
+                customer_id=customer_id,
+                url=normalized_url,
+            )
+    
+    log_structured(
+        run_id,
+        run_type="weekly",
+        stage="detect_404s",
+        status="complete",
+        customer_id=customer_id,
+        total_404s=len(seen_404s),
+    )
 
 
 def detect_broken_internal_links(
@@ -218,6 +291,16 @@ def run(settings: Settings) -> None:
                         fetched_count=len(fetch_results),
                         success_count=sum(1 for r in fetch_results if r.ok),
                     )
+                    
+                    # Detect new 404s from sampled crawl
+                    with log_stage(run_id, "detect_404s", customer_id=customer_id):
+                        detect_new_404s(
+                            conn,
+                            run_id,
+                            customer_id,
+                            fetch_results,
+                            period=datetime.fromisoformat(now_iso()).strftime('%Y-W%U'),
+                        )
                     
                     # Detect broken internal links
                     with log_stage(run_id, "detect_broken_links", customer_id=customer_id):

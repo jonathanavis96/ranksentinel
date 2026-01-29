@@ -276,7 +276,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** normalizes URLs (strip fragments, normalize trailing slash policy)
   - **Validate:** controlled HTML fixture produces expected link set
 
-- [ ] **2.6** Detect new 404s from sampled crawl
+- [x] **2.6** Detect new 404s from sampled crawl
   - **Goal:** detect newly-broken pages and prioritize as SEO regressions.
   - **AC:** any sampled URL returning 404 creates a finding
   - **AC:** repeat 404s are deduped within a run (and ideally across runs once idempotency exists)
