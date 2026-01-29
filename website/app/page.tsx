@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Container, EmailReportPreview, FAQAccordion, FeatureTabs } from './components';
+import { Badge, Button, Card, Container, EmailReportPreview, FAQAccordion, FeatureTabs, LeadCaptureForm } from './components';
 
 export default function Home() {
   return (
@@ -20,20 +20,25 @@ export default function Home() {
               Robots, sitemaps, canonicals, noindex, broken links, and PageSpeed regressions—summarized into one weekly digest (with critical-only daily alerts).
             </p>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-              <Button as="link" href="#sample-report" variant="primary" size="lg">
-                Get a sample report
-              </Button>
-              <Button as="link" href="#how-it-works" variant="secondary" size="lg">
-                See how it works
-              </Button>
+            {/* Lead Capture Form */}
+            <div className="pt-4 max-w-xl mx-auto">
+              <LeadCaptureForm />
             </div>
 
             {/* Micro-proof line */}
-            <p className="text-sm text-[var(--color-body-light)] max-w-2xl mx-auto">
+            <p className="text-sm text-[var(--color-body-light)] max-w-2xl mx-auto pt-4">
               Designed to avoid false alerts (severity + confirmation + dedupe).
             </p>
+
+            {/* Secondary CTAs */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
+              <Button as="link" href="#sample-report" variant="secondary" size="md">
+                Get a sample report
+              </Button>
+              <Button as="link" href="#how-it-works" variant="secondary" size="md">
+                See how it works
+              </Button>
+            </div>
 
             {/* Email Preview */}
             <div className="pt-12">

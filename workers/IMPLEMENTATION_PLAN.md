@@ -266,7 +266,7 @@ Brain skills (open those relevant to the current item):
     - error handling
   - **If Blocked:** Document as a section inside `docs/WEBSITE_REQUIREMENTS.md`.
 
-- [ ] **6.2** Implement website forms (frictionless)
+- [x] **6.2** Implement website forms (frictionless)
   - **Goal:** Max conversions with minimal inputs.
   - **AC:**
     - Homepage form uses: email (required), domain (required), key pages optional.

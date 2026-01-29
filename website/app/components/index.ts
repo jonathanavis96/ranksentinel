@@ -8,3 +8,4 @@ export { default as Container } from './Container';
 export { default as EmailReportPreview } from './EmailReportPreview';
 export { FAQAccordion } from './FAQAccordion';
 export { FeatureTabs } from './FeatureTabs';
+export { default as LeadCaptureForm } from './LeadCaptureForm';
