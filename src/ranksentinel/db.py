@@ -11,7 +11,12 @@ PRAGMA journal_mode=WAL;
 CREATE TABLE IF NOT EXISTS customers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
+  email_raw TEXT,
+  email_canonical TEXT,
   status TEXT NOT NULL CHECK(status IN ('active','past_due','canceled')),
+  digest_weekday INTEGER,
+  digest_time_local TEXT,
+  digest_timezone TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -154,6 +159,19 @@ CREATE TABLE IF NOT EXISTS run_coverage (
 );
 
 CREATE INDEX IF NOT EXISTS idx_run_coverage_lookup ON run_coverage(customer_id, run_type, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS schedule_tokens (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER NOT NULL,
+  token TEXT NOT NULL UNIQUE,
+  expires_at TEXT NOT NULL,
+  used_at TEXT,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_schedule_tokens_lookup ON schedule_tokens(token, expires_at);
+CREATE INDEX IF NOT EXISTS idx_schedule_tokens_customer ON schedule_tokens(customer_id, created_at DESC);
 """
 
 
@@ -207,6 +225,26 @@ def init_db(conn: sqlite3.Connection) -> None:
 
         if "run_id" not in findings_columns:
             cursor.execute("ALTER TABLE findings ADD COLUMN run_id TEXT NOT NULL DEFAULT ''")
+
+    # Check if customers table exists for schedule migrations
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='customers'")
+    customers_exists = cursor.fetchone() is not None
+
+    if customers_exists:
+        # Migration: Add email and schedule columns to customers if missing
+        cursor.execute("PRAGMA table_info(customers)")
+        customers_columns = {row[1] for row in cursor.fetchall()}
+
+        if "email_raw" not in customers_columns:
+            cursor.execute("ALTER TABLE customers ADD COLUMN email_raw TEXT")
+        if "email_canonical" not in customers_columns:
+            cursor.execute("ALTER TABLE customers ADD COLUMN email_canonical TEXT")
+        if "digest_weekday" not in customers_columns:
+            cursor.execute("ALTER TABLE customers ADD COLUMN digest_weekday INTEGER")
+        if "digest_time_local" not in customers_columns:
+            cursor.execute("ALTER TABLE customers ADD COLUMN digest_time_local TEXT")
+        if "digest_timezone" not in customers_columns:
+            cursor.execute("ALTER TABLE customers ADD COLUMN digest_timezone TEXT")
 
     conn.commit()
 
@@ -407,4 +445,103 @@ def get_latest_run_coverage(
            WHERE customer_id=? AND run_type=?
            ORDER BY created_at DESC LIMIT 1""",
         (customer_id, run_type),
+    )
+
+
+def create_schedule_token(
+    conn: sqlite3.Connection,
+    customer_id: int,
+    expires_at: str,
+) -> str:
+    """Generate and store a new schedule token for a customer.
+
+    Args:
+        conn: Database connection
+        customer_id: Customer ID
+        expires_at: ISO timestamp when token expires
+
+    Returns:
+        The generated token string (URL-safe)
+    """
+    import secrets
+
+    token = secrets.token_urlsafe(32)
+    created_at = fetch_one(conn, "SELECT datetime('now') as now", ())["now"]
+
+    execute(
+        conn,
+        "INSERT INTO schedule_tokens(customer_id, token, expires_at, created_at) VALUES(?,?,?,?)",
+        (customer_id, token, expires_at, created_at),
+    )
+
+    return token
+
+
+def validate_schedule_token(
+    conn: sqlite3.Connection,
+    token: str,
+) -> sqlite3.Row | None:
+    """Validate a schedule token and return customer info if valid.
+
+    Args:
+        conn: Database connection
+        token: The token to validate
+
+    Returns:
+        Row with customer_id and token info if valid and not expired/used, None otherwise
+    """
+    now = fetch_one(conn, "SELECT datetime('now') as now", ())["now"]
+
+    return fetch_one(
+        conn,
+        """SELECT id, customer_id, expires_at, used_at 
+           FROM schedule_tokens 
+           WHERE token=? AND expires_at > ? AND used_at IS NULL""",
+        (token, now),
+    )
+
+
+def mark_schedule_token_used(
+    conn: sqlite3.Connection,
+    token: str,
+) -> None:
+    """Mark a schedule token as used (single-use token pattern).
+
+    Args:
+        conn: Database connection
+        token: The token to mark as used
+    """
+    used_at = fetch_one(conn, "SELECT datetime('now') as now", ())["now"]
+
+    execute(
+        conn,
+        "UPDATE schedule_tokens SET used_at=? WHERE token=?",
+        (used_at, token),
+    )
+
+
+def update_customer_schedule(
+    conn: sqlite3.Connection,
+    customer_id: int,
+    digest_weekday: int,
+    digest_time_local: str,
+    digest_timezone: str,
+) -> None:
+    """Update customer's digest schedule preferences.
+
+    Args:
+        conn: Database connection
+        customer_id: Customer ID
+        digest_weekday: Day of week (0=Monday, 6=Sunday)
+        digest_time_local: Local time in HH:MM format (e.g., "09:00")
+        digest_timezone: IANA timezone (e.g., "America/New_York")
+    """
+    updated_at = fetch_one(conn, "SELECT datetime('now') as now", ())["now"]
+
+    execute(
+        conn,
+        """UPDATE customers 
+           SET digest_weekday=?, digest_time_local=?, digest_timezone=?, updated_at=?
+           WHERE id=?""",
+        (digest_weekday, digest_time_local, digest_timezone, updated_at, customer_id),
     )

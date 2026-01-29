@@ -318,18 +318,18 @@ Brain skills (open those relevant to the current item):
   - **AC:** Matches UX rules above.
   - **If Blocked:** Skip preview and show only the API-computed next run after save.
 
-- [ ] **8.2** Implement schedule token link in emails (30-day expiry, scoped, rotated)
+- [x] **8.2** Implement schedule token link in emails (30-day expiry, scoped, rotated)
   - **Goal:** Passwordless schedule settings.
   - **Requirements (confirmed):**
     - Expiry: 30 days.
     - Scope: schedule update only.
     - Rotate/single-use token after successful update.
-    - Include “Set schedule” link in:
+    - Include "Set schedule" link in:
       - confirmation emails
       - unlocked weekly digest emails
       - paywalled weekly emails
   - **AC:** Token works, cannot be guessed, and old token no longer works after update.
-  - **If Blocked:** Use a short-lived token and include a “request new link” endpoint.
+  - **If Blocked:** Use a short-lived token and include a "request new link" endpoint.
 
 - [ ] **8.3** Implement `POST /public/schedule` (API source of truth)
   - **Goal:** Persist schedule + return authoritative next run.

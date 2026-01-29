@@ -9,21 +9,39 @@ class EmailMessage:
     html: str
 
 
-def render_weekly_digest(customer_name: str, findings_md: Iterable[str]) -> EmailMessage:
+def render_weekly_digest(
+    customer_name: str, findings_md: Iterable[str], schedule_token: str | None = None
+) -> EmailMessage:
     subject = f"RankSentinel Weekly Digest — {customer_name}"
 
     body_md = "\n\n".join(findings_md) if findings_md else "No findings."
+
+    # Add schedule link if token provided
+    schedule_link = ""
+    if schedule_token:
+        schedule_link_text = f"\n\n→ Manage your weekly digest schedule: https://ranksentinel.com/schedule?token={schedule_token}\n"
+        schedule_link_html = (
+            f"<div style='background: #f5f5f5; border-left: 4px solid #1976d2; padding: 15px; margin: 20px 0; border-radius: 4px;'>"
+            f"<strong>→ Manage Schedule:</strong> "
+            f"<a href='https://ranksentinel.com/schedule?token={schedule_token}'>Change your weekly digest day/time</a>"
+            f"</div>"
+        )
+    else:
+        schedule_link_text = ""
+        schedule_link_html = ""
 
     text = (
         f"Weekly Digest for {customer_name}\n\n"
         "Sections: Critical / Warning / Info\n\n"
         f"{body_md}\n"
+        f"{schedule_link_text}"
     )
 
     html = (
         f"<h1>Weekly Digest — {customer_name}</h1>"
         "<p><strong>Sections:</strong> Critical / Warning / Info</p>"
         f"<pre style='white-space:pre-wrap'>{body_md}</pre>"
+        f"{schedule_link_html}"
     )
     return EmailMessage(subject=subject, text=text, html=html)
 
@@ -71,23 +89,39 @@ def render_daily_critical_alert(
     return EmailMessage(subject=subject, text=text, html=html)
 
 
-def render_first_insight(customer_name: str, report_text: str, report_html: str) -> EmailMessage:
+def render_first_insight(
+    customer_name: str, report_text: str, report_html: str, schedule_token: str | None = None
+) -> EmailMessage:
     """Render a First Insight onboarding email.
 
     Args:
         customer_name: Customer name
         report_text: Plain text version of the report
         report_html: HTML version of the report
+        schedule_token: Optional schedule token for passwordless schedule management
 
     Returns:
         EmailMessage with subject, text, and html
     """
     subject = f"🎉 Your First RankSentinel Insight — {customer_name}"
 
+    # Add schedule link if token provided
+    schedule_link_text = ""
+    schedule_link_html = ""
+    if schedule_token:
+        schedule_link_text = f"\n→ Set your weekly digest schedule: https://ranksentinel.com/schedule?token={schedule_token}\n"
+        schedule_link_html = (
+            f"<div style='background: #f5f5f5; border-left: 4px solid #1976d2; padding: 15px; margin: 20px 0; border-radius: 4px;'>"
+            f"<strong>→ Set Schedule:</strong> "
+            f"<a href='https://ranksentinel.com/schedule?token={schedule_token}'>Choose your weekly digest day and time</a>"
+            f"</div>"
+        )
+
     text = (
         f"Welcome to RankSentinel, {customer_name}!\n\n"
         "We've completed your first site analysis. Here's what we found:\n\n"
         f"{report_text}\n\n"
+        f"{schedule_link_text}"
         "→ Next Steps: We'll continue monitoring your site and send weekly digests with any changes or new issues.\n"
     )
 
@@ -103,6 +137,7 @@ def render_first_insight(customer_name: str, report_text: str, report_html: str)
         f"<strong>Welcome to RankSentinel!</strong> We've completed your first site analysis."
         f"</div>"
         f"{report_html}"
+        f"{schedule_link_html}"
         f"<div class='next-steps'>"
         f"<strong>→ Next Steps:</strong> We'll continue monitoring your site and send weekly digests with any changes or new issues."
         f"</div>"
