@@ -209,6 +209,74 @@ def check_title_change(
     return None
 
 
+def check_robots_txt_change(
+    conn,
+    customer_id: int,
+    base_url: str,
+    current_robots_content: str,
+) -> tuple[str, str] | None:
+    """Check if robots.txt changed with meaningful diff and severity assessment.
+
+    Returns (severity, details_md) tuple if meaningful change found, None otherwise.
+    Uses normalization to ignore cosmetic changes (whitespace, comments).
+    Assigns severity based on risk of disallow rule changes.
+    """
+    from ranksentinel.runner.normalization import normalize_robots_txt, diff_summary
+
+    prev = get_latest_artifact(conn, customer_id, "robots_txt", base_url)
+
+    if not prev:
+        # No baseline yet
+        return None
+
+    prev_content = str(prev["raw_content"] or "")
+    curr_content = current_robots_content or ""
+
+    # Normalize both to ignore cosmetic differences
+    prev_normalized = normalize_robots_txt(prev_content)
+    curr_normalized = normalize_robots_txt(curr_content)
+
+    if prev_normalized == curr_normalized:
+        # No meaningful change
+        return None
+
+    # Meaningful change detected - generate diff and determine severity
+    diff_text = diff_summary(prev_normalized, curr_normalized, "robots.txt")
+
+    # Analyze severity based on disallow rules
+    severity = "info"  # Default to informational
+
+    prev_lower = prev_normalized.lower()
+    curr_lower = curr_normalized.lower()
+
+    # Critical: New site-wide disallow
+    if "disallow: /" in curr_lower and "disallow: /" not in prev_lower:
+        severity = "critical"
+    # Critical: Previously allowed paths now disallowed
+    elif "disallow:" in curr_lower:
+        # Check for expanded disallow patterns
+        prev_disallows = [line for line in prev_lower.split("\n") if line.startswith("disallow:")]
+        curr_disallows = [line for line in curr_lower.split("\n") if line.startswith("disallow:")]
+        
+        if len(curr_disallows) > len(prev_disallows):
+            # More disallow rules added
+            severity = "warning"
+        elif curr_disallows != prev_disallows:
+            # Disallow rules changed
+            severity = "warning"
+
+    details = f"""Robots.txt configuration changed.
+
+- **Base URL:** `{base_url}`
+- **Severity:** Changes to disallow rules detected
+
+{diff_text}
+
+Review these changes to ensure they align with your SEO strategy."""
+
+    return (severity, details)
+
+
 def fetch_psi_metrics(url: str, api_key: str, strategy: str = "mobile") -> dict[str, Any] | None:
     """Fetch PageSpeed Insights metrics for a URL.
 
@@ -429,16 +497,48 @@ def run(settings: Settings) -> None:
                                 robots_sha = sha256_text(robots_content)
                                 fetched_at = now_iso()
                                 
-                                # Store artifact (kind=robots_txt, subject=base_url)
-                                store_artifact(
-                                    conn, customer_id, "robots_txt", robots_base_url, 
-                                    robots_sha, robots_content, fetched_at
-                                )
+                                # Check for meaningful changes before storing
+                                prev_robots_artifact = get_latest_artifact(conn, customer_id, "robots_txt", robots_base_url)
                                 
-                                log_structured(
-                                    run_id, customer_id=customer_id, stage="fetch_robots", 
-                                    status="success", url=robots_url, sha=robots_sha[:12]
-                                )
+                                # Only store and check if changed
+                                if not prev_robots_artifact or prev_robots_artifact["artifact_sha"] != robots_sha:
+                                    # Store artifact (kind=robots_txt, subject=base_url)
+                                    store_artifact(
+                                        conn, customer_id, "robots_txt", robots_base_url, 
+                                        robots_sha, robots_content, fetched_at
+                                    )
+                                    
+                                    log_structured(
+                                        run_id, customer_id=customer_id, stage="fetch_robots", 
+                                        status="success", url=robots_url, sha=robots_sha[:12]
+                                    )
+                                    
+                                    # Check for meaningful robots.txt changes
+                                    robots_result = check_robots_txt_change(
+                                        conn, customer_id, robots_base_url, robots_content
+                                    )
+                                    if robots_result:
+                                        severity, details = robots_result
+                                        period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                        dedupe_key = generate_finding_dedupe_key(
+                                            customer_id, "daily", "indexability", "Robots.txt changed", None, period
+                                        )
+                                        execute(
+                                            conn,
+                                            "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                            "VALUES(?,?,?,?,?,?,?,?,?)",
+                                            (
+                                                customer_id,
+                                                "daily",
+                                                severity,
+                                                "indexability",
+                                                "Robots.txt changed",
+                                                details,
+                                                None,
+                                                dedupe_key,
+                                                fetched_at,
+                                            ),
+                                        )
                             else:
                                 log_structured(
                                     run_id, customer_id=customer_id, stage="fetch_robots",

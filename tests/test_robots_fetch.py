@@ -127,8 +127,9 @@ def test_robots_fetch_no_duplicate_on_rerun(test_db):
         
         second_count = len(fetch_all(conn, "SELECT * FROM artifacts WHERE kind='robots_txt'"))
     
-    # Both runs should store artifacts (one per run), but they're the same content
-    assert second_count == 2, f"Expected 2 artifacts after 2 runs, got {second_count}"
+    # Only-on-change: when content hasn't changed, no new artifact is stored
+    assert first_count == 1, f"Expected 1 artifact after first run, got {first_count}"
+    assert second_count == 1, f"Expected 1 artifact after second run (unchanged), got {second_count}"
 
 
 def test_robots_fetch_changed_content(test_db):
