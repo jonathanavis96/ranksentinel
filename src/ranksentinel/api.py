@@ -114,3 +114,22 @@ def patch_settings(customer_id: int, payload: CustomerSettingsPatch, conn=Depend
     params.append(customer_id)
     execute(conn, f"UPDATE settings SET {', '.join(updates)} WHERE customer_id=?", params)
     return {"status": "ok"}
+
+
+@app.post("/admin/customers/{customer_id}/send_first_insight")
+def send_first_insight(customer_id: int, conn=Depends(get_conn)):
+    """Trigger a First Insight report for a customer (admin-only endpoint).
+    
+    This endpoint sends an immediate onboarding report to help new customers
+    see value quickly without waiting for the weekly schedule.
+    """
+    cust = fetch_one(conn, "SELECT id FROM customers WHERE id=?", (customer_id,))
+    if not cust:
+        raise HTTPException(status_code=404, detail="customer not found")
+    
+    # Import here to avoid circular dependencies
+    from ranksentinel.runner.first_insight import trigger_first_insight_report
+    
+    trigger_first_insight_report(conn, customer_id)
+    
+    return {"status": "ok", "message": "First Insight report triggered"}

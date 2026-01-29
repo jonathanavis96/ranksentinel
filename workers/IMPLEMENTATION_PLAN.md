@@ -621,8 +621,8 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Phase 4: Email reporting (atomic)
 
-- [ ] **4.6a** First Insight: add admin trigger endpoint (no payment integration)
-  - **Goal:** Provide an internal/admin-only way to send a one-off “First Insight” report immediately.
+- [x] **4.6a** First Insight: add admin trigger endpoint (no payment integration)
+  - **Goal:** Provide an internal/admin-only way to send a one-off "First Insight" report immediately.
   - **Files (likely):** `src/ranksentinel/api.py`
   - **Implementation guidance:**
     - Add `POST /admin/customers/{customer_id}/send_first_insight`.
@@ -630,6 +630,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Skills:** `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/backend/auth-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
   - **AC:** Hitting the endpoint returns 200 and enqueues/executes the first-insight flow for that customer.
   - **Validate:** Unit test for endpoint routing + mocked service call.
+  - **Completed:** Added endpoint with stub service function and full test coverage
 
 - [ ] **4.6b** First Insight: implement runner/service to generate report input data
   - **Goal:** Reuse weekly/daily signal collection to generate a “first run” snapshot set without waiting for Monday.
