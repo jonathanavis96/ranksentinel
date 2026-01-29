@@ -232,7 +232,7 @@ Brain skills (open those relevant to the current item):
     - Primary CTA on pricing is “Start monitoring”.
   - **If Blocked:** Ship a simplified 3-tier card layout and link to contact for enterprise.
 
-- [ ] **5.2** Implement `/sample-report`
+- [x] **5.2** Implement `/sample-report`
   - **Goal:** Provide a tangible proof artifact.
   - **References:** `docs/SAMPLE_REPORT.md`, `docs/websites/04_page_requirements.md`.
   - **AC:**
