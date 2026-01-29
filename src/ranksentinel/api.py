@@ -116,20 +116,42 @@ def patch_settings(customer_id: int, payload: CustomerSettingsPatch, conn=Depend
     return {"status": "ok"}
 
 
-@app.post("/admin/customers/{customer_id}/send_first_insight")
-def send_first_insight(customer_id: int, conn=Depends(get_conn), settings: Settings = Depends(get_settings)):
-    """Trigger a First Insight report for a customer (admin-only endpoint).
+def trigger_first_insight_for_customer(
+    customer_id: int,
+    conn,
+    settings: Settings,
+) -> dict:
+    """Internal hook for triggering First Insight report on payment success.
     
-    This endpoint sends an immediate onboarding report to help new customers
-    see value quickly without waiting for the weekly schedule.
+    This function is designed to be called by payment webhook handlers
+    (e.g., Stripe webhook) when a customer successfully completes payment.
+    
+    Args:
+        customer_id: ID of the customer who completed payment
+        conn: Database connection
+        settings: Application settings with API keys and email config
+        
+    Returns:
+        Dict with run_id, findings count, and email delivery status
+        
+    Raises:
+        ValueError: If customer_id is invalid or customer not found
+        
+    Example:
+        # From a future Stripe webhook handler:
+        def handle_payment_success(stripe_customer_id: str, conn, settings):
+            customer_id = get_customer_id_from_stripe(stripe_customer_id)
+            result = trigger_first_insight_for_customer(customer_id, conn, settings)
+            return result
     """
-    cust = fetch_one(conn, "SELECT id FROM customers WHERE id=?", (customer_id,))
-    if not cust:
-        raise HTTPException(status_code=404, detail="customer not found")
-    
     # Import here to avoid circular dependencies
     from ranksentinel.mailgun import MailgunClient
     from ranksentinel.runner.first_insight import trigger_first_insight_report
+    
+    # Validate customer exists
+    cust = fetch_one(conn, "SELECT id FROM customers WHERE id=?", (customer_id,))
+    if not cust:
+        raise ValueError(f"Customer {customer_id} not found")
     
     # Initialize Mailgun client if configured
     mailgun_client = None
@@ -150,3 +172,17 @@ def send_first_insight(customer_id: int, conn=Depends(get_conn), settings: Setti
     )
     
     return result
+
+
+@app.post("/admin/customers/{customer_id}/send_first_insight")
+def send_first_insight(customer_id: int, conn=Depends(get_conn), settings: Settings = Depends(get_settings)):
+    """Trigger a First Insight report for a customer (admin-only endpoint).
+    
+    This endpoint sends an immediate onboarding report to help new customers
+    see value quickly without waiting for the weekly schedule.
+    """
+    try:
+        result = trigger_first_insight_for_customer(customer_id, conn, settings)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e

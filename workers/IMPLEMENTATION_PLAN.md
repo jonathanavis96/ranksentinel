@@ -657,12 +657,13 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:** Integration test with mocked Mailgun client asserts exactly one delivery recorded.
   - **Completed:** Added `render_first_insight()` email template, updated `trigger_first_insight_report()` to send emails via Mailgun with idempotency check (one email per customer per day), updated type hints in `mailgun.py` to support `run_type='first_insight'`, and created comprehensive integration tests in `tests/test_first_insight_email.py` covering success, idempotency, failure, and no-email scenarios.
 
-- [ ] **4.6d** First Insight: payment integration hook (deferred wiring)
+- [x] **4.6d** First Insight: payment integration hook (deferred wiring)
   - **Goal:** When payments exist, automatically trigger First Insight on successful payment.
   - **Scope:** Do not implement Stripe/payment processor in this task unless already in scope.
   - **Skills:** `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/backend/error-handling-patterns.md`
   - **AC:** A single internal function exists that the future webhook handler can call.
   - **Validate:** Code structure supports calling `trigger_first_insight(customer_id)` from webhook code.
+  - **Completed:** Created `trigger_first_insight_for_customer()` internal hook function in `api.py` that webhook handlers can call, refactored existing endpoint to use the hook, and created comprehensive tests in `tests/test_payment_integration_hook.py` validating the function exists, handles errors, and can be called from webhook code.
 
 - [x] **4.1** Recommendation rules engine
   - **Goal:** deterministic mapping from finding type -> “what to do next” recommendation text.
