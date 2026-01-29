@@ -331,7 +331,7 @@ Brain skills (open those relevant to the current item):
   - **AC:** Token works, cannot be guessed, and old token no longer works after update.
   - **If Blocked:** Use a short-lived token and include a "request new link" endpoint.
 
-- [ ] **8.3** Implement `POST /public/schedule` (API source of truth)
+- [x] **8.3** Implement `POST /public/schedule` (API source of truth)
   - **Goal:** Persist schedule + return authoritative next run.
   - **Request:** token, digest_weekday, digest_time_local, digest_timezone.
   - **Response (required):**

@@ -12,6 +12,8 @@ from ranksentinel.models import (
     CustomerSettingsPatch,
     LeadCreate,
     LeadResponse,
+    ScheduleUpdateRequest,
+    ScheduleUpdateResponse,
     StartMonitoringRequest,
     StartMonitoringResponse,
     TargetCreate,
@@ -359,4 +361,82 @@ def start_monitoring(payload: StartMonitoringRequest, conn=Depends(get_conn)):
         success=True,
         message="Your site monitoring has started!",
         customer_id=customer_id,
+    )
+
+
+@app.post("/public/schedule", response_model=ScheduleUpdateResponse)
+def update_schedule(payload: ScheduleUpdateRequest, conn=Depends(get_conn)):
+    """
+    Public endpoint for updating digest schedule (token-protected).
+    
+    Returns authoritative next run time with DST-safe timezone handling.
+    """
+    from datetime import timedelta
+    from zoneinfo import ZoneInfo
+    from ranksentinel.db import update_customer_schedule, validate_schedule_token, mark_schedule_token_used
+    
+    # Validate token and find customer
+    token_info = validate_schedule_token(conn, payload.token)
+    
+    if not token_info:
+        raise HTTPException(status_code=404, detail="Invalid or expired token")
+    
+    customer_id = token_info["customer_id"]
+    
+    # Mark token as used (single-use pattern)
+    mark_schedule_token_used(conn, payload.token)
+    
+    # Validate timezone
+    try:
+        tz = ZoneInfo(payload.digest_timezone)
+    except Exception:
+        raise HTTPException(status_code=400, detail=f"Invalid timezone: {payload.digest_timezone}")
+    
+    # Validate time format (already validated by Pydantic pattern, but check range)
+    try:
+        hour, minute = map(int, payload.digest_time_local.split(":"))
+        if not (0 <= hour <= 23 and 0 <= minute <= 59):
+            raise ValueError("Time out of range")
+    except Exception:
+        raise HTTPException(status_code=400, detail=f"Invalid time format: {payload.digest_time_local}")
+    
+    # Calculate next run time with DST-aware timezone handling
+    now = datetime.now(tz)
+    
+    # Calculate days until target weekday
+    days_ahead = (payload.digest_weekday - now.weekday()) % 7
+    
+    # If it's the target weekday today, check if time has passed
+    if days_ahead == 0:
+        target_today = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        if now >= target_today:
+            # Already passed today, schedule for next week
+            days_ahead = 7
+    
+    # Calculate next run time
+    next_run = now + timedelta(days=days_ahead)
+    next_run = next_run.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    
+    # Convert to UTC for storage
+    next_run_utc = next_run.astimezone(ZoneInfo("UTC"))
+    
+    # Get UTC offset at the next run time (DST-aware)
+    utc_offset_minutes = int(next_run.utcoffset().total_seconds() / 60)
+    
+    # Update customer schedule in database
+    update_customer_schedule(
+        conn,
+        customer_id,
+        payload.digest_weekday,
+        payload.digest_time_local,
+        payload.digest_timezone,
+    )
+    
+    return ScheduleUpdateResponse(
+        success=True,
+        message="Schedule updated successfully",
+        timezone=payload.digest_timezone,
+        utc_offset_minutes=utc_offset_minutes,
+        next_run_at_utc=next_run_utc.isoformat(),
+        next_run_at_local=next_run.isoformat(),
     )

@@ -80,3 +80,25 @@ class StartMonitoringResponse(BaseModel):
     success: bool
     message: str
     customer_id: int | None = None
+
+
+class ScheduleUpdateRequest(BaseModel):
+    """Model for schedule update request."""
+
+    token: str = Field(min_length=1, max_length=500)
+    digest_weekday: int = Field(ge=0, le=6, description="Day of week: 0=Monday, 6=Sunday")
+    digest_time_local: str = Field(
+        min_length=5, max_length=5, pattern=r"^\d{2}:\d{2}$", description="Time in HH:MM format"
+    )
+    digest_timezone: str = Field(min_length=1, max_length=100, description="IANA timezone name")
+
+
+class ScheduleUpdateResponse(BaseModel):
+    """Response for schedule update request."""
+
+    success: bool
+    message: str
+    timezone: str
+    utc_offset_minutes: int
+    next_run_at_utc: str
+    next_run_at_local: str | None = None
