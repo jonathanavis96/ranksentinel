@@ -109,6 +109,101 @@ class TestPublicLeads:
         
         # Pydantic validation returns 422 for validation errors
         assert response.status_code == 422
+    
+    def test_create_lead_sends_sample_report(self, client, monkeypatch):
+        """Test that sample report email is sent on lead creation."""
+        from unittest.mock import Mock, MagicMock
+        
+        # Mock MailgunClient
+        mock_send_email = Mock()
+        mock_mailgun_instance = MagicMock()
+        mock_mailgun_instance.send_email = mock_send_email
+        
+        mock_mailgun_class = Mock(return_value=mock_mailgun_instance)
+        
+        # Patch MailgunClient where it's imported (in the mailgun module)
+        monkeypatch.setattr("ranksentinel.mailgun.MailgunClient", mock_mailgun_class)
+        
+        # Configure test settings with Mailgun credentials
+        from ranksentinel.config import Settings, get_settings
+        test_settings = Settings(
+            RANKSENTINEL_DB_PATH=":memory:",
+            MAILGUN_API_KEY="test-key",
+            MAILGUN_DOMAIN="test.mailgun.org",
+        )
+        
+        def override_get_settings():
+            return test_settings
+        
+        app.dependency_overrides[get_settings] = override_get_settings
+        
+        # Make request
+        payload = {
+            "email": "email-test@example.com",
+            "domain": "example.com",
+        }
+        
+        response = client.post("/public/leads", json=payload)
+        
+        # Verify response
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert "sample report" in data["message"].lower() or "check your email" in data["message"].lower()
+        
+        # Verify email was sent
+        assert mock_send_email.called, "MailgunClient.send_email should have been called"
+        call_args = mock_send_email.call_args
+        assert call_args is not None
+        
+        # Check email parameters
+        assert call_args.kwargs["to"] == "email-test@example.com"
+        assert "Sample RankSentinel Report" in call_args.kwargs["subject"]
+        assert "example.com" in call_args.kwargs["subject"]
+        assert "CRITICAL ISSUES" in call_args.kwargs["text"]
+        assert "ranksentinel.com/schedule" in call_args.kwargs["text"]
+        
+        # Clean up
+        app.dependency_overrides.clear()
+    
+    def test_create_lead_email_failure_doesnt_block(self, client, monkeypatch):
+        """Test that email sending failure doesn't block lead creation."""
+        from unittest.mock import Mock
+        
+        # Mock MailgunClient to raise an exception
+        mock_mailgun_class = Mock(side_effect=Exception("Mailgun error"))
+        
+        monkeypatch.setattr("ranksentinel.mailgun.MailgunClient", mock_mailgun_class)
+        
+        # Configure test settings with Mailgun credentials
+        from ranksentinel.config import Settings, get_settings
+        test_settings = Settings(
+            RANKSENTINEL_DB_PATH=":memory:",
+            MAILGUN_API_KEY="test-key",
+            MAILGUN_DOMAIN="test.mailgun.org",
+        )
+        
+        def override_get_settings():
+            return test_settings
+        
+        app.dependency_overrides[get_settings] = override_get_settings
+        
+        # Make request
+        payload = {
+            "email": "failure-test@example.com",
+            "domain": "example.com",
+        }
+        
+        response = client.post("/public/leads", json=payload)
+        
+        # Verify response - should succeed despite email failure
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert "lead_id" in data
+        
+        # Clean up
+        app.dependency_overrides.clear()
 
 
 class TestPublicStartMonitoring:

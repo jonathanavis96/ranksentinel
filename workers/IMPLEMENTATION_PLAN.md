@@ -344,13 +344,14 @@ Brain skills (open those relevant to the current item):
 
 ### Task 9: Funnel endpoints + trial provisioning
 
-- [ ] **9.1** Implement `POST /public/leads`
+- [x] **9.1** Implement `POST /public/leads`
   - **Goal:** Capture demand and deliver sample report.
   - **AC:**
     - Stores lead.
     - Sends sample report email.
-    - Includes optional “Start monitoring” next-step link.
+    - Includes optional "Start monitoring" next-step link.
   - **If Blocked:** Store lead only and log a TODO for email send.
+  - **Completed:** 2026-01-30 - Added `render_sample_report()` email template, updated endpoint to send sample report with CTA to start monitoring, tests verify email sending and graceful failure handling.
 
 - [ ] **9.2** Implement `POST /public/start-monitoring` with immediate trial provisioning
   - **Goal:** Deliver instant value while controlling abuse.

@@ -214,13 +214,16 @@ def send_first_insight_endpoint(
 
 
 @app.post("/public/leads", response_model=LeadResponse)
-def create_lead(payload: LeadCreate, conn=Depends(get_conn)):
+def create_lead(payload: LeadCreate, conn=Depends(get_conn), settings: Settings = Depends(get_settings)):
     """
     Public endpoint for lead capture from website form.
     
-    Creates a lead entry in the database for future follow-up.
+    Creates a lead entry in the database and sends a sample report email.
     Does NOT create a customer or start monitoring immediately.
     """
+    from ranksentinel.mailgun import MailgunClient
+    from ranksentinel.reporting.email_templates import render_sample_report
+    
     ts = now_iso()
     
     # Validate email format (basic check)
@@ -254,8 +257,8 @@ def create_lead(payload: LeadCreate, conn=Depends(get_conn)):
     # Note: 'lead' is not a valid status per DB schema; using 'active' as default
     lead_id = execute(
         conn,
-        "INSERT INTO customers(name,status,created_at,updated_at) VALUES(?,?,?,?)",
-        (email, "active", ts, ts),
+        "INSERT INTO customers(name,email_raw,email_canonical,status,created_at,updated_at) VALUES(?,?,?,?,?,?)",
+        (email_raw, email_raw, email_canonical, "active", ts, ts),
     )
     
     # Store domain and key pages in settings table
@@ -279,9 +282,29 @@ def create_lead(payload: LeadCreate, conn=Depends(get_conn)):
                 (lead_id, url, True, ts),
             )
     
+    # Send sample report email (if Mailgun configured)
+    email_sent = False
+    if settings.MAILGUN_API_KEY and settings.MAILGUN_DOMAIN:
+        try:
+            mailgun_client = MailgunClient(settings)
+            message = render_sample_report(domain)
+            
+            # Send to the lead's email
+            mailgun_client.send_email(
+                to=email_raw,
+                subject=message.subject,
+                text=message.text,
+                html=message.html,
+            )
+            email_sent = True
+        except Exception as e:
+            # Log error but don't fail the request
+            # TODO: Add proper logging
+            print(f"Failed to send sample report email: {e}")
+    
     return LeadResponse(
         success=True,
-        message="Thank you! We'll start monitoring your site shortly.",
+        message="Thank you! Check your email for a sample report. Ready to start monitoring? Visit ranksentinel.com/schedule",
         lead_id=lead_id,
     )
 
