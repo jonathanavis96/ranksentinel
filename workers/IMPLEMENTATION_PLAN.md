@@ -286,7 +286,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 7: Anti-abuse + email canonicalization
 
-- [ ] **7.1** Implement email canonicalization and dedupe (Gmail dot/plus)
+- [x] **7.1** Implement email canonicalization and dedupe (Gmail dot/plus)
   - **Goal:** Prevent trial abuse via email variants.
   - **Requirements:**
     - Lowercase and trim.
