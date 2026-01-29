@@ -174,15 +174,16 @@ Brain skills (open those relevant to the current item):
   - **If Blocked:** Prefer accessibility correctness over visual parity; note visual deltas.
   - **Completed:** 2026-01-30 - All core UI components created with accessibility features
 
-- [ ] **3.4** Implement the Email Report Preview (hero object)
-  - **Goal:** Make the value instantly legible: “email-first monitoring, no dashboard required.”
+- [x] **3.4** Implement the Email Report Preview (hero object)
+  - **Goal:** Make the value instantly legible: "email-first monitoring, no dashboard required."
   - **References:** `docs/websites/04_page_requirements.md`, `docs/websites/10_design_ux.md`.
   - **AC:**
-    - Includes subject: “Weekly SEO Regression Digest — example.com”.
+    - Includes subject: "Weekly SEO Regression Digest — example.com".
     - Has sections: Critical / Warning / Info.
-    - Includes “Top 3 actions this week”.
+    - Includes "Top 3 actions this week".
     - Uses severity colors as accents (not loud backgrounds).
   - **If Blocked:** Reduce to a static component (no interactivity) but keep exact content structure.
+  - **Completed:** 2026-01-30 - EmailReportPreview component created with severity sections, top actions, and accessible markup
 
 ### Task 4: Homepage implementation (sections + copy)
 
