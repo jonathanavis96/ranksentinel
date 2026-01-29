@@ -193,7 +193,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** After a weekly run with `crawl_limit=N`, there are `N` new `snapshots` rows with `run_type='weekly'` and `run_id=<current run_id>` (or fewer only if sitemap has < N URLs).
   - **Validate:** Extend `tests/test_weekly_fetcher_integration.py` to assert snapshot rows inserted and include run_id.
 
-- [ ] **0-R.4** Verify weekly snapshots + run_coverage tables are created in the *real* SQLite DB
+- [x] **0-R.4** Verify weekly snapshots + run_coverage tables are created in the *real* SQLite DB
   - **Goal:** Catch schema drift where code expects new tables but the live DB never got `init_db()` applied.
   - **Files (likely):** `src/ranksentinel/db.py`, `src/ranksentinel/runner/weekly_digest.py`, `scripts/run_weekly.sh`, docs as needed
   - **Implementation guidance:**
