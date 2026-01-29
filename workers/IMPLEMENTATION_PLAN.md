@@ -88,7 +88,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 1: Planning sanity + IA confirmation
 
-- [ ] **1.1** Confirm MVP page list and section blueprint alignment
+- [x] **1.1** Confirm MVP page list and section blueprint alignment
   - **Goal:** Ensure IA matches the section blueprint and we’re shipping the right pages first.
   - **References:** `docs/websites/03_ia_sitemap.md`, `docs/websites/04_page_requirements.md`, `brain/skills/domains/websites/architecture/sitemap-builder.md`.
   - **AC:**
