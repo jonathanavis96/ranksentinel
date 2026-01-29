@@ -323,7 +323,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** sorting is stable: severity first, then impact
   - **Validate:** unit test that given a findings list returns a stable ordered recommendation list
 
-- [ ] **4.2** Weekly report composer (no send)
+- [x] **4.2** Weekly report composer (no send)
   - **Goal:** generate the weekly digest text/HTML from findings.
   - **AC:** output matches `docs/SAMPLE_REPORT.md` sectioning (Critical/Warning/Info)
   - **AC:** includes prioritized recommendations derived from finding kinds (via the recommendation rules engine)
