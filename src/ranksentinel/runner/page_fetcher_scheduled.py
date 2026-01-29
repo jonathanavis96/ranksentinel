@@ -151,6 +151,8 @@ def fetch_pages_scheduled(
                 attempt=task.attempt,
             )
             scheduler.record_429(task)
+            # Add 429 result so it gets counted in run_coverage stats
+            results[task.customer_id].append(result)
         elif result.ok:
             log_structured(
                 run_id,

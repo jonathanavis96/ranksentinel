@@ -165,7 +165,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
   - **AC:** `./.venv/bin/pytest -q tests/test_customer_status_gating.py` passes.
 
-- [ ] **0-R.9** Weekly crawl resilience: handle HTTP 429 without hanging the whole run
+- [x] **0-R.9** Weekly crawl resilience: handle HTTP 429 without hanging the whole run
   - **Why:** weekly entrypoint can stall/timeout due to rate limits (429) when fetching many URLs.
   - **Do (MVP scheduler):** Implement a **fair round-robin fetch scheduler** with **per-domain cooldown** so rate-limited customers are **interleaved** with other customers (not deferred until the end).
     - Model work as tasks: `(customer_id, url)`.
@@ -185,6 +185,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
       - no unbounded sleep (scheduler keeps working on other tasks while cooling down)
     - Persist auditability:
       - when skipping due to threshold, create snapshots/run_coverage entries that make it obvious we were rate-limited.
+  - **Done:** Fixed `page_fetcher_scheduled.py` to persist 429 responses to results dict so they get counted in `run_coverage.http_429_count`. All AC requirements verified: (1) Weekly run completes with repeated 429s, (2) Rate-limited customers are interleaved (not deferred), (3) http_429_count recorded correctly, (4) Runtime bounded by caps, (5) Interleaving behavior confirmed via integration test. All existing tests pass (12/12 for scheduler + weekly fetcher integration).
   - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/infrastructure/observability-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
   - **AC:**
     - Weekly run completes even when a customer domain responds with repeated 429s.
