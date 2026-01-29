@@ -135,6 +135,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 > Motivation: the weekly email must provide clear value even when there are 0 issues.
 > Current gaps observed in manual tests:
+>
 > - "No issues" emails contain only a bootstrap placeholder finding and lack coverage stats.
 > - Emails can include stale findings from earlier in the week without making "resolved" vs "new" clear.
 

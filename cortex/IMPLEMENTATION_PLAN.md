@@ -46,6 +46,12 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Note:** Manual validation required per Manual.Integration.1
   - **If Blocked:** Requires human operator to run end-to-end workflow test and validate behavior. Cannot be automated by Ralph. Human should test daily/weekly runs and mark [x] when satisfied.
 
+- [x] **0-W.6** Fix MD032 in workers/IMPLEMENTATION_PLAN.md line 90
+  - **AC:** `markdownlint workers/IMPLEMENTATION_PLAN.md` passes (no MD032 errors)
+
+- [x] **0-W.7** Fix MD034 in workers/ralph/THUNK.md line 134:274
+  - **AC:** `markdownlint workers/ralph/THUNK.md` passes (no MD034 errors)
+
 ## Phase 0-S: Sitemap parser robustness (real-world compatibility)
 
 > Motivation: some real sites publish sitemaps using the Google namespace `http://www.google.com/schemas/sitemap/0.84` (example observed: `https://www.cesnet.co.za/googlesitemap`).
@@ -124,6 +130,59 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - final snapshot status_code=200
     - no critical 404 finding created
   - **Validate:** `pytest -q`
+
+## Phase 0-E: Weekly email UX improvements (must feel valuable even with no issues)
+
+> Motivation: the weekly email must provide clear value even when there are 0 issues.
+> Current gaps observed in manual tests:
+>
+> - "No issues" emails contain only a bootstrap placeholder finding and lack coverage stats.
+> - Emails can include stale findings from earlier in the week without making "resolved" vs "new" clear.
+
+- [x] **0-E.1** Remove bootstrap placeholder finding from customer-facing weekly emails
+  - **Goal:** Don’t send low-value “bootstrap” noise to customers.
+  - **Files (likely):** `src/ranksentinel/runner/weekly_digest.py`, `src/ranksentinel/reporting/report_composer.py`
+  - **Implementation guidance (choose one):**
+    - Stop inserting the `category='bootstrap'` weekly finding entirely, OR
+    - Exclude `category='bootstrap'` from the query used to compose customer emails.
+  - **AC:** Weekly email contains no "Weekly digest executed (bootstrap)" item.
+  - **Validate:** Add/extend `tests/test_report_composer.py` (or integration test) to assert bootstrap findings are excluded.
+
+- [x] **0-E.2** Add an "All clear" header when there are 0 Critical and 0 Warnings
+  - **Goal:** Make a healthy week feel like a positive outcome.
+  - **Files:** `src/ranksentinel/reporting/report_composer.py`
+  - **AC:** If `critical_count==0` and `warning_count==0`, text + HTML include an explicit "All clear" message.
+  - **Validate:** Unit test for text + HTML output.
+
+- [x] **0-E.3** Persist per-run coverage stats (needed for email/reporting)
+  - **Goal:** Include what was checked (sitemap URL, total URLs, sampled URLs, success/error counts, 404 count, broken link count).
+  - **Files (likely):** `src/ranksentinel/db.py`, `src/ranksentinel/runner/weekly_digest.py`
+  - **Implementation guidance:**
+    - Add a small new DB table (e.g., `run_coverage`) keyed by `(run_id, customer_id, run_type)` storing:
+      - `sitemap_url`, `total_urls`, `sampled_urls`, `success_count`, `error_count`, `http_429_count`, `http_404_count`, timestamps.
+    - Insert/update this row during weekly processing.
+  - **AC:** After a weekly run, coverage stats exist in DB for that customer and run_id.
+  - **Validate:** Add integration test to assert row exists and counts are non-null.
+
+- [ ] **0-E.4** Include coverage stats in the weekly email (text + HTML)
+  - **Goal:** Even when there are no findings, the email shows what RankSentinel monitored.
+  - **Files (likely):** `src/ranksentinel/runner/weekly_digest.py`, `src/ranksentinel/reporting/report_composer.py`
+  - **Implementation guidance:**
+    - Fetch the most recent `run_coverage` row for the customer/run_id and render a "Coverage" section.
+  - **AC:** Email includes a Coverage section with:
+    - sitemap URL
+    - total URLs in sitemap
+    - sampled URLs (crawl_limit)
+    - success vs error counts (including 429 count)
+  - **Validate:** Unit/integration test verifying section exists.
+
+- [ ] **0-E.5** Weekly email should distinguish "New" vs "Existing" vs "Resolved" findings (MVP)
+  - **Goal:** Avoid confusion when an issue was fixed but still appears in the "last 7 days" window.
+  - **Implementation guidance (MVP acceptable):**
+    - Scope the email to the current run via `run_id` (preferred), OR
+    - Add a lightweight resolution mechanism by comparing current snapshots vs previous period and marking findings resolved.
+  - **AC:** After fixing an issue (e.g., 404 becomes 200), the next weekly email does NOT present it as a current critical issue.
+  - **Validate:** Add a test that simulates a 404 in run 1 and a 200 in run 2 and verifies the run 2 email does not show it as active.
 
 ## Phase 0-H: Human go-live checklist (required to start charging)
 
