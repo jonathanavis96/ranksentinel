@@ -1,26 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Palette A: Signal Teal + Ink */
+  
+  /* Core */
+  --color-background: #F7FAFC;
+  --color-surface: #FFFFFF;
+  --color-border: #E6EDF5;
+  --color-headline: #0B1220;
+  --color-body: #445066;
+  
+  /* Brand accent */
+  --color-primary: #0F766E;
+  --color-primary-hover: #0B5F59;
+  --color-accent-tint: #E6FFFB;
+  
+  /* Severity (email + UI) */
+  --color-critical: #B42318;
+  --color-warning: #B54708;
+  --color-info: #175CD3;
+  --color-success: #027A48;
+  
+  /* Hero gradient */
+  --gradient-hero: linear-gradient(135deg, #F7FAFC 0%, #E6FFFB 100%);
+  
+  /* Legacy aliases for compatibility */
+  --background: var(--color-background);
+  --foreground: var(--color-headline);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-headline);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-background);
+  color: var(--color-body);
   font-family: Arial, Helvetica, sans-serif;
 }

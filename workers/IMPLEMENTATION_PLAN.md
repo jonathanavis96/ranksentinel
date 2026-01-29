@@ -126,7 +126,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 3: Design tokens + base components (Palette A)
 
-- [ ] **3.1** Implement Palette A tokens (hex) as CSS variables (and/or Tailwind theme)
+- [x] **3.1** Implement Palette A tokens (hex) as CSS variables (and/or Tailwind theme)
   - **Goal:** Make design consistent and easy to evolve.
   - **References:** `docs/websites/10_design_ux.md`, `brain/skills/domains/websites/design/color-system.md`.
   - **AC:**
