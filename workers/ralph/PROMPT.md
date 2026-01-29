@@ -27,6 +27,39 @@ If the `# VERIFIER STATUS` section shows `[WARN]` lines:
 
 ---
 
+## Brain Skills Integration (MANDATORY)
+
+**MUST consult brain skills first** before implementing any task.
+
+### Before Implementation
+
+1. **Always consult** `./brain/skills/SUMMARY.md` to locate relevant domain knowledge
+2. **Read the specific skill file** that matches your task domain (e.g., SEO, observability, API design)
+3. **Apply patterns** from the skill to your implementation
+
+### If Blocked by Missing Knowledge
+
+If you encounter a blocker due to missing domain knowledge (API quirks, PSI parsing, Mailgun edge cases, cron/VPS specifics):
+
+1. **MUST create** `docs/SKILL_REQUEST_<topic>.md` before proceeding
+2. Include in the skill request:
+   - **Context:** What you're trying to accomplish
+   - **Attempted approach:** What you've tried and why it didn't work
+   - **Constraints:** Project-specific rules (no stealth scraping, respect robots, no secrets in logs)
+   - **Links/Examples:** Relevant documentation or error messages
+   - **Open questions:** Specific unknowns blocking progress
+   - **Acceptance criteria:** What a good answer would enable
+3. **Mark the task** `[?]` in `workers/IMPLEMENTATION_PLAN.md` with an "If Blocked: docs/SKILL_REQUEST_<topic>.md" note
+4. **Continue** with the next safe task if possible
+
+**Example blocked task notation:**
+```markdown
+- [?] **1.2** Implement PSI mobile score tracking
+  - **If Blocked:** See `docs/SKILL_REQUEST_psi_mobile_api.md` for API quota and parameter questions
+```
+
+---
+
 ## MANDATORY: Startup Procedure (Cheap First)
 
 **Do NOT open large files at startup.** Use targeted commands instead.

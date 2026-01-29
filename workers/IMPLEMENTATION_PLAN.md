@@ -65,7 +65,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - Remove the symlink and ensure `brain/skills/SUMMARY.md` exists and is readable from within the workspace.
   - **AC:** `test -f brain/skills/SUMMARY.md` passes and `readlink brain/skills` fails (meaning it’s not a symlink).
 
-- [ ] **0-K.2** Update Ralph prompt to require Brain skills consult + SKILL_REQUEST on block
+- [x] **0-K.2** Update Ralph prompt to require Brain skills consult + SKILL_REQUEST on block
   - **Files:** `workers/ralph/PROMPT.md` (protected), `workers/ralph/.verify/prompt.sha256` (protected)
   - **Implementation guidance:** Add explicit steps at the top of the prompt:
     - Before implementing: consult `./brain/skills/SUMMARY.md` + relevant domain skill.

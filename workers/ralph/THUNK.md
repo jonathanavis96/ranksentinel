@@ -153,3 +153,5 @@ Started: 2026-01-28
 
 | 2026-01-29 | 0-R.2c | Persist weekly page fetch results into snapshots | Implemented persist_fetch_results() in page_fetcher.py to insert PageFetchResult objects into snapshots table with run_type='weekly', run_id, fetched_at timestamp, and content hash. Called from weekly_digest.py immediately after fetch_pages(). Extended test_weekly_fetcher_integration.py to assert exactly 5 snapshots persisted (matching crawl_limit), all with run_id and run_type='weekly'. All 3 tests in test_weekly_fetcher_integration.py pass. |  |
 | 2026-01-29T14:44:32Z | 0-K.1 | Fixed brain/skills symlink; vendored from upstream repo using sync_brain_skills.sh --from-repo | AC: brain/skills/SUMMARY.md exists and is not a symlink |
+
+| 2026-01-29 | 0-K.2 | Updated PROMPT.md to require Brain skills consultation before implementation and SKILL_REQUEST doc creation when blocked. Added mandatory section with clear rules and example notation. |
