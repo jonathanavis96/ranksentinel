@@ -72,7 +72,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `bash scripts/run_daily.sh`
     - `sqlite3 ranksentinel.sqlite3 "select count(*) from findings;"`
 
-- [ ] **0.6** Weekly runner entrypoint executes successfully
+- [x] **0.6** Weekly runner entrypoint executes successfully
   - **Goal:** the weekly job can be executed from cron without crashing.
   - **AC:** `bash scripts/run_weekly.sh` exits 0
   - **AC:** a single bootstrap finding is recorded in `findings` (or equivalent minimal artifact)
