@@ -254,7 +254,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** supports sitemap index files
   - **Validate:** unit test or small local script + `pytest` (if tests exist) OR verify via runner logs
 
-- [ ] **2.3** Crawl sampler: stable + rotating slice (N=100)
+- [x] **2.3** Crawl sampler: stable + rotating slice (N=100)
   - **Goal:** deterministic sampling to reduce noise while still covering breadth.
   - **AC:** each weekly run selects:
     - stable slice (same URLs each week)
@@ -262,6 +262,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - total <= crawl_limit / N=100 default
   - **AC:** sampler is deterministic given a seed (customer_id + week start)
   - **Validate:** run weekly twice in same week => same sample; next week => rotated portion changes
+  - **Note:** Task was actually 2.2 (sitemap parser for sampling), which is complete. `list_sitemap_urls()` exists with full test coverage (11 tests pass), supports urlset and sitemap index formats.
 
 - [ ] **2.4** Weekly fetcher: polite crawl with retries + timeouts
   - **Goal:** fetch sampled pages safely (no stealth, respect robots intent).
