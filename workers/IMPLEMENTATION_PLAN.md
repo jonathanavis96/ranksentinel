@@ -632,8 +632,8 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:** Unit test for endpoint routing + mocked service call.
   - **Completed:** Added endpoint with stub service function and full test coverage
 
-- [ ] **4.6b** First Insight: implement runner/service to generate report input data
-  - **Goal:** Reuse weekly/daily signal collection to generate a “first run” snapshot set without waiting for Monday.
+- [x] **4.6b** First Insight: implement runner/service to generate report input data
+  - **Goal:** Reuse weekly/daily signal collection to generate a "first run" snapshot set without waiting for Monday.
   - **Files (likely):** `src/ranksentinel/runner/first_insight.py`, `src/ranksentinel/runner/daily_checks.py`, `src/ranksentinel/runner/weekly_digest.py`
   - **Implementation guidance (MVP):**
     - Collect the highest-signal checks:
@@ -643,7 +643,8 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - Write findings scoped to a new run type (e.g., `run_type='first_insight'`) or reuse weekly composer but with a distinct header.
   - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
   - **AC:** Running the first insight runner produces a report payload with Critical/Warning/Info sections.
-  - **Validate:** Unit test for “first insight” report composition given fixture inputs.
+  - **Validate:** Unit test for "first insight" report composition given fixture inputs.
+  - **Completed:** Implemented run_first_insight_checks() and trigger_first_insight_report() with full test coverage. Updated schema to support 'first_insight' run_type.
 
 - [ ] **4.6c** First Insight: email send + delivery logging
   - **Goal:** Send the first-insight email via Mailgun and record exactly one delivery.
