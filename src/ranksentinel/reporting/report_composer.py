@@ -16,6 +16,19 @@ from ranksentinel.reporting.severity import CRITICAL, INFO, WARNING, Severity
 
 
 @dataclass
+class CoverageStats:
+    """Coverage statistics for a run."""
+
+    sitemap_url: str | None
+    total_urls: int | None
+    sampled_urls: int | None
+    success_count: int | None
+    error_count: int | None
+    http_429_count: int | None
+    http_404_count: int | None
+
+
+@dataclass
 class WeeklyReport:
     """A composed weekly report with sections by severity."""
 
@@ -23,6 +36,7 @@ class WeeklyReport:
     critical_findings: list[FindingWithRecommendation]
     warning_findings: list[FindingWithRecommendation]
     info_findings: list[FindingWithRecommendation]
+    coverage: CoverageStats | None = None
 
     @property
     def critical_count(self) -> int:
@@ -46,14 +60,14 @@ class WeeklyReport:
         lines.append(f"RankSentinel Weekly Digest — {self.customer_name}")
         lines.append("=" * 60)
         lines.append("")
-        
+
         # Add "All clear" header if no critical or warnings
         if self.critical_count == 0 and self.warning_count == 0:
             lines.append("✓ ALL CLEAR")
             lines.append("")
             lines.append("Great news! No critical issues or warnings detected this week.")
             lines.append("")
-        
+
         lines.append("Executive Summary")
         lines.append("")
         lines.append(f"- {self.critical_count} Critical")
@@ -123,33 +137,45 @@ class WeeklyReport:
         """Generate HTML version of the report."""
         lines = []
         lines.append("<html><head><style>")
-        lines.append("body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }")
-        lines.append("h1 { color: #1a1a1a; border-bottom: 3px solid #4CAF50; padding-bottom: 10px; }")
+        lines.append(
+            "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }"
+        )
+        lines.append(
+            "h1 { color: #1a1a1a; border-bottom: 3px solid #4CAF50; padding-bottom: 10px; }"
+        )
         lines.append("h2 { color: #333; margin-top: 40px; }")
-        lines.append(".all-clear { background: #e8f5e9; border-left: 4px solid #4CAF50; padding: 20px; margin: 20px 0; border-radius: 8px; }")
+        lines.append(
+            ".all-clear { background: #e8f5e9; border-left: 4px solid #4CAF50; padding: 20px; margin: 20px 0; border-radius: 8px; }"
+        )
         lines.append(".all-clear h2 { margin-top: 0; color: #2e7d32; }")
-        lines.append(".summary { background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0; }")
+        lines.append(
+            ".summary { background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0; }"
+        )
         lines.append(".summary ul { margin: 10px 0; }")
-        lines.append(".finding { background: #fff; border-left: 4px solid #ddd; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }")
+        lines.append(
+            ".finding { background: #fff; border-left: 4px solid #ddd; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }"
+        )
         lines.append(".finding.critical { border-left-color: #d32f2f; }")
         lines.append(".finding.warning { border-left-color: #f57c00; }")
         lines.append(".finding.info { border-left-color: #1976d2; }")
         lines.append(".finding h3 { margin-top: 0; color: #1a1a1a; }")
         lines.append(".meta { color: #666; font-size: 0.9em; margin: 10px 0; }")
         lines.append(".details { margin: 15px 0; line-height: 1.6; }")
-        lines.append(".recommendation { background: #e8f5e9; border-radius: 4px; padding: 12px; margin-top: 15px; }")
+        lines.append(
+            ".recommendation { background: #e8f5e9; border-radius: 4px; padding: 12px; margin-top: 15px; }"
+        )
         lines.append(".recommendation strong { color: #2e7d32; }")
         lines.append("</style></head><body>")
-        
+
         lines.append(f"<h1>RankSentinel Weekly Digest — {self.customer_name}</h1>")
-        
+
         # Add "All clear" banner if no critical or warnings
         if self.critical_count == 0 and self.warning_count == 0:
             lines.append("<div class='all-clear'>")
             lines.append("<h2>✓ All Clear</h2>")
             lines.append("<p>Great news! No critical issues or warnings detected this week.</p>")
             lines.append("</div>")
-        
+
         lines.append("<div class='summary'>")
         lines.append("<strong>Executive Summary</strong>")
         lines.append("<ul>")
@@ -157,8 +183,10 @@ class WeeklyReport:
         lines.append(f"<li><strong>{self.warning_count}</strong> Warnings</li>")
         lines.append(f"<li><strong>{self.info_count}</strong> Info</li>")
         lines.append("</ul>")
-        lines.append("<p>This report focuses on SEO regressions and high-signal site health issues. "
-                    "It avoids alert noise by normalizing page content and only escalating high-severity issues.</p>")
+        lines.append(
+            "<p>This report focuses on SEO regressions and high-signal site health issues. "
+            "It avoids alert noise by normalizing page content and only escalating high-severity issues.</p>"
+        )
         lines.append("</div>")
 
         if self.critical_findings:
@@ -172,7 +200,9 @@ class WeeklyReport:
                 lines.append(f"<div><strong>Detected:</strong> {finding.created_at}</div>")
                 lines.append("</div>")
                 lines.append(f"<div class='details'>{finding.details_md}</div>")
-                lines.append(f"<div class='recommendation'><strong>→ Recommended Action:</strong> {finding.recommendation}</div>")
+                lines.append(
+                    f"<div class='recommendation'><strong>→ Recommended Action:</strong> {finding.recommendation}</div>"
+                )
                 lines.append("</div>")
 
         if self.warning_findings:
@@ -186,7 +216,9 @@ class WeeklyReport:
                 lines.append(f"<div><strong>Detected:</strong> {finding.created_at}</div>")
                 lines.append("</div>")
                 lines.append(f"<div class='details'>{finding.details_md}</div>")
-                lines.append(f"<div class='recommendation'><strong>→ Recommended Action:</strong> {finding.recommendation}</div>")
+                lines.append(
+                    f"<div class='recommendation'><strong>→ Recommended Action:</strong> {finding.recommendation}</div>"
+                )
                 lines.append("</div>")
 
         if self.info_findings:
@@ -200,7 +232,9 @@ class WeeklyReport:
                 lines.append(f"<div><strong>Detected:</strong> {finding.created_at}</div>")
                 lines.append("</div>")
                 lines.append(f"<div class='details'>{finding.details_md}</div>")
-                lines.append(f"<div class='recommendation'><strong>→ Recommended Action:</strong> {finding.recommendation}</div>")
+                lines.append(
+                    f"<div class='recommendation'><strong>→ Recommended Action:</strong> {finding.recommendation}</div>"
+                )
                 lines.append("</div>")
 
         lines.append("</body></html>")
@@ -221,29 +255,29 @@ def parse_severity(severity_str: str) -> Severity:
 
 def compose_daily_critical_report(customer_name: str, findings_rows: list[Any]) -> WeeklyReport:
     """Compose a daily critical report from database findings rows.
-    
+
     Similar to compose_weekly_report but intended for daily critical alerts.
     Uses the same WeeklyReport structure for consistency.
-    
+
     Args:
         customer_name: Customer name for the report
         findings_rows: List of sqlite3.Row objects from findings table (critical severity only)
-        
+
     Returns:
         WeeklyReport with only critical findings populated
     """
     # Convert rows to FindingWithRecommendation objects
     findings_with_recs: list[FindingWithRecommendation] = []
-    
+
     for row in findings_rows:
         severity = parse_severity(row["severity"])
         category = row["category"]
         title = row["title"]
-        
+
         # Get recommendation and priority
         recommendation = get_recommendation_for_finding(category, title, severity)
         priority = get_recommendation_priority(category, title, severity)
-        
+
         findings_with_recs.append(
             FindingWithRecommendation(
                 finding_id=row["id"],
@@ -258,13 +292,13 @@ def compose_daily_critical_report(customer_name: str, findings_rows: list[Any]) 
                 priority=priority,
             )
         )
-    
+
     # Sort findings by priority
     sorted_findings = sort_findings_with_recommendations(findings_with_recs)
-    
+
     # Only critical findings for daily alerts
     critical_findings = [f for f in sorted_findings if f.severity == CRITICAL]
-    
+
     return WeeklyReport(
         customer_name=customer_name,
         critical_findings=critical_findings,
@@ -285,16 +319,16 @@ def compose_weekly_report(customer_name: str, findings_rows: list[Any]) -> Weekl
     """
     # Convert rows to FindingWithRecommendation objects
     findings_with_recs: list[FindingWithRecommendation] = []
-    
+
     for row in findings_rows:
         severity = parse_severity(row["severity"])
         category = row["category"]
         title = row["title"]
-        
+
         # Get recommendation and priority
         recommendation = get_recommendation_for_finding(category, title, severity)
         priority = get_recommendation_priority(category, title, severity)
-        
+
         findings_with_recs.append(
             FindingWithRecommendation(
                 finding_id=row["id"],
@@ -309,15 +343,15 @@ def compose_weekly_report(customer_name: str, findings_rows: list[Any]) -> Weekl
                 priority=priority,
             )
         )
-    
+
     # Sort findings by severity and priority
     sorted_findings = sort_findings_with_recommendations(findings_with_recs)
-    
+
     # Split into severity sections
     critical_findings = [f for f in sorted_findings if f.severity == CRITICAL]
     warning_findings = [f for f in sorted_findings if f.severity == WARNING]
     info_findings = [f for f in sorted_findings if f.severity == INFO]
-    
+
     return WeeklyReport(
         customer_name=customer_name,
         critical_findings=critical_findings,
