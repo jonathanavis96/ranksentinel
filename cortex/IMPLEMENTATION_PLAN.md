@@ -26,6 +26,14 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Prioritized tasks
 
+## Phase 0-Warn: Verifier Warnings
+
+- [x] **0-W.1** Fix MD022/MD032/MD031 in docs/MANUAL_VALIDATION_0.10.md
+  - **AC:** `markdownlint docs/MANUAL_VALIDATION_0.10.md` passes (no MD022, MD032, or MD031 errors)
+
+- [x] **0-W.2** Fix MD022/MD032/MD031 in workers/docs/MANUAL_VALIDATION_0.10.md
+  - **AC:** `markdownlint workers/docs/MANUAL_VALIDATION_0.10.md` passes (no MD022, MD032, or MD031 errors)
+
 ## Phase 0: Bootstrap verification and local run path (atomic)
 
 > Phase 0 is about making the repo runnable end-to-end locally with minimal behavior.
@@ -116,12 +124,12 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** job exit code reflects overall success/failure policy (decide in Phase 5.4)
   - **Validate:** configure two customers where one fails (bad URL) and confirm the other still produces findings
 
-- [ ] **0.11** Structured logging + run_id
+- [x] **0.11** Structured logging + run_id
   - **Goal:** every run has `run_id` and logs include `run_id`, `customer_id`, `stage`, `elapsed_ms`.
   - **AC:** daily/weekly scripts emit a single end-of-run `SUMMARY` line for cron readability
   - **Validate:** run daily and confirm logs contain `run_id=` and end with a `SUMMARY` line
 
-- [ ] **0.12** Customer status gating everywhere
+- [x] **0.12** Customer status gating everywhere
   - **Goal:** skip non-active customers in runners (e.g., `past_due`, `canceled`).
   - **AC:** daily/weekly only process customers with `status='active'`
   - **Validate:** flip a customer status and confirm it is skipped (no new findings for that customer)
@@ -130,17 +138,19 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 > Phase 1 adds the first real SEO signals with normalization + severity, but keeps scope tight.
 
-- [ ] **1.0** Observation/artifact baseline model
-  - **Goal:** define where “latest known value” lives per (customer, kind, subject) so diffs are deterministic.
+- [x] **1.0** Observation/artifact baseline model
+  - **Goal:** define where "latest known value" lives per (customer, kind, subject) so diffs are deterministic.
   - **AC:** DB has a mechanism/table to store the latest snapshot per (customer, kind, subject)
-  - **AC:** runner code can load “previous snapshot” and compare to “current snapshot” for each kind
+  - **AC:** runner code can load "previous snapshot" and compare to "current snapshot" for each kind
   - **Validate:** run the same job twice and confirm the second run can load a baseline without crashing
+  - **Completed:** Added `artifacts` table with (customer_id, kind, subject, artifact_sha, raw_content, fetched_at) and index. Created `get_latest_artifact()` and `store_artifact()` functions in db.py. Comprehensive test coverage (7 tests) validates baseline loading, customer/kind/subject isolation, and idempotent run scenarios.
 
-- [ ] **1.1** Idempotent only-on-change rule
+- [x] **1.1** Idempotent only-on-change rule
   - **Goal:** prevent finding spam by only writing findings when something meaningful changes.
   - **AC:** unchanged robots/sitemap/title/canonical/meta robots creates **0** new findings
   - **AC:** cosmetic-only changes are ignored (whitespace, comment-only, ordering-only where applicable)
   - **Validate:** run daily twice against an unchanged site and confirm findings count remains stable
+  - **Completed:** Integrated artifact baseline comparison into daily_checks.py. Added only-on-change logic for meta_robots, canonical, and title fields. Each field is now hashed and compared against the latest artifact before creating findings. Validated idempotent behavior: two consecutive runs against unchanged site produced 3 artifacts (1 per field) and 0 findings on both runs.
 
 - [x] **1.2** Diff summary engine (human readable)
   - **Goal:** produce short diffs for SEO-relevant fields, with normalization to avoid cosmetic diffs.
@@ -150,13 +160,14 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:** fixture tests cover robots + sitemap + title + canonical diff summaries
   - **Completed:** Added `extract_title()`, `normalize_robots_txt()`, and `diff_summary()` functions with comprehensive test coverage (23 tests passing). Title extraction integrated into daily_checks.py.
 
-- [ ] **1.3** Finding dedupe keys (early)
+- [x] **1.3** Finding dedupe keys (early)
   - **Goal:** make runs safe to retry and avoid duplicates for the same change within the same period.
   - **AC:** each finding has a deterministic `dedupe_key` (customer + kind + subject + artifact_sha + day/week)
   - **AC:** reruns do not duplicate findings for the same change in the same period
-  - **Validate:** run the same job twice and verify counts don’t increase unexpectedly
+  - **Validate:** run the same job twice and verify counts don't increase unexpectedly
+  - **Completed:** Added `dedupe_key` column to findings table with UNIQUE constraint. Implemented `generate_finding_dedupe_key()` function that creates deterministic SHA256 hashes from (customer_id, run_type, category, title, url, period). Updated all INSERT statements in daily_checks.py and weekly_digest.py to use `INSERT OR IGNORE` with dedupe keys. Daily findings use '%Y-%m-%d' period format, weekly uses '%Y-W%U'. Comprehensive test coverage with 5 passing tests.
 
-- [ ] **1.4** Robots fetch + persist raw artifact
+- [x] **1.4** Robots fetch + persist raw artifact
   - **Goal:** reliably fetch `robots.txt` and store the raw content + sha for later diffs.
   - **AC:** daily run fetches `<site>/robots.txt` for each customer (or configured base URL)
   - **AC:** a `findings` (or artifact) row is recorded with:
@@ -166,16 +177,18 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:**
     - run `bash scripts/run_daily.sh`
     - confirm DB rows exist for robots findings (example): `sqlite3 ranksentinel.sqlite3 "select kind, count(*) from findings group by kind;"`
+  - **Completed:** Implemented robots.txt fetch in daily_checks.py. Derives base URL from sitemap_url (or falls back to first target URL). Fetches `/robots.txt` using http_client.fetch_text with 10s timeout and 2 retry attempts. Stores artifact with kind='robots_txt', subject=base_url, artifact_sha, and raw_content. Includes comprehensive error handling for 404s and fetch failures. Added 5 test cases covering: artifact storage, no-duplicate reruns, changed content detection, error handling, and fallback URL logic. Validated with live run against python.org showing successful fetch and storage.
 
-- [ ] **1.5** Robots diff + severity (Disallow risk)
+- [x] **1.5** Robots diff + severity (Disallow risk)
   - **Goal:** detect meaningful robots changes and assign severity without noise.
   - **AC:** when robots content changes, a new finding is created containing a diff summary
   - **AC:** severity rules exist for high-risk changes (e.g., new `Disallow: /` or expanded disallow patterns)
   - **AC:** normalization prevents cosmetic diffs (whitespace/comment-only) from triggering alerts
   - **Validate:**
     - run daily twice with a controlled fixture (or temporary override) and confirm: no change => no new finding; change => finding with severity
+  - **Completed:** Implemented check_robots_txt_change() with normalize_robots_txt() to ignore cosmetic changes. Severity logic: critical for new site-wide Disallow: /, warning for new/changed disallow rules, info for other changes. Uses only-on-change pattern (stores artifacts only when SHA changes). Generates diff_summary() showing additions/removals. Added 7 comprehensive tests covering: no baseline, cosmetic changes ignored, critical site-wide disallow, warning for new rules, warning for changed rules, info for non-disallow changes, and diff content verification. Updated test_robots_fetch.py to match only-on-change behavior. All 20 robots-related tests pass.
 
-- [ ] **1.6** Sitemap fetch + persist raw artifact
+- [x] **1.6** Sitemap fetch + persist raw artifact
   - **Goal:** fetch sitemap (configured per customer) and store raw content + sha.
   - **AC:** daily run fetches `settings.sitemap_url` and stores raw body + sha
   - **AC:** missing/unreachable sitemap produces a finding with `severity = critical` (per BOOTSTRAP intent)
@@ -183,7 +196,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `bash scripts/run_daily.sh`
     - `sqlite3 ranksentinel.sqlite3 "select kind, severity, count(*) from findings group by kind, severity;"`
 
-- [ ] **1.7** Sitemap URL count + delta severity
+- [x] **1.7** Sitemap URL count + delta severity
   - **Goal:** compute sitemap URL count and detect big drops without false positives.
   - **AC:** URL count is extracted from sitemap XML (supports sitemap index + urlset)
   - **AC:** store URL count as a numeric field (or JSON in finding payload)
