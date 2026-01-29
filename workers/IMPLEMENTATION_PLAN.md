@@ -83,7 +83,7 @@ Brain skills (open those relevant to the current item):
 - [x] **0.3** Fix MD040 in brain_upstream/TEMPLATE_DRIFT_REPORT.md
   - **AC:** `markdownlint brain_upstream/TEMPLATE_DRIFT_REPORT.md` passes (no MD040 errors on line 254)
 
-- [ ] **0.4** Fix MD056 table column count errors in brain_upstream/workers/ralph/THUNK.md
+- [x] **0.4** Fix MD056 table column count errors in brain_upstream/workers/ralph/THUNK.md
   - **AC:** `markdownlint brain_upstream/workers/ralph/THUNK.md` passes (no MD056 errors on lines 829, 839, 841-848)
 
 ### Task 1: Planning sanity + IA confirmation
