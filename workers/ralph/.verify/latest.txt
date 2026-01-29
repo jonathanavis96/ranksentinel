@@ -1,6 +1,6 @@
 Ralph Verifier Report
-Time: 2026-01-29 16:51:07
-Git:  20a2fc4
+Time: 2026-01-29 18:52:45
+Git:  a7a8cc3
 AC:   /home/grafe/code/ranksentinel/workers/ralph/rules/AC.rules
 Approvals: /home/grafe/code/ranksentinel/workers/ralph/rules/MANUAL_APPROVALS.rules
 ------------------------------------------------------------
@@ -14,11 +14,14 @@ Approvals: /home/grafe/code/ranksentinel/workers/ralph/rules/MANUAL_APPROVALS.ru
   cmd:  test -d ../bin && echo yes
   exit: 0
   stdout: yes
-[PASS] Structure.Dirs.3
+[FAIL] Structure.Dirs.3
   desc: config/ directory exists
   cmd:  test -d ../config && echo yes
-  exit: 0
-  stdout: yes
+  exit: 1
+  stdout: 
+  reasons:
+    - exit=1 expected=0
+    - stdout mismatch expected='yes' got=''
 [PASS] Structure.Dirs.4
   desc: docs/ directory exists
   cmd:  test -d ../docs && echo yes
@@ -89,13 +92,11 @@ Approvals: /home/grafe/code/ranksentinel/workers/ralph/rules/MANUAL_APPROVALS.ru
   cmd:  sha256sum verifier.sh | cut -d' ' -f1 | diff -q - .verify/verifier.sha256 >/dev/null 2>&1 && echo match || echo mismatch
   exit: 0
   stdout: match
-[WARN] Protected.3 (auto check failed but warn gate)
+[PASS] Protected.3
   desc: PROMPT.md differs from baseline (allowed in projects)
   cmd:  sha256sum PROMPT.md | cut -d' ' -f1 | diff -q - .verify/prompt.sha256 >/dev/null 2>&1 && echo match || echo mismatch
   exit: 0
-  stdout: mismatch
-  reasons:
-    - stdout mismatch expected='match' got='mismatch'
+  stdout: match
 [PASS] VerifyMeta.1
   desc: Verifier run_id.txt exists and is non-empty
   cmd:  test -s .verify/run_id.txt && echo OK || echo FAIL
@@ -142,8 +143,8 @@ THOUGHTS.md:65:81 error MD013/line-length Line length [Expected: 80; Actual: 95]
 ------------------------------------------------------------
 SUMMARY
   PASS: 22
-  FAIL: 0
-  WARN: 2 (manual_warn=1)
+  FAIL: 1
+  WARN: 1 (manual_warn=1)
   SKIP: 0
   Manual gate=block failures: 0
   Hash guard: OK
