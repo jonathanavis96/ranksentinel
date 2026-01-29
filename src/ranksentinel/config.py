@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     MAILGUN_API_KEY: str = ""
     MAILGUN_DOMAIN: str = ""
     MAILGUN_FROM: str = ""
+    MAILGUN_TO: str = ""
 
     # PSI
     PSI_API_KEY: str = ""

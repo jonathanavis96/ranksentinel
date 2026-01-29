@@ -329,7 +329,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** includes prioritized recommendations derived from finding kinds (via the recommendation rules engine)
   - **Validate:** run weekly and print report to stdout or save to a local file (no email yet)
 
-- [ ] **4.3** Mailgun client + deliveries logging
+- [x] **4.3** Mailgun client + deliveries logging
   - **Goal:** send an email and record the delivery attempt.
   - **AC:** `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_FROM`, `MAILGUN_TO` used from env/settings
   - **AC:** deliveries table records status + provider message id + timestamps
