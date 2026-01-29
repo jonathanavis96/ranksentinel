@@ -270,7 +270,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** per-run max pages is enforced
   - **Validate:** run weekly and confirm it completes under limit and records fetch statuses
 
-- [ ] **2.5** Link extraction from HTML (internal only)
+- [x] **2.5** Link extraction from HTML (internal only)
   - **Goal:** extract internal links from crawled pages.
   - **AC:** extracts `<a href>` links, resolves relative URLs, filters to same host
   - **AC:** normalizes URLs (strip fragments, normalize trailing slash policy)
