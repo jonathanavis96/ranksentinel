@@ -1,9 +1,14 @@
 Ralph Verifier Report
-Time: 2026-01-29 20:25:11
-Git:  9e9ca37
+Time: 2026-01-30 00:21:14
+Git:  b28d62e
 AC:   /home/grafe/code/ranksentinel/workers/ralph/rules/AC.rules
 Approvals: /home/grafe/code/ranksentinel/workers/ralph/rules/MANUAL_APPROVALS.rules
 ------------------------------------------------------------
+[2026-01-30 00:21:14] FAIL: AC hash mismatch (rules/AC.rules modified).
+Expected: 24973bbc1440f1bb3549ed79177e356c2b52df5bdee24e0cb988ec2f339f936a
+Actual:   057ec1bb2ae94289aab73f69be51a971b85ab0facb317571d55ca2ebaa83c9ce
+Fix: If intentional, update:
+  sha256sum "/home/grafe/code/ranksentinel/workers/ralph/rules/AC.rules" > "/home/grafe/code/ranksentinel/workers/ralph/.verify/ac.sha256"
 [PASS] Structure.Dirs.1
   desc: src/ directory exists at project root (NOT ralph/src/)
   cmd:  test -d ../src && echo yes
@@ -112,11 +117,11 @@ Approvals: /home/grafe/code/ranksentinel/workers/ralph/rules/MANUAL_APPROVALS.ru
   cmd:  bash -c 'command -v markdownlint &>/dev/null && markdownlint AGENTS.md 2>&1 | head -10 || echo "ok (markdownlint not installed)"'
   exit: 0
   stdout: AGENTS.md:7:81 error MD013/line-length Line length [Expected: 80; Actual: 93]
-AGENTS.md:15:81 error MD013/line-length Line length [Expected: 80; Actual: 95]
-AGENTS.md:16:81 error MD013/line-length Line length [Expected: 80; Actual: 88]
-AGENTS.md:17:81 error MD013/line-length Line length [Expected: 80; Actual: 103]
-AGENTS.md:37:81 error MD013/line-length Line length [Expected: 80; Actual: 106]
-AGENTS.md:45:81 error MD013/line-length Line length [Expected: 80; Actual: 97]
+AGENTS.md:16:81 error MD013/line-length Line length [Expected: 80; Actual: 95]
+AGENTS.md:17:81 error MD013/line-length Line length [Expected: 80; Actual: 88]
+AGENTS.md:18:81 error MD013/line-length Line length [Expected: 80; Actual: 103]
+AGENTS.md:38:81 error MD013/line-length Line length [Expected: 80; Actual: 106]
+AGENTS.md:46:81 error MD013/line-length Line length [Expected: 80; Actual: 97]
 [PASS] Lint.Markdownlint.NEURONS
   desc: NEURONS.md passes markdownlint (if installed)
   cmd:  bash -c 'command -v markdownlint &>/dev/null && markdownlint NEURONS.md 2>&1 | head -10 || echo "ok (markdownlint not installed)"'
@@ -144,4 +149,4 @@ SUMMARY
   WARN: 1 (manual_warn=1)
   SKIP: 0
   Manual gate=block failures: 0
-  Hash guard: OK
+  Hash guard: FAIL

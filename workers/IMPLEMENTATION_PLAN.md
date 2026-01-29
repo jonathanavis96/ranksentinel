@@ -74,7 +74,7 @@ Brain skills (open those relevant to the current item):
 
 ### Phase 0-Lint: Markdown Lint Errors
 
-- [ ] **0.1** Fix MD024 in brain_upstream/cortex/PLAN_DONE.md
+- [x] **0.1** Fix MD024 in brain_upstream/cortex/PLAN_DONE.md
   - **AC:** `markdownlint brain_upstream/cortex/PLAN_DONE.md` passes (no MD024 errors for "Archived on 2026-01-26")
 
 - [ ] **0.2** Fix MD056 table column count errors in brain_upstream/TEMPLATE_DRIFT_REPORT.md

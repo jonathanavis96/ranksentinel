@@ -176,3 +176,4 @@ Started: 2026-01-28
 
 | 4.6d | Payment integration hook | Created `trigger_first_insight_for_customer()` internal function in `api.py` as a reusable hook for payment webhooks, refactored existing admin endpoint to use the hook, added comprehensive tests validating callable interface and error handling. Future Stripe/payment webhooks can call this function directly. |
 | 2026-01-30 | 0-Lint.Plan | Added Phase 0-Lint tasks to workers/IMPLEMENTATION_PLAN.md for markdown lint errors (MD024, MD056, MD040) in brain_upstream files. Created 4 atomic tasks (0.1-0.4) with clear AC per file/error type. | workers/IMPLEMENTATION_PLAN.md |
+| 2026-01-30 | 0.1 | Fix MD024 duplicate heading errors | Fixed MD024 errors in brain_upstream/cortex/PLAN_DONE.md by adding unique batch numbers (Batch 11, Batch 12) to two duplicate "Archived on 2026-01-26" headings. Markdownlint now passes with no errors. | brain_upstream/cortex/PLAN_DONE.md |

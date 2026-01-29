@@ -28,5 +28,12 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.pytest.ini_options]
+# This repo uses a "src/" layout; ensure tests can import "ranksentinel" without
+# requiring an editable install.
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-ra"
+
 [tool.ruff]
 line-length = 100
