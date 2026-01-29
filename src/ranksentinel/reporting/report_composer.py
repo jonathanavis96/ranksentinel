@@ -80,6 +80,28 @@ class WeeklyReport:
         )
         lines.append("")
 
+        # Add coverage section
+        if self.coverage:
+            lines.append("-" * 60)
+            lines.append("COVERAGE")
+            lines.append("-" * 60)
+            lines.append("")
+            if self.coverage.sitemap_url:
+                lines.append(f"Sitemap: {self.coverage.sitemap_url}")
+            if self.coverage.total_urls is not None:
+                lines.append(f"Total URLs in sitemap: {self.coverage.total_urls}")
+            if self.coverage.sampled_urls is not None:
+                lines.append(f"URLs sampled (crawl limit): {self.coverage.sampled_urls}")
+            if self.coverage.success_count is not None:
+                lines.append(f"Successful fetches: {self.coverage.success_count}")
+            if self.coverage.error_count is not None:
+                lines.append(f"Failed fetches: {self.coverage.error_count}")
+            if self.coverage.http_429_count is not None and self.coverage.http_429_count > 0:
+                lines.append(f"Rate limit (429) responses: {self.coverage.http_429_count}")
+            if self.coverage.http_404_count is not None and self.coverage.http_404_count > 0:
+                lines.append(f"404 responses: {self.coverage.http_404_count}")
+            lines.append("")
+
         if self.critical_findings:
             lines.append("-" * 60)
             lines.append("CRITICAL")
@@ -188,6 +210,28 @@ class WeeklyReport:
             "It avoids alert noise by normalizing page content and only escalating high-severity issues.</p>"
         )
         lines.append("</div>")
+
+        # Add coverage section
+        if self.coverage:
+            lines.append("<div class='summary'>")
+            lines.append("<strong>Coverage</strong>")
+            lines.append("<ul>")
+            if self.coverage.sitemap_url:
+                lines.append(f"<li><strong>Sitemap:</strong> <code>{self.coverage.sitemap_url}</code></li>")
+            if self.coverage.total_urls is not None:
+                lines.append(f"<li><strong>Total URLs in sitemap:</strong> {self.coverage.total_urls}</li>")
+            if self.coverage.sampled_urls is not None:
+                lines.append(f"<li><strong>URLs sampled (crawl limit):</strong> {self.coverage.sampled_urls}</li>")
+            if self.coverage.success_count is not None:
+                lines.append(f"<li><strong>Successful fetches:</strong> {self.coverage.success_count}</li>")
+            if self.coverage.error_count is not None:
+                lines.append(f"<li><strong>Failed fetches:</strong> {self.coverage.error_count}</li>")
+            if self.coverage.http_429_count is not None and self.coverage.http_429_count > 0:
+                lines.append(f"<li><strong>Rate limit (429) responses:</strong> {self.coverage.http_429_count}</li>")
+            if self.coverage.http_404_count is not None and self.coverage.http_404_count > 0:
+                lines.append(f"<li><strong>404 responses:</strong> {self.coverage.http_404_count}</li>")
+            lines.append("</ul>")
+            lines.append("</div>")
 
         if self.critical_findings:
             lines.append("<h2>Critical</h2>")
@@ -307,12 +351,15 @@ def compose_daily_critical_report(customer_name: str, findings_rows: list[Any]) 
     )
 
 
-def compose_weekly_report(customer_name: str, findings_rows: list[Any]) -> WeeklyReport:
+def compose_weekly_report(
+    customer_name: str, findings_rows: list[Any], coverage: CoverageStats | None = None
+) -> WeeklyReport:
     """Compose a weekly report from database findings rows.
 
     Args:
         customer_name: Customer name for the report
         findings_rows: List of sqlite3.Row objects from findings table
+        coverage: Optional coverage statistics for this run
 
     Returns:
         WeeklyReport with sorted findings by severity and priority
@@ -357,4 +404,5 @@ def compose_weekly_report(customer_name: str, findings_rows: list[Any]) -> Weekl
         critical_findings=critical_findings,
         warning_findings=warning_findings,
         info_findings=info_findings,
+        coverage=coverage,
     )

@@ -393,9 +393,24 @@ def run(settings: Settings) -> None:
                                 (customer_id,)
                             )
                             
+                            # Fetch coverage stats for this run
+                            coverage_row = get_latest_run_coverage(conn, customer_id, "weekly")
+                            coverage_stats = None
+                            if coverage_row:
+                                from ranksentinel.reporting.report_composer import CoverageStats
+                                coverage_stats = CoverageStats(
+                                    sitemap_url=coverage_row["sitemap_url"],
+                                    total_urls=coverage_row["total_urls"],
+                                    sampled_urls=coverage_row["sampled_urls"],
+                                    success_count=coverage_row["success_count"],
+                                    error_count=coverage_row["error_count"],
+                                    http_429_count=coverage_row["http_429_count"],
+                                    http_404_count=coverage_row["http_404_count"],
+                                )
+                            
                             # Compose report
                             customer_name = c["name"]
-                            report = compose_weekly_report(customer_name, findings_rows)
+                            report = compose_weekly_report(customer_name, findings_rows, coverage_stats)
                             
                             # Send email
                             subject = f"RankSentinel Weekly Digest — {customer_name}"

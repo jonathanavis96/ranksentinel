@@ -4,7 +4,11 @@ import sqlite3
 
 import pytest
 
-from ranksentinel.reporting.report_composer import compose_weekly_report, parse_severity
+from ranksentinel.reporting.report_composer import (
+    CoverageStats,
+    compose_weekly_report,
+    parse_severity,
+)
 from ranksentinel.reporting.severity import CRITICAL, INFO, WARNING
 
 
@@ -480,3 +484,69 @@ def test_no_all_clear_when_warnings_present():
     # Verify all clear message is NOT present
     assert "ALL CLEAR" not in text
     assert "All Clear" not in html
+
+
+def test_coverage_stats_in_text_report():
+    """Test that coverage stats appear in text report when provided."""
+    coverage = CoverageStats(
+        sitemap_url="https://example.com/sitemap.xml",
+        total_urls=500,
+        sampled_urls=100,
+        success_count=95,
+        error_count=5,
+        http_429_count=2,
+        http_404_count=3,
+    )
+    
+    report = compose_weekly_report("TestCo", [], coverage)
+    text = report.to_text()
+    
+    # Verify coverage section is present
+    assert "COVERAGE" in text
+    assert "Sitemap: https://example.com/sitemap.xml" in text
+    assert "Total URLs in sitemap: 500" in text
+    assert "URLs sampled (crawl limit): 100" in text
+    assert "Successful fetches: 95" in text
+    assert "Failed fetches: 5" in text
+    assert "Rate limit (429) responses: 2" in text
+    assert "404 responses: 3" in text
+
+
+def test_coverage_stats_in_html_report():
+    """Test that coverage stats appear in HTML report when provided."""
+    coverage = CoverageStats(
+        sitemap_url="https://example.com/sitemap.xml",
+        total_urls=500,
+        sampled_urls=100,
+        success_count=95,
+        error_count=5,
+        http_429_count=0,  # Test zero values not shown
+        http_404_count=3,
+    )
+    
+    report = compose_weekly_report("TestCo", [], coverage)
+    html = report.to_html()
+    
+    # Verify coverage section is present
+    assert "<strong>Coverage</strong>" in html
+    assert "<li><strong>Sitemap:</strong> <code>https://example.com/sitemap.xml</code></li>" in html
+    assert "<li><strong>Total URLs in sitemap:</strong> 500</li>" in html
+    assert "<li><strong>URLs sampled (crawl limit):</strong> 100</li>" in html
+    assert "<li><strong>Successful fetches:</strong> 95</li>" in html
+    assert "<li><strong>Failed fetches:</strong> 5</li>" in html
+    assert "429" not in html  # Zero values should not be shown
+    assert "<li><strong>404 responses:</strong> 3</li>" in html
+
+
+def test_no_coverage_stats_when_not_provided():
+    """Test that coverage section is absent when coverage is None."""
+    report = compose_weekly_report("TestCo", [], None)
+    
+    text = report.to_text()
+    html = report.to_html()
+    
+    # Verify coverage section is NOT present
+    assert "COVERAGE" not in text
+    assert "Coverage" not in html
+    assert "sitemap" not in text.lower()
+    assert "sitemap" not in html.lower()
