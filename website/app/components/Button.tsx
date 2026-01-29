@@ -1,0 +1,98 @@
+import React from 'react';
+import Link from 'next/link';
+
+type ButtonVariant = 'primary' | 'secondary';
+type ButtonSize = 'sm' | 'md' | 'lg';
+
+interface BaseButtonProps {
+  children: React.ReactNode;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  className?: string;
+  disabled?: boolean;
+}
+
+interface ButtonAsButtonProps extends BaseButtonProps {
+  as?: 'button';
+  type?: 'button' | 'submit' | 'reset';
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  href?: never;
+}
+
+interface ButtonAsLinkProps extends BaseButtonProps {
+  as: 'link';
+  href: string;
+  type?: never;
+  onClick?: never;
+}
+
+type ButtonProps = ButtonAsButtonProps | ButtonAsLinkProps;
+
+/**
+ * Button component with primary and secondary variants
+ * 
+ * Design specifications:
+ * - Primary: Teal background (#0F766E), white text, hover darken
+ * - Secondary: Transparent bg, border, dark text
+ * - Rounded corners: 10-14px
+ * - Subtle shadow on hover (primary only)
+ * 
+ * Accessibility features:
+ * - Focus-visible ring
+ * - Disabled state with reduced opacity and cursor-not-allowed
+ * - Proper semantic elements (button vs link)
+ * - Keyboard navigation support
+ */
+export default function Button({
+  children,
+  variant = 'primary',
+  size = 'md',
+  className = '',
+  disabled = false,
+  as = 'button',
+  ...props
+}: ButtonProps) {
+  // Base styles shared by all variants
+  const baseStyles = 'inline-flex items-center justify-center font-medium transition-all focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+
+  // Variant styles
+  const variantStyles = {
+    primary: 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white hover:shadow-md',
+    secondary: 'bg-transparent border border-[var(--color-border)] text-[var(--color-headline)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]',
+  };
+
+  // Size styles
+  const sizeStyles = {
+    sm: 'px-3 py-1.5 text-sm rounded-lg',
+    md: 'px-4 py-2 text-sm rounded-lg',
+    lg: 'px-6 py-3 text-base rounded-xl',
+  };
+
+  const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
+
+  if (as === 'link') {
+    const linkProps = props as ButtonAsLinkProps;
+    return (
+      <Link
+        href={linkProps.href}
+        className={combinedClassName}
+        aria-disabled={disabled}
+      >
+        {children}
+      </Link>
+    );
+  }
+
+  const buttonProps = props as ButtonAsButtonProps;
+  
+  return (
+    <button
+      type={buttonProps.type || 'button'}
+      onClick={buttonProps.onClick}
+      disabled={disabled}
+      className={combinedClassName}
+    >
+      {children}
+    </button>
+  );
+}

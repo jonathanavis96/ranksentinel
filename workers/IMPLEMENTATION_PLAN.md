@@ -145,7 +145,7 @@ Brain skills (open those relevant to the current item):
     - Spacing scale is documented or encoded in utility classes.
   - **If Blocked:** Use a minimal container + spacing utilities and document defaults.
 
-- [ ] **3.3** Implement core UI components
+- [x] **3.3** Implement core UI components
   - **Goal:** Standardize nav/buttons/cards to match the design direction.
   - **References:** `docs/websites/10_design_ux.md`, `brain/skills/domains/frontend/accessibility-patterns.md`.
   - **Scope:** Header/Nav, Footer, Button (primary/secondary), Card, Badge/Pill.
@@ -153,6 +153,7 @@ Brain skills (open those relevant to the current item):
     - Rounded corners + light borders + subtle shadows match the doc.
     - Focus states are visible and keyboard navigation works.
   - **If Blocked:** Prefer accessibility correctness over visual parity; note visual deltas.
+  - **Completed:** 2026-01-30 - All core UI components created with accessibility features
 
 - [ ] **3.4** Implement the Email Report Preview (hero object)
   - **Goal:** Make the value instantly legible: “email-first monitoring, no dashboard required.”
