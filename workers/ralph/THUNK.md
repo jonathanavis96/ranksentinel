@@ -54,3 +54,4 @@ Started: 2026-01-28
 - Each project gets independent THUNK numbering (starts at 1)
 - When starting a new plan phase, use `[e]` to create a new Era section
 | 2026-01-29T00:34:01Z | Verified MD034 fixes already completed | Tasks 6.11 & 6.15: both SAMPLE_REPORT.md files pass markdownlint (email wrapped in angle brackets) | 8a80a90 |
+| 2026-01-29T02:35:18Z | Verified bootstrap documentation presence | Task 0.1: Confirmed BOOTSTRAP.md, SAMPLE_REPORT.md, RUNBOOK_VPS.md exist and BOOTSTRAP.md contains cron examples for scripts/run_daily.sh and scripts/run_weekly.sh | $(git rev-parse --short HEAD) |
