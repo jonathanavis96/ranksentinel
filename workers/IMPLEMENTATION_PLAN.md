@@ -44,7 +44,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** `./.venv/bin/pip install -e ".[dev]"` succeeds
   - **Validate:** run the three commands above from repo root
 
-- [ ] **0.3** Local API boots + healthcheck OK
+- [x] **0.3** Local API boots + healthcheck OK
   - **Goal:** FastAPI app starts in dev mode and responds.
   - **AC:** `bash scripts/run_local.sh` starts uvicorn bound to `127.0.0.1:8000`
   - **AC:** `curl -s http://127.0.0.1:8000/health` returns `{ "status": "ok" }`
