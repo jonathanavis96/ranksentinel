@@ -646,15 +646,16 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:** Unit test for "first insight" report composition given fixture inputs.
   - **Completed:** Implemented run_first_insight_checks() and trigger_first_insight_report() with full test coverage. Updated schema to support 'first_insight' run_type.
 
-- [ ] **4.6c** First Insight: email send + delivery logging
+- [x] **4.6c** First Insight: email send + delivery logging
   - **Goal:** Send the first-insight email via Mailgun and record exactly one delivery.
   - **Files (likely):** `src/ranksentinel/mailgun.py`, `src/ranksentinel/reporting/email_templates.py`, `src/ranksentinel/db.py`
   - **Implementation guidance:**
-    - Reuse existing weekly email template/layout if possible, but label as “First Insight”.
+    - Reuse existing weekly email template/layout if possible, but label as "First Insight".
     - Ensure idempotency: repeated trigger within same day should not send duplicates (dedupe key).
   - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/infrastructure/observability-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
   - **AC:** Exactly one email is sent per trigger window; a delivery row is recorded with `run_type='first_insight'`.
   - **Validate:** Integration test with mocked Mailgun client asserts exactly one delivery recorded.
+  - **Completed:** Added `render_first_insight()` email template, updated `trigger_first_insight_report()` to send emails via Mailgun with idempotency check (one email per customer per day), updated type hints in `mailgun.py` to support `run_type='first_insight'`, and created comprehensive integration tests in `tests/test_first_insight_email.py` covering success, idempotency, failure, and no-email scenarios.
 
 - [ ] **4.6d** First Insight: payment integration hook (deferred wiring)
   - **Goal:** When payments exist, automatically trigger First Insight on successful payment.

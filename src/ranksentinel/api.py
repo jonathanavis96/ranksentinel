@@ -117,7 +117,7 @@ def patch_settings(customer_id: int, payload: CustomerSettingsPatch, conn=Depend
 
 
 @app.post("/admin/customers/{customer_id}/send_first_insight")
-def send_first_insight(customer_id: int, conn=Depends(get_conn)):
+def send_first_insight(customer_id: int, conn=Depends(get_conn), settings: Settings = Depends(get_settings)):
     """Trigger a First Insight report for a customer (admin-only endpoint).
     
     This endpoint sends an immediate onboarding report to help new customers
@@ -128,8 +128,25 @@ def send_first_insight(customer_id: int, conn=Depends(get_conn)):
         raise HTTPException(status_code=404, detail="customer not found")
     
     # Import here to avoid circular dependencies
+    from ranksentinel.mailgun import MailgunClient
     from ranksentinel.runner.first_insight import trigger_first_insight_report
     
-    trigger_first_insight_report(conn, customer_id)
+    # Initialize Mailgun client if configured
+    mailgun_client = None
+    recipient_email = None
+    if settings.MAILGUN_API_KEY and settings.MAILGUN_DOMAIN and settings.MAILGUN_TO:
+        try:
+            mailgun_client = MailgunClient(settings)
+            recipient_email = settings.MAILGUN_TO
+        except Exception:
+            pass  # Will run without email if Mailgun not configured
     
-    return {"status": "ok", "message": "First Insight report triggered"}
+    result = trigger_first_insight_report(
+        conn, 
+        customer_id, 
+        psi_api_key=settings.PSI_API_KEY,
+        mailgun_client=mailgun_client,
+        recipient_email=recipient_email,
+    )
+    
+    return result

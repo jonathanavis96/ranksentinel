@@ -363,22 +363,58 @@ Future runs will detect changes to this page."""
     log_structured(run_id, run_type="first_insight", stage="complete", status="success", customer_id=customer_id)
 
 
-def trigger_first_insight_report(conn: Connection, customer_id: int, psi_api_key: str | None = None) -> dict[str, Any]:
+def trigger_first_insight_report(
+    conn: Connection, 
+    customer_id: int, 
+    psi_api_key: str | None = None,
+    mailgun_client: Any | None = None,
+    recipient_email: str | None = None,
+) -> dict[str, Any]:
     """Trigger generation and delivery of a First Insight report.
     
     Args:
         conn: Database connection
         customer_id: ID of the customer to generate report for
         psi_api_key: Optional PageSpeed Insights API key
+        mailgun_client: Optional MailgunClient instance for sending emails
+        recipient_email: Optional recipient email address
         
     Returns:
-        Dict with run_id and findings count
+        Dict with run_id, findings count, and email delivery status
         
     Note:
-        This implements data collection and report composition.
-        Email delivery will be implemented in task 4.6c.
+        Implements idempotency: only one email per customer per day.
+        Checks deliveries table for existing first_insight delivery today.
     """
+    from ranksentinel.mailgun import send_and_log
+    from ranksentinel.reporting.email_templates import render_first_insight
+    
     run_id = generate_run_id()
+    today = datetime.now(timezone.utc).date().isoformat()
+    
+    # Check for existing first_insight delivery today (idempotency)
+    existing_delivery = fetch_one(
+        conn,
+        "SELECT id FROM deliveries WHERE customer_id=? AND run_type='first_insight' "
+        "AND DATE(sent_at) = DATE(?) LIMIT 1",
+        (customer_id, today),
+    )
+    
+    if existing_delivery:
+        log_structured(
+            run_id, 
+            run_type="first_insight", 
+            stage="dedupe_check", 
+            status="skipped", 
+            customer_id=customer_id,
+            reason="Already sent first_insight email today"
+        )
+        return {
+            "run_id": run_id,
+            "customer_id": customer_id,
+            "email_sent": False,
+            "dedupe_reason": "Already sent today",
+        }
     
     # Run data collection
     run_first_insight_checks(conn, customer_id, run_id, psi_api_key)
@@ -397,9 +433,62 @@ def trigger_first_insight_report(conn: Connection, customer_id: int, psi_api_key
     # Compose report (reuse weekly composer)
     report = compose_weekly_report(customer_name, findings)
     
-    return {
+    result = {
         "run_id": run_id,
         "customer_id": customer_id,
         "findings_count": len(findings),
         "report": report,
+        "email_sent": False,
     }
+    
+    # Send email if client and recipient provided
+    if mailgun_client and recipient_email:
+        try:
+            # Render email using first_insight template
+            report_text = report.to_text()
+            report_html = report.to_html()
+            email_msg = render_first_insight(customer_name, report_text, report_html)
+            
+            # Send and log delivery
+            success = send_and_log(
+                conn=conn,
+                client=mailgun_client,
+                customer_id=customer_id,
+                run_type="first_insight",
+                recipient=recipient_email,
+                subject=email_msg.subject,
+                text_body=email_msg.text,
+                html_body=email_msg.html,
+            )
+            
+            result["email_sent"] = success
+            
+            if success:
+                log_structured(
+                    run_id,
+                    run_type="first_insight",
+                    stage="send_email",
+                    status="success",
+                    customer_id=customer_id,
+                    recipient=recipient_email,
+                )
+            else:
+                log_structured(
+                    run_id,
+                    run_type="first_insight",
+                    stage="send_email",
+                    status="failed",
+                    customer_id=customer_id,
+                )
+        except Exception as e:
+            log_structured(
+                run_id,
+                run_type="first_insight",
+                stage="send_email",
+                status="error",
+                customer_id=customer_id,
+                error=str(e),
+            )
+            result["email_error"] = str(e)
+    
+    return result

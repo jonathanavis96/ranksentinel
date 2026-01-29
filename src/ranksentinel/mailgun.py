@@ -101,7 +101,7 @@ class MailgunClient:
 def log_delivery(
     conn: sqlite3.Connection,
     customer_id: int,
-    run_type: Literal["daily", "weekly"],
+    run_type: Literal["daily", "weekly", "first_insight"],
     recipient: str,
     subject: str,
     status: DeliveryStatus,
@@ -113,7 +113,7 @@ def log_delivery(
     Args:
         conn: Database connection
         customer_id: Customer ID
-        run_type: 'daily' or 'weekly'
+        run_type: 'daily', 'weekly', or 'first_insight'
         recipient: Email recipient address
         subject: Email subject line
         status: Delivery status ('sent', 'skipped', 'failed')
@@ -138,7 +138,7 @@ def send_and_log(
     conn: sqlite3.Connection,
     client: MailgunClient,
     customer_id: int,
-    run_type: Literal["daily", "weekly"],
+    run_type: Literal["daily", "weekly", "first_insight"],
     recipient: str,
     subject: str,
     text_body: str,
@@ -152,7 +152,7 @@ def send_and_log(
         conn: Database connection
         client: MailgunClient instance
         customer_id: Customer ID
-        run_type: 'daily' or 'weekly'
+        run_type: 'daily', 'weekly', or 'first_insight'
         recipient: Email recipient address
         subject: Email subject line
         text_body: Plain text email body
