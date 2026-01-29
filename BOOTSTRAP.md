@@ -134,14 +134,17 @@ Cancellation behavior:
   - `psi_perf_drop_threshold` (default 10)
   - `psi_lcp_increase_threshold_ms` (default 500)
 
-#### `snapshots` (planned)
+#### `snapshots`
 
-Per-URL snapshots for diffing.
+Per-URL snapshots for diffing and auditability.
 
-- `customer_id`, `url`, `run_type`, `fetched_at`
+- `customer_id`, `url`, `run_type`, `run_id`, `fetched_at`
 - status, final URL, redirect chain
 - title, canonical, meta robots
 - normalized text hash
+- `error_type`, `error` (optional, for fetch failures)
+  - On fetch failure: `status_code=0`, `content_hash=''`, `error_type` and `error` populated
+  - Enables weekly run auditability and "New vs Resolved" diffing
 
 #### `artifacts` (planned)
 

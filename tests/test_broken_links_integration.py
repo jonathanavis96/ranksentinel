@@ -30,12 +30,13 @@ def test_detect_broken_links_with_fixtures():
         # Note: This is a controlled test - in real usage, snapshots are created by daily/weekly runs
         execute(
             conn,
-            "INSERT INTO snapshots(customer_id,url,run_type,fetched_at,status_code,final_url,redirect_chain,title,canonical,meta_robots,content_hash) "
-            "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO snapshots(customer_id,url,run_type,run_id,fetched_at,status_code,final_url,redirect_chain,title,canonical,meta_robots,content_hash) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 customer_id,
                 "https://example.com/test-page",
                 "weekly",
+                "test-run-id",
                 "2024-01-01T00:00:00Z",
                 200,
                 "https://example.com/test-page",

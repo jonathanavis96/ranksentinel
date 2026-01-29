@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS snapshots (
   customer_id INTEGER NOT NULL,
   url TEXT NOT NULL,
   run_type TEXT NOT NULL CHECK(run_type IN ('daily','weekly')),
+  run_id TEXT NOT NULL,
   fetched_at TEXT NOT NULL,
   status_code INTEGER NOT NULL,
   final_url TEXT NOT NULL,
@@ -50,8 +51,13 @@ CREATE TABLE IF NOT EXISTS snapshots (
   canonical TEXT,
   meta_robots TEXT,
   content_hash TEXT NOT NULL,
+  error_type TEXT,
+  error TEXT,
   FOREIGN KEY(customer_id) REFERENCES customers(id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_snapshots_lookup ON snapshots(customer_id, run_type, fetched_at DESC);
+CREATE INDEX IF NOT EXISTS idx_snapshots_run ON snapshots(customer_id, run_id);
 
 CREATE TABLE IF NOT EXISTS findings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
