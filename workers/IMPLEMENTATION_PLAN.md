@@ -46,10 +46,10 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Note:** Manual validation required per Manual.Integration.1
   - **If Blocked:** Requires human operator to run end-to-end workflow test and validate behavior. Cannot be automated by Ralph. Human should test daily/weekly runs and mark [x] when satisfied.
 
-- [ ] **0-W.6** Fix MD032 in workers/IMPLEMENTATION_PLAN.md line 90
+- [x] **0-W.6** Fix MD032 in workers/IMPLEMENTATION_PLAN.md line 90
   - **AC:** `markdownlint workers/IMPLEMENTATION_PLAN.md` passes (no MD032 errors)
 
-- [ ] **0-W.7** Fix MD034 in workers/ralph/THUNK.md line 134:274
+- [x] **0-W.7** Fix MD034 in workers/ralph/THUNK.md line 134:274
   - **AC:** `markdownlint workers/ralph/THUNK.md` passes (no MD034 errors)
 
 ## Phase 0-S: Sitemap parser robustness (real-world compatibility)
