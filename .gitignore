@@ -24,3 +24,6 @@ ENV/
 .DS_Store
 Thumbs.db
 brain_upstream/
+
+# Ralph local markers
+workers/ralph/.verify/.brain_skills_synced
