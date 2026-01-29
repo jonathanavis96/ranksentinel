@@ -27,6 +27,117 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def expand_sitemap_index(
+    run_id: str,
+    customer_id: int,
+    sitemap_url: str,
+    sitemap_xml: str,
+    crawl_limit: int,
+    max_child_sitemaps: int = 10,
+) -> list[str]:
+    """Expand sitemap index to extract page URLs from child sitemaps.
+    
+    If the sitemap is a sitemapindex (e.g., Shopify), fetch child sitemaps
+    and extract page URLs from them. Enforce limits to avoid blowups.
+    
+    Args:
+        run_id: Unique run identifier for logging
+        customer_id: Customer ID for logging
+        sitemap_url: URL of the sitemap (for context)
+        sitemap_xml: Parsed XML content
+        crawl_limit: Maximum number of page URLs to return
+        max_child_sitemaps: Maximum child sitemaps to fetch (default: 10)
+    
+    Returns:
+        List of page URLs (not sitemap URLs)
+    """
+    urls = list_sitemap_urls(sitemap_xml)
+    
+    if not urls:
+        return []
+    
+    # Check if first URL looks like a sitemap (heuristic: ends with .xml)
+    # If not, assume it's already a urlset with page URLs
+    if not urls[0].endswith('.xml'):
+        log_structured(
+            run_id,
+            run_type="weekly",
+            stage="sitemap_expand",
+            status="urlset_detected",
+            customer_id=customer_id,
+            page_urls_count=len(urls),
+        )
+        return urls
+    
+    # Looks like a sitemapindex - fetch child sitemaps
+    log_structured(
+        run_id,
+        run_type="weekly",
+        stage="sitemap_expand",
+        status="sitemapindex_detected",
+        customer_id=customer_id,
+        child_sitemaps_count=len(urls),
+    )
+    
+    page_urls = []
+    child_sitemaps_fetched = 0
+    
+    for child_sitemap_url in urls[:max_child_sitemaps]:
+        if len(page_urls) >= crawl_limit:
+            log_structured(
+                run_id,
+                run_type="weekly",
+                stage="sitemap_expand",
+                status="crawl_limit_reached",
+                customer_id=customer_id,
+                page_urls_extracted=len(page_urls),
+            )
+            break
+        
+        # Fetch child sitemap
+        child_result = fetch_text(child_sitemap_url, timeout=20, attempts=2)
+        
+        if not child_result.ok:
+            log_structured(
+                run_id,
+                run_type="weekly",
+                stage="sitemap_expand",
+                status="child_fetch_error",
+                customer_id=customer_id,
+                child_sitemap_url=child_sitemap_url,
+                error=child_result.error,
+            )
+            continue
+        
+        child_sitemaps_fetched += 1
+        
+        # Extract page URLs from child sitemap
+        child_urls = list_sitemap_urls(child_result.body)
+        page_urls.extend(child_urls)
+        
+        log_structured(
+            run_id,
+            run_type="weekly",
+            stage="sitemap_expand",
+            status="child_fetched",
+            customer_id=customer_id,
+            child_sitemap_url=child_sitemap_url,
+            child_page_urls_count=len(child_urls),
+        )
+    
+    log_structured(
+        run_id,
+        run_type="weekly",
+        stage="sitemap_expand",
+        status="complete",
+        customer_id=customer_id,
+        child_sitemaps_fetched=child_sitemaps_fetched,
+        page_urls_extracted=len(page_urls),
+    )
+    
+    return page_urls
+
+
 def detect_new_404s(
     conn,
     run_id: str,
@@ -283,7 +394,14 @@ def run(settings: Settings) -> None:
                             )
                             continue
                         
-                        urls = list_sitemap_urls(sitemap_result.body)
+                        # Expand sitemap index if needed (handles Shopify-style sitemaps)
+                        urls = expand_sitemap_index(
+                            run_id=run_id,
+                            customer_id=customer_id,
+                            sitemap_url=sitemap_url,
+                            sitemap_xml=sitemap_result.body,
+                            crawl_limit=crawl_limit,
+                        )
                         
                         if not urls:
                             log_structured(
