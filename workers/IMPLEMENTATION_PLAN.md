@@ -187,7 +187,8 @@ Brain skills (open those relevant to the current item):
 
 ### Task 4: Homepage implementation (sections + copy)
 
-- [ ] **4.1** Implement homepage sections exactly per blueprint
+- [x] **4.1** Implement homepage sections exactly per blueprint
+  - **Completed:** 2026-01-30 - All homepage sections implemented per blueprint (hero, social proof, why different, features, how it works, sample report, pricing teaser, FAQ teaser, final CTA)
   - **Goal:** Ship the primary conversion page in the intended “soft SaaS” style.
   - **References:** `docs/websites/04_page_requirements.md`, `docs/websites/05_copy_system.md`, `brain/skills/domains/websites/architecture/section-composer.md`.
   - **AC:** Homepage contains:
