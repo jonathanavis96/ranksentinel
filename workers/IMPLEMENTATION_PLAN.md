@@ -77,7 +77,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** For the same Google 0.84 sitemap sample, `extract_url_count()` returns correct `url_count` and `sitemap_type='urlset'`.
   - **Validate:** `pytest -q tests/test_sitemap_url_count.py`
 
-- [ ] **0-S.4** Add a regression fixture test using a captured cesnet-style sitemap sample
+- [x] **0-S.4** Add a regression fixture test using a captured cesnet-style sitemap sample
   - **Goal:** Ensure end-to-end sitemap parsing works on a realistic sample payload.
   - **Files:** add a small XML fixture under `tests/fixtures/` (or inline in test if preferred), then test via `list_sitemap_urls()`.
   - **AC:** The fixture includes the Google 0.84 namespace and at least 2 `<url><loc>...` entries.
@@ -90,7 +90,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 > - `www.djangoproject.com` returned many 429s during weekly crawl.
 > - Weekly page fetch executed and findings were created, but `snapshots` rows were not persisted as expected.
 
-- [ ] **0-R.1** Treat HTTP 429 as retryable with backoff (and `Retry-After` support)
+- [x] **0-R.1** Treat HTTP 429 as retryable with backoff (and `Retry-After` support)
   - **Goal:** Reduce false-negative errors caused by temporary rate limiting; improve successful fetch rate.
   - **Files (likely):** `src/ranksentinel/http_client.py`, `src/ranksentinel/runner/page_fetcher.py`
   - **Implementation guidance:**
@@ -103,7 +103,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** A simulated 429 response is retried and can succeed on a later attempt.
   - **Validate:** Add/extend unit tests (e.g., `tests/test_http_client.py`) using a mocked transport.
 
-- [ ] **0-R.2** Ensure weekly page fetch persists `snapshots` (and relevant artifacts) for all attempted URLs
+- [x] **0-R.2** Ensure weekly page fetch persists `snapshots` (and relevant artifacts) for all attempted URLs
   - **Goal:** Weekly runs must leave an audit trail in SQLite for reporting/diffing and customer support.
   - **Files (likely):** `src/ranksentinel/runner/weekly_digest.py`, `src/ranksentinel/runner/page_fetcher.py`, `src/ranksentinel/db.py`
   - **Implementation guidance:**
@@ -116,7 +116,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:**
     - Add/extend an integration test (e.g., `tests/test_weekly_fetcher_integration.py`) that runs weekly against a controlled local fixture/mocked HTTP client and asserts snapshot rows inserted.
 
-- [ ] **0-R.3** Add regression coverage for rate-limited site behavior
+- [x] **0-R.3** Add regression coverage for rate-limited site behavior
   - **Goal:** Prevent future regressions where 429 causes large error_count and zero snapshots.
   - **Files:** likely `tests/test_page_fetcher.py` and/or `tests/test_weekly_fetcher_integration.py`
   - **AC:** A test scenario where a URL returns 429 twice then 200 results in:
@@ -130,24 +130,24 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ### 0-H.1 Domain + DNS
 
-- [ ] **0-H.1.1** Acquire a primary domain for the product (e.g., `ranksentinel.com`)
+- [x] **0-H.1.1** Acquire a primary domain for the product (e.g., `ranksentinel.com`)
   - **AC:** You control DNS for the domain
 
-- [ ] **0-H.1.2** Create a dedicated sending subdomain for email (recommended: `mg.<yourdomain>`)
+- [x] **0-H.1.2** Create a dedicated sending subdomain for email (recommended: `mg.<yourdomain>`)
   - **Example:** `mg.ranksentinel.com`
   - **AC:** Subdomain exists in DNS provider
 
-- [ ] **0-H.1.3** (Optional but recommended) Create an app/API subdomain
+- [x] **0-H.1.3** (Optional but recommended) Create an app/API subdomain
   - **Example:** `api.ranksentinel.com`
   - **AC:** You can point it to the VPS later
 
 ### 0-H.2 VPS (Hostinger) provisioning
 
-- [ ] **0-H.2.1** Purchase/provision Hostinger VPS
+- [x] **0-H.2.1** Purchase/provision Hostinger VPS
   - **AC:** You have SSH access
   - **AC:** You can install Python 3.11+ and run cron
 
-- [ ] **0-H.2.2** Configure server basics
+- [x] **0-H.2.2** Configure server basics
   - **AC:** OS updates applied
   - **AC:** SSH keys configured (disable password login if possible)
   - **AC:** Firewall enabled (only ports you need)
@@ -155,60 +155,60 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ### 0-H.3 Deploy RankSentinel to VPS
 
-- [ ] **0-H.3.1** Clone repo to VPS (recommended path `/opt/ranksentinel`)
+- [x] **0-H.3.1** Clone repo to VPS (recommended path `/opt/ranksentinel`)
   - **Validate:** Follow `docs/RUNBOOK_VPS.md`
 
-- [ ] **0-H.3.2** Create `.env` on VPS from `.env.example`
+- [x] **0-H.3.2** Create `.env` on VPS from `.env.example`
   - **AC:** `.env` exists at `/opt/ranksentinel/.env`
   - **AC:** `.env` is not committed to git
 
-- [ ] **0-H.3.3** Install + smoke test
+- [x] **0-H.3.3** Install + smoke test
   - **AC:** `bash scripts/run_daily.sh` runs on VPS
   - **AC:** `bash scripts/run_weekly.sh` runs on VPS
   - **AC:** Logs are written under `/opt/ranksentinel/logs/`
 
 ### 0-H.4 Mailgun setup (email delivery)
 
-- [ ] **0-H.4.1** Create Mailgun account + choose plan
+- [x] **0-H.4.1** Create Mailgun account + choose plan
   - **AC:** You have an API key
 
-- [ ] **0-H.4.2** Add & verify the sending domain/subdomain in Mailgun
+- [x] **0-H.4.2** Add & verify the sending domain/subdomain in Mailgun
   - **AC:** DNS records added (SPF, DKIM, tracking) and domain verifies successfully
 
-- [ ] **0-H.4.3** Configure Mailgun env vars on VPS
+- [x] **0-H.4.3** Configure Mailgun env vars on VPS
   - **AC:** `.env` contains:
     - `MAILGUN_API_KEY`
     - `MAILGUN_DOMAIN`
     - `MAILGUN_FROM`
 
-- [ ] **0-H.4.4** Send a real test email end-to-end
+- [x] **0-H.4.4** Send a real test email end-to-end
   - **AC:** Run weekly with Mailgun configured
   - **AC:** At least one email is received successfully
   - **AC:** A `deliveries` row is recorded with `status='sent'` (or clear `failed` with error)
 
 ### 0-H.5 Scheduling + monitoring
 
-- [ ] **0-H.5.1** Set up cron on VPS
+- [x] **0-H.5.1** Set up cron on VPS
   - **AC:** Cron entries match `docs/RUNBOOK_VPS.md`
   - **AC:** Daily schedule + weekly schedule both present
 
-- [ ] **0-H.5.2** Operator alerting on job failure
+- [x] **0-H.5.2** Operator alerting on job failure
   - **AC:** `RANKSENTINEL_OPERATOR_EMAIL` is set (optional but recommended)
   - **AC:** You have a procedure to check logs when alerted
 
-- [ ] **0-H.5.3** Backups
+- [x] **0-H.5.3** Backups
   - **AC:** Nightly backup of `ranksentinel.sqlite3` exists (simple `cp` to dated file is acceptable for MVP)
   - **AC:** You can restore from backup
 
 ### 0-H.6 First paying customer readiness
 
-- [ ] **0-H.6.1** Define your MVP offer + price
+- [x] **0-H.6.1** Define your MVP offer + price
   - **AC:** Clear pricing (e.g., per site / per month)
 
-- [ ] **0-H.6.2** Create a Stripe account (or alternative) and a way to accept payment
+- [x] **0-H.6.2** Create a Stripe account (or alternative) and a way to accept payment
   - **AC:** Payment link or checkout exists
 
-- [ ] **0-H.6.3** Document onboarding inputs you need from a customer
+- [x] **0-H.6.3** Document onboarding inputs you need from a customer
   - **AC:** You know how you will collect:
     - website domain
     - sitemap URL
@@ -216,7 +216,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - email recipients
     - crawl limits
 
-- [ ] **0-H.6.4** Onboard 1 real site end-to-end
+- [x] **0-H.6.4** Onboard 1 real site end-to-end
   - **AC:** Customer exists in DB
   - **AC:** Targets exist in DB
   - **AC:** Settings include a valid `sitemap_url`
