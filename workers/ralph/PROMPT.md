@@ -53,6 +53,7 @@ If you encounter a blocker due to missing domain knowledge (API quirks, PSI pars
 4. **Continue** with the next safe task if possible
 
 **Example blocked task notation:**
+
 ```markdown
 - [?] **1.2** Implement PSI mobile score tracking
   - **If Blocked:** See `docs/SKILL_REQUEST_psi_mobile_api.md` for API quota and parameter questions

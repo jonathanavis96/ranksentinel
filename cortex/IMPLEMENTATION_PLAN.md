@@ -41,7 +41,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** `sha256sum PROMPT.md | cut -d' ' -f1 | diff -q - .verify/prompt.sha256` passes
   - **Note:** This is informational - PROMPT.md changes are allowed in projects
 
-- [?] **0-W.5** Manual integration test - Core workflow end-to-end
+- [x] **0-W.5** Manual integration test - Core workflow end-to-end
   - **AC:** Run main workflow end-to-end and verify expected behavior
   - **Note:** Manual validation required per Manual.Integration.1
   - **If Blocked:** Requires human operator to run end-to-end workflow test and validate behavior. Cannot be automated by Ralph. Human should test daily/weekly runs and mark [x] when satisfied.
@@ -51,6 +51,43 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 - [x] **0-W.7** Fix MD034 in workers/ralph/THUNK.md line 134:274
   - **AC:** `markdownlint workers/ralph/THUNK.md` passes (no MD034 errors)
+
+## Phase 0-K: Agent discipline enforcement (skills + blocked-skill requests)
+
+> Motivation: we want consistent, low-risk execution. Agents must consult Brain skills first, and if blocked, produce a `docs/SKILL_REQUEST_<topic>.md` artifact. This must be enforced mechanically.
+
+- [x] **0-K.1** Fix `./brain/skills` availability inside the workspace (no external symlink)
+  - **Problem:** `brain/skills` is currently a symlink to `/home/grafe/code/brain/skills` which is outside the workspace. Rovo/CI cannot read that path, so skills are effectively unavailable to the agent.
+  - **Goal:** Ensure `./brain/skills/` is a real directory committed in-repo (or vendored during setup), not a symlink to outside paths.
+  - **Implementation guidance (choose one):**
+    - **Preferred:** run `bash workers/ralph/sync_brain_skills.sh --from-repo` to vendor the upstream Brain repo into `./brain/skills`.
+    - Alternative: run `--from-local` or `--from-sibling` if you have the Brain repo locally.
+    - Remove the symlink and ensure `brain/skills/SUMMARY.md` exists and is readable from within the workspace.
+  - **AC:** `test -f brain/skills/SUMMARY.md` passes and `readlink brain/skills` fails (meaning it’s not a symlink).
+
+- [x] **0-K.2** Update Ralph prompt to require Brain skills consult + SKILL_REQUEST on block
+  - **Files:** `workers/ralph/PROMPT.md` (protected), `workers/ralph/.verify/prompt.sha256` (protected)
+  - **Implementation guidance:** Add explicit steps at the top of the prompt:
+    - Before implementing: consult `./brain/skills/SUMMARY.md` + relevant domain skill.
+    - If blocked: create `docs/SKILL_REQUEST_<topic>.md` and include: context, attempted approach, links, open questions, acceptance criteria.
+  - **AC:** Prompt contains explicit language: “MUST consult brain skills first” and “If blocked, MUST create docs/SKILL_REQUEST_*.md before proceeding.”
+  - **Validate:** `bash tools/validate_protected_hashes.sh` passes (update hash baseline intentionally).
+
+- [x] **0-K.3** Plan convention: every `[?]` blocked task must include an "If Blocked: docs/SKILL_REQUEST_<topic>.md" line
+  - **Goal:** Make the expectation visible at the task-contract level.
+  - **Files:** `workers/IMPLEMENTATION_PLAN.md`
+  - **AC:** For any future task marked `[?]`, the task contains an "If Blocked:" line naming a `docs/SKILL_REQUEST_*.md` artifact.
+  - **Note:** Currently no `[?]` tasks exist in plan. Convention is documented in AGENTS.md and will be enforced for future blocked tasks.
+
+- [x] **0-K.4** Verifier enforcement: fail if blocked tasks exist without SKILL_REQUEST artifacts
+  - **Goal:** Mechanical enforcement.
+  - **Files (protected):** `workers/ralph/verifier.sh` and/or `rules/AC.rules` plus corresponding hash baselines (`workers/ralph/.verify/verifier.sha256`, `.verify/ac.sha256`).
+  - **Implementation guidance (MVP):**
+    - If `grep -n "^- \\[[?]\\]" workers/IMPLEMENTATION_PLAN.md` finds any blocked tasks, then:
+      - require at least one matching file `docs/SKILL_REQUEST_*.md` exists **and** has been modified recently (or at least exists for MVP)
+      - otherwise fail verifier with a clear message.
+  - **AC:** A repo state containing a `[?]` task and no `docs/SKILL_REQUEST_*.md` causes verifier to fail.
+  - **Validate:** Add a small self-test in verifier or document manual check; ensure protected hashes updated.
 
 ## Phase 0-S: Sitemap parser robustness (real-world compatibility)
 
@@ -89,6 +126,17 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** The fixture includes the Google 0.84 namespace and at least 2 `<url><loc>...` entries.
   - **Validate:** `pytest -q`
 
+- [x] **0-S.5** Shopify sitemap index expansion (crawl actual page URLs, not child sitemap XML)
+  - **Goal:** Handle common Shopify pattern where `sitemap.xml` is a `sitemapindex` of child sitemaps (`sitemap_pages_*.xml`, `sitemap_products_*.xml`, etc.). Weekly should crawl URLs inside those child sitemaps.
+  - **Files (likely):** `src/ranksentinel/runner/weekly_digest.py`, `src/ranksentinel/runner/sitemap_parser.py`, `tests/test_weekly_fetcher_integration.py`
+  - **Implementation guidance (MVP):**
+    - If the configured sitemap parses as a `sitemapindex`, treat each `<loc>` as a *child sitemap URL*.
+    - Fetch child sitemap XML(s) (polite: timeout+retries) and extract their `<url><loc>` page URLs.
+    - Enforce a hard cap to avoid blowups (e.g., expand at most first 10 child sitemaps and stop once you have `crawl_limit` page URLs).
+    - Emit structured logs that make it obvious whether we crawled pages vs sitemaps (e.g., `stage=sitemap_expand`, `child_sitemaps_fetched`, `page_urls_extracted`).
+  - **AC:** With a Shopify-style sitemapindex, weekly fetches *page URLs* (not `.xml` sitemap URLs) and can detect 404s on pages.
+  - **Validate:** Add an integration test using mocked HTTP responses: root sitemapindex -> child urlset -> page URLs; assert fetched URLs are pages and not `.xml`.
+
 ## Phase 0-R: Real-world crawl resilience (rate limiting + auditability)
 
 > Motivation: real sites frequently rate-limit bots (HTTP 429), and weekly runs must persist snapshots for auditability/diffing.
@@ -110,18 +158,51 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** A simulated 429 response is retried and can succeed on a later attempt.
   - **Validate:** Add/extend unit tests (e.g., `tests/test_http_client.py`) using a mocked transport.
 
-- [x] **0-R.2** Ensure weekly page fetch persists `snapshots` (and relevant artifacts) for all attempted URLs
+- [x] **0-R.2a** Define weekly snapshot persistence schema (run_id-linked, supports errors)
+  - **Goal:** Make weekly crawl auditability possible and enable "New vs Resolved" later.
+  - **Files:** `src/ranksentinel/db.py`, `BOOTSTRAP.md` (if spec update needed)
+  - **Proposed schema (MVP):**
+    - Extend `snapshots` table to include:
+      - `run_id TEXT` (links snapshot rows to a specific run)
+      - `error_type TEXT` and `error TEXT` (optional, for fetch failures)
+    - Keep existing fields; on failure persist:
+      - `status_code = 0` (or other explicit sentinel) and `content_hash = ''` (empty)
+      - `final_url = url`, `redirect_chain = '[]'`
+    - Add index for lookup: `(customer_id, run_type, fetched_at DESC)` and optionally `(customer_id, run_id)`.
+  - **AC:** Schema supports storing a row even when the fetch failed, and supports scoping a report to a specific run_id.
+
+- [x] **0-R.2b** Implement DB migration-on-startup (no manual migrations)
+  - **Goal:** Ensure existing DB files get new tables/columns automatically when the runner starts.
+  - **Files:** `src/ranksentinel/db.py`
+  - **Implementation guidance:**
+    - Enhance `init_db(conn)` to be idempotent but also apply lightweight migrations:
+      - create missing tables (`run_coverage`)
+      - `ALTER TABLE` add missing columns (e.g., `snapshots.run_id`, `snapshots.error_type`, `snapshots.error`)
+      - (Also ensure `findings.run_id` exists if code expects it)
+    - Use `PRAGMA table_info(<table>)` checks before ALTER.
+  - **AC:** Running `init_db()` against an older DB creates `run_coverage` and adds missing columns without data loss.
+  - **Validate:** Add a unit test that creates an "old" schema (without these columns) and then calls `init_db()` and asserts columns exist.
+
+- [x] **0-R.2c** Persist weekly page fetch results into `snapshots` for all attempted URLs
   - **Goal:** Weekly runs must leave an audit trail in SQLite for reporting/diffing and customer support.
   - **Files (likely):** `src/ranksentinel/runner/weekly_digest.py`, `src/ranksentinel/runner/page_fetcher.py`, `src/ranksentinel/db.py`
   - **Implementation guidance:**
-    - Confirm intended contract:
-      - On each attempted fetch (success or error), persist a `snapshots` row with:
-        - `customer_id`, `url`, `run_type='weekly'`, `fetched_at`, `status_code`, `final_url`, `redirect_chain`, `content_hash` (use empty hash on error if needed)
-      - For successes, persist parsed fields (`title`, `canonical`, `meta_robots`) and/or artifacts as currently designed.
-    - If persistence is intentionally only on success today, change it to persist at least the status/redirect metadata for failures too.
-  - **AC:** After a weekly run with `crawl_limit=N`, there are `N` new `snapshots` rows for that customer/run_type (or fewer only if sitemap has < N URLs).
-  - **Validate:**
-    - Add/extend an integration test (e.g., `tests/test_weekly_fetcher_integration.py`) that runs weekly against a controlled local fixture/mocked HTTP client and asserts snapshot rows inserted.
+    - Implement `persist_fetch_results()` in `page_fetcher.py` (remove "schema TBD" stub).
+    - Call it from `weekly_digest.run()` immediately after `fetch_pages()`.
+    - Persist one row per attempted URL with `run_type='weekly'` and the current `run_id`.
+  - **AC:** After a weekly run with `crawl_limit=N`, there are `N` new `snapshots` rows with `run_type='weekly'` and `run_id=<current run_id>` (or fewer only if sitemap has < N URLs).
+  - **Validate:** Extend `tests/test_weekly_fetcher_integration.py` to assert snapshot rows inserted and include run_id.
+
+- [ ] **0-R.4** Verify weekly snapshots + run_coverage tables are created in the *real* SQLite DB
+  - **Goal:** Catch schema drift where code expects new tables but the live DB never got `init_db()` applied.
+  - **Files (likely):** `src/ranksentinel/db.py`, `src/ranksentinel/runner/weekly_digest.py`, `scripts/run_weekly.sh`, docs as needed
+  - **Implementation guidance:**
+    - Ensure weekly calls `init_db(conn)` against the configured `RANKSENTINEL_DB_PATH`.
+    - Add a smoke/integration test that runs a weekly pass against a temp DB and asserts:
+      - `run_coverage` table exists + row inserted
+      - `snapshots` includes `run_type='weekly'` rows
+    - (Optional) Consider adding a small startup log line printing DB path for easier debugging.
+  - **AC:** After a weekly run in this workspace, `sqlite3 ranksentinel.sqlite3 "select count(*) from run_coverage;"` is > 0 and `select run_type,count(*) from snapshots group by run_type;` includes weekly.
 
 - [x] **0-R.3** Add regression coverage for rate-limited site behavior
   - **Goal:** Prevent future regressions where 429 causes large error_count and zero snapshots.
@@ -164,7 +245,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** After a weekly run, coverage stats exist in DB for that customer and run_id.
   - **Validate:** Add integration test to assert row exists and counts are non-null.
 
-- [ ] **0-E.4** Include coverage stats in the weekly email (text + HTML)
+- [x] **0-E.4** Include coverage stats in the weekly email (text + HTML)
   - **Goal:** Even when there are no findings, the email shows what RankSentinel monitored.
   - **Files (likely):** `src/ranksentinel/runner/weekly_digest.py`, `src/ranksentinel/reporting/report_composer.py`
   - **Implementation guidance:**
@@ -176,112 +257,13 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - success vs error counts (including 429 count)
   - **Validate:** Unit/integration test verifying section exists.
 
-- [ ] **0-E.5** Weekly email should distinguish "New" vs "Existing" vs "Resolved" findings (MVP)
+- [x] **0-E.5** Weekly email should distinguish "New" vs "Existing" vs "Resolved" findings (MVP)
   - **Goal:** Avoid confusion when an issue was fixed but still appears in the "last 7 days" window.
   - **Implementation guidance (MVP acceptable):**
     - Scope the email to the current run via `run_id` (preferred), OR
     - Add a lightweight resolution mechanism by comparing current snapshots vs previous period and marking findings resolved.
   - **AC:** After fixing an issue (e.g., 404 becomes 200), the next weekly email does NOT present it as a current critical issue.
   - **Validate:** Add a test that simulates a 404 in run 1 and a 200 in run 2 and verifies the run 2 email does not show it as active.
-
-## Phase 0-H: Human go-live checklist (required to start charging)
-
-> This section is intentionally **human-owned**. These items are the practical prerequisites to operate RankSentinel reliably and accept payments.
-
-### 0-H.1 Domain + DNS
-
-- [x] **0-H.1.1** Acquire a primary domain for the product (e.g., `ranksentinel.com`)
-  - **AC:** You control DNS for the domain
-
-- [x] **0-H.1.2** Create a dedicated sending subdomain for email (recommended: `mg.<yourdomain>`)
-  - **Example:** `mg.ranksentinel.com`
-  - **AC:** Subdomain exists in DNS provider
-
-- [x] **0-H.1.3** (Optional but recommended) Create an app/API subdomain
-  - **Example:** `api.ranksentinel.com`
-  - **AC:** You can point it to the VPS later
-
-### 0-H.2 VPS (Hostinger) provisioning
-
-- [x] **0-H.2.1** Purchase/provision Hostinger VPS
-  - **AC:** You have SSH access
-  - **AC:** You can install Python 3.11+ and run cron
-
-- [x] **0-H.2.2** Configure server basics
-  - **AC:** OS updates applied
-  - **AC:** SSH keys configured (disable password login if possible)
-  - **AC:** Firewall enabled (only ports you need)
-  - **AC:** Timezone + NTP configured
-
-### 0-H.3 Deploy RankSentinel to VPS
-
-- [x] **0-H.3.1** Clone repo to VPS (recommended path `/opt/ranksentinel`)
-  - **Validate:** Follow `docs/RUNBOOK_VPS.md`
-
-- [x] **0-H.3.2** Create `.env` on VPS from `.env.example`
-  - **AC:** `.env` exists at `/opt/ranksentinel/.env`
-  - **AC:** `.env` is not committed to git
-
-- [x] **0-H.3.3** Install + smoke test
-  - **AC:** `bash scripts/run_daily.sh` runs on VPS
-  - **AC:** `bash scripts/run_weekly.sh` runs on VPS
-  - **AC:** Logs are written under `/opt/ranksentinel/logs/`
-
-### 0-H.4 Mailgun setup (email delivery)
-
-- [x] **0-H.4.1** Create Mailgun account + choose plan
-  - **AC:** You have an API key
-
-- [x] **0-H.4.2** Add & verify the sending domain/subdomain in Mailgun
-  - **AC:** DNS records added (SPF, DKIM, tracking) and domain verifies successfully
-
-- [x] **0-H.4.3** Configure Mailgun env vars on VPS
-  - **AC:** `.env` contains:
-    - `MAILGUN_API_KEY`
-    - `MAILGUN_DOMAIN`
-    - `MAILGUN_FROM`
-
-- [x] **0-H.4.4** Send a real test email end-to-end
-  - **AC:** Run weekly with Mailgun configured
-  - **AC:** At least one email is received successfully
-  - **AC:** A `deliveries` row is recorded with `status='sent'` (or clear `failed` with error)
-
-### 0-H.5 Scheduling + monitoring
-
-- [x] **0-H.5.1** Set up cron on VPS
-  - **AC:** Cron entries match `docs/RUNBOOK_VPS.md`
-  - **AC:** Daily schedule + weekly schedule both present
-
-- [x] **0-H.5.2** Operator alerting on job failure
-  - **AC:** `RANKSENTINEL_OPERATOR_EMAIL` is set (optional but recommended)
-  - **AC:** You have a procedure to check logs when alerted
-
-- [x] **0-H.5.3** Backups
-  - **AC:** Nightly backup of `ranksentinel.sqlite3` exists (simple `cp` to dated file is acceptable for MVP)
-  - **AC:** You can restore from backup
-
-### 0-H.6 First paying customer readiness
-
-- [x] **0-H.6.1** Define your MVP offer + price
-  - **AC:** Clear pricing (e.g., per site / per month)
-
-- [x] **0-H.6.2** Create a Stripe account (or alternative) and a way to accept payment
-  - **AC:** Payment link or checkout exists
-
-- [x] **0-H.6.3** Document onboarding inputs you need from a customer
-  - **AC:** You know how you will collect:
-    - website domain
-    - sitemap URL
-    - key pages (targets)
-    - email recipients
-    - crawl limits
-
-- [x] **0-H.6.4** Onboard 1 real site end-to-end
-  - **AC:** Customer exists in DB
-  - **AC:** Targets exist in DB
-  - **AC:** Settings include a valid `sitemap_url`
-  - **AC:** Weekly run generates weekly snapshots and sends digest
-
 
 ## Phase 0: Bootstrap verification and local run path (atomic)
 

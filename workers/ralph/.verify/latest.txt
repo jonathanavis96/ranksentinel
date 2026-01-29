@@ -1,6 +1,6 @@
 Ralph Verifier Report
-Time: 2026-01-29 16:49:44
-Git:  ad913b6
+Time: 2026-01-29 16:51:07
+Git:  20a2fc4
 AC:   /home/grafe/code/ranksentinel/workers/ralph/rules/AC.rules
 Approvals: /home/grafe/code/ranksentinel/workers/ralph/rules/MANUAL_APPROVALS.rules
 ------------------------------------------------------------
@@ -89,11 +89,13 @@ Approvals: /home/grafe/code/ranksentinel/workers/ralph/rules/MANUAL_APPROVALS.ru
   cmd:  sha256sum verifier.sh | cut -d' ' -f1 | diff -q - .verify/verifier.sha256 >/dev/null 2>&1 && echo match || echo mismatch
   exit: 0
   stdout: match
-[PASS] Protected.3
+[WARN] Protected.3 (auto check failed but warn gate)
   desc: PROMPT.md differs from baseline (allowed in projects)
   cmd:  sha256sum PROMPT.md | cut -d' ' -f1 | diff -q - .verify/prompt.sha256 >/dev/null 2>&1 && echo match || echo mismatch
   exit: 0
-  stdout: match
+  stdout: mismatch
+  reasons:
+    - stdout mismatch expected='match' got='mismatch'
 [PASS] VerifyMeta.1
   desc: Verifier run_id.txt exists and is non-empty
   cmd:  test -s .verify/run_id.txt && echo OK || echo FAIL
@@ -139,9 +141,9 @@ NEURONS.md:388:81 error MD013/line-length Line length [Expected: 80; Actual: 130
 THOUGHTS.md:65:81 error MD013/line-length Line length [Expected: 80; Actual: 95]
 ------------------------------------------------------------
 SUMMARY
-  PASS: 23
+  PASS: 22
   FAIL: 0
-  WARN: 1 (manual_warn=1)
+  WARN: 2 (manual_warn=1)
   SKIP: 0
   Manual gate=block failures: 0
   Hash guard: OK
