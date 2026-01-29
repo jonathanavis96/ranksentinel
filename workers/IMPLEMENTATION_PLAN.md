@@ -220,7 +220,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - success vs error counts (including 429 count)
   - **Validate:** Unit/integration test verifying section exists.
 
-- [ ] **0-E.5** Weekly email should distinguish "New" vs "Existing" vs "Resolved" findings (MVP)
+- [x] **0-E.5** Weekly email should distinguish "New" vs "Existing" vs "Resolved" findings (MVP)
   - **Goal:** Avoid confusion when an issue was fixed but still appears in the "last 7 days" window.
   - **Implementation guidance (MVP acceptable):**
     - Scope the email to the current run via `run_id` (preferred), OR
