@@ -4,13 +4,15 @@ Last Updated: 2026-01-28 22:09:32
 
 ## Mission
 
-From `BOOTSTRAP.md`: Ship an autonomous SEO regression monitor (daily critical checks + weekly digest) with low-noise alerts.
+From `BOOTSTRAP.md`: Ship an autonomous SEO regression monitor (daily critical
+checks + weekly digest) with low-noise alerts.
 
 ## Relationship to Ralph
 
 Ralph executes work from `workers/IMPLEMENTATION_PLAN.md`.
 
-Cortex uses this file for higher-level planning notes and phase intent. The source of truth task list is `workers/IMPLEMENTATION_PLAN.md`.
+Cortex uses this file for higher-level planning notes and phase intent. The
+source of truth task list is `workers/IMPLEMENTATION_PLAN.md`.
 
 ## Strategic phases (summary)
 
