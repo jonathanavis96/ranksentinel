@@ -97,3 +97,5 @@ Started: 2026-01-28
 - `tests/test_normalization.py`: Added 8 new tests for meta robots and canonical extraction
 
 | 2.0 | Created central conftest.py with shared pytest fixtures: db_conn, test_db, robots (5 variants), sitemap (4 variants), HTML (5 variants), PSI (4 variants). Added test_fixtures.py to validate fixtures. 104 tests collected, 96 passed. | 2026-01-29 |
+
+| 2.1 | Implemented robots.txt parser and crawl gate module. Created `src/ranksentinel/runner/robots.py` with `RobotsCrawlGate` class using Python's urllib.robotparser for RFC-compliant robots.txt parsing. Provides `can_fetch(url)` method for single URL checks and `filter_urls(urls)` for batch filtering. Added comprehensive test suite in `tests/test_robots_parser.py` with 11 tests covering: empty robots, disallow rules, site-wide blocks, unloaded state, cross-domain handling, comment parsing, and AC requirement for /private blocking. All tests pass. Default behavior when robots.txt unavailable: allow crawling (documented in code). Ready for integration into weekly crawl sampler. | 2026-01-29 |

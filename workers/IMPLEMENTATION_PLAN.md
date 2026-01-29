@@ -238,7 +238,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - PSI JSON (minimal representative samples)
   - **Validate:** `pytest -q`
 
-- [ ] **2.1** Robots rules parser + crawl gate
+- [x] **2.1** Robots rules parser + crawl gate
   - **Goal:** weekly crawl sampling must not fetch disallowed URLs.
   - **AC:** robots is fetched once per customer per run and parsed into allow/deny rules
   - **AC:** sampled URLs are filtered through robots rules before fetch
