@@ -1,1 +1,101 @@
-# Sample RankSentinel Weekly Digest (Example)\n\nSubject:\n\nRankSentinel Weekly Digest — ExampleCo\n\nTo:\n\<<nseo@exampleco.com>>\n\n---\n\n## Executive Summary\n\n- 2 Critical\n- 3 Warnings\n- 6 Info\n\nThis report focuses on SEO regressions and high-signal site health issues. It avoids alert noise by normalizing page content and only escalating high-severity issues.\n\n---\n\n## Critical\n\n### 1) Homepage is now `noindex`\n\n- URL: `https://example.com/`\n- Detected: meta robots changed from empty → `noindex,follow`\n- Why it matters: pages with `noindex` may be removed from search results.\n- Recommended action:\n  1. Check your CMS/SEO plugin settings for “Discourage search engines”.\n  2. Verify there is no environment toggle that accidentally set production to noindex.\n  3. Deploy fix and confirm the meta robots tag is removed.\n\n### 2) `robots.txt` now blocks `/blog/`\n\n- URL: `https://example.com/robots.txt`\n- Change: new rule `Disallow: /blog/`\n- Why it matters: search engines may stop crawling blog pages, causing traffic loss.\n- Recommended action:\n  1. Confirm intended behavior.\n  2. Revert unintended disallow.\n  3. Validate robots file in Search Console (if available).\n\n---\n\n## Warnings\n\n### 1) Pricing page canonical changed\n\n- URL: `https://example.com/pricing`\n- Change: canonical now points to `https://example.com/` (unexpected)\n- Why it matters: search engines may treat the pricing page as duplicate content.\n- Recommended action:\n  1. Check canonical tag generation in your theme/plugin.\n  2. Ensure self-referential canonical on pricing page.\n\n### 2) New 404s discovered (sample crawl)\n\n- Example broken URLs:\n  - `https://example.com/blog/old-post`\n  - `https://example.com/docs/getting-started-old`\n- Why it matters: broken internal links waste crawl budget and harm UX.\n- Recommended action:\n  1. Add redirects for moved pages.\n  2. Update internal links on referring pages.\n\n### 3) PageSpeed regression suspected (awaiting confirmation)\n\n- URL: `https://example.com/pricing`\n- Mobile LCP: 2.1s → 3.0s\n- Status: suspected (will confirm on next run)\n- Recommended action:\n  1. Check recent deploys for new scripts/images.\n  2. Verify caching and image optimization.\n\n---\n\n## Info\n\n### 1) Blog homepage content changed\n\n- URL: `https://example.com/blog/`\n- Detected: main content changed (normalized diff)\n- Interpretation: informational; not necessarily a regression.\n\n### 2) Sitemap URL count increased\n\n- URL: `https://example.com/sitemap.xml`\n- Count: 1200 → 1235\n- Interpretation: growth; verify new URLs are intended.\n\n---\n\n## What to do first (prioritized)\n\n1. Remove `noindex` from homepage.\n2. Fix `robots.txt` disallow for `/blog/` if unintended.\n3. Resolve canonical misconfiguration on pricing page.\n4. Address new 404s by redirecting or updating internal links.\n5. Re-check PSI regression on next run; investigate if confirmed.\n
+# Sample RankSentinel Weekly Digest (Example)
+
+**Subject:** RankSentinel Weekly Digest — ExampleCo
+
+**To:** <seo@exampleco.com>
+
+---
+
+## Executive Summary
+
+- **2 Critical**
+- **3 Warnings**
+- **6 Info**
+
+This report focuses on SEO regressions and high-signal site health issues. It avoids alert noise by normalizing page content and only escalating high-severity issues.
+
+---
+
+## Critical
+
+### 1) Homepage is now `noindex`
+
+- **URL:** `https://example.com/`
+- **Detected:** Meta robots changed from `index,follow` → `noindex,follow`
+- **Why it matters:** Your homepage may drop from search results.
+- **Suggested fix:** Remove the `noindex` directive or scope it to non-production environments.
+
+**Evidence**
+
+```text
+<meta name="robots" content="noindex,follow">
+```
+
+---
+
+### 2) Robots.txt now blocks key section
+
+- **URL:** `https://example.com/robots.txt`
+- **Detected:** `Disallow: /blog/`
+- **Why it matters:** Blog pages may stop being crawled and lose rankings.
+- **Suggested fix:** Remove the rule or narrow it to non-indexable paths.
+
+**Evidence**
+
+```text
+User-agent: *
+Disallow: /blog/
+```
+
+---
+
+## Warnings
+
+### 1) Sitemap index URL count dropped
+
+- **URL:** `https://example.com/sitemap.xml`
+- **Detected:** URL count decreased by ~35%
+- **Why it matters:** Indicates accidental URL removal, canonical changes, or crawlability issues.
+- **Suggested fix:** Confirm the CMS didn’t stop publishing URLs and that the sitemap generator is healthy.
+
+---
+
+### 2) Spike in 404 responses
+
+- **Detected:** 404 rate increased on previously indexed URLs
+- **Why it matters:** Can cause deindexing and loss of long-tail traffic.
+- **Suggested fix:** Restore the pages or add 301 redirects.
+
+---
+
+### 3) Title tag drift on key pages
+
+- **Detected:** Title templates changed on high-value pages
+- **Why it matters:** Titles influence rankings and CTR.
+- **Suggested fix:** Revert the template change or confirm it’s intentional.
+
+---
+
+## Info
+
+### 1) Minor content changes detected
+
+- **Detected:** Non-structural content edits on several pages.
+- **Action:** No action needed unless edits were unplanned.
+
+---
+
+## Recommendations (Next 7 Days)
+
+1. **Fix homepage `noindex`** and redeploy.
+2. **Audit robots.txt** changes and confirm crawl rules.
+3. **Investigate sitemap URL drop** (compare current vs last-known-good export).
+4. **Add redirects** for new 404s affecting organic traffic.
+
+---
+
+## Report Metadata
+
+- **Generated:** 2026-01-29 18:15:00
+- **Report type:** Weekly digest
+- **Note:** This is an example layout; actual findings and counts vary.
