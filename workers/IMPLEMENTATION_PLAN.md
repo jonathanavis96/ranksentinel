@@ -257,7 +257,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 6: API contract + forms integration
 
-- [ ] **6.1** Write website↔API contract doc
+- [x] **6.1** Write website↔API contract doc
   - **Goal:** Prevent frontend/backend mismatch.
   - **AC:** A doc under `docs/` includes:
     - endpoints
