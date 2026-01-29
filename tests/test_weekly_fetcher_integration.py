@@ -62,7 +62,7 @@ def test_weekly_fetcher_enforces_crawl_limit(tmp_path):
 
 
 def test_weekly_fetcher_records_fetch_status(tmp_path):
-    """Test that weekly fetcher logs fetch results."""
+    """Test that weekly fetcher logs fetch results and persists snapshots."""
     # Setup test database
     db_path = tmp_path / "test.db"
     conn = sqlite3.connect(str(db_path))
@@ -126,10 +126,38 @@ def test_weekly_fetcher_records_fetch_status(tmp_path):
         conn = sqlite3.connect(str(db_path))
         conn.row_factory = sqlite3.Row
         findings = fetch_all(conn, "SELECT * FROM findings WHERE customer_id=?", (customer_id,))
+        
+        # Verify snapshots were persisted
+        snapshots = fetch_all(
+            conn,
+            "SELECT * FROM snapshots WHERE customer_id=? AND run_type='weekly'",
+            (customer_id,)
+        )
+        
+        # Verify run_coverage was created
+        run_coverage = fetch_all(
+            conn,
+            "SELECT * FROM run_coverage WHERE customer_id=? AND run_type='weekly'",
+            (customer_id,)
+        )
+        
         conn.close()
         
         # Should have at least the bootstrap finding (still in DB, just not in email)
         assert len(findings) >= 1
+        
+        # Should have exactly 5 snapshots (crawl_limit=5)
+        assert len(snapshots) == 5, f"Expected 5 snapshots, got {len(snapshots)}"
+        
+        # Verify all snapshots have run_id set
+        for snapshot in snapshots:
+            assert snapshot["run_id"], f"Snapshot missing run_id: {dict(snapshot)}"
+            assert snapshot["run_type"] == "weekly"
+            assert snapshot["customer_id"] == customer_id
+        
+        # Should have exactly 1 run_coverage entry
+        assert len(run_coverage) == 1, f"Expected 1 run_coverage entry, got {len(run_coverage)}"
+        assert run_coverage[0]["run_type"] == "weekly"
 
 
 def test_weekly_fetcher_skips_customer_without_sitemap(tmp_path):

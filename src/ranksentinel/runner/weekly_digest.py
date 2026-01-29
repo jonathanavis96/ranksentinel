@@ -19,7 +19,7 @@ from ranksentinel.runner.finding_utils import insert_finding
 from ranksentinel.runner.link_checker import find_broken_links
 from ranksentinel.runner.logging_utils import generate_run_id, log_stage, log_structured, log_summary
 from ranksentinel.runner.normalization import normalize_url
-from ranksentinel.runner.page_fetcher import PageFetchResult, fetch_pages
+from ranksentinel.runner.page_fetcher import PageFetchResult, fetch_pages, persist_fetch_results
 from ranksentinel.runner.sitemap_parser import list_sitemap_urls
 
 
@@ -420,6 +420,14 @@ def run(settings: Settings) -> None:
                         customer_id=customer_id,
                         urls=urls,
                         crawl_limit=crawl_limit,
+                    )
+                    
+                    # Persist fetch results to snapshots table
+                    persist_fetch_results(
+                        conn=conn,
+                        run_id=run_id,
+                        customer_id=customer_id,
+                        results=fetch_results,
                     )
                     
                     # Calculate coverage stats

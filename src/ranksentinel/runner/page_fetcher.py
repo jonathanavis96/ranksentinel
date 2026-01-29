@@ -161,13 +161,52 @@ def persist_fetch_results(
         customer_id: Customer ID
         results: List of PageFetchResult objects
     """
-    # This will be implemented in a future task when we define the schema
-    # For now, just log the results
+    from datetime import datetime, timezone
+    import hashlib
+    
+    cursor = conn.cursor()
+    fetched_at = datetime.now(timezone.utc).isoformat()
+    
+    for result in results:
+        # Calculate content hash (empty string for failed fetches)
+        content_hash = ""
+        if result.body:
+            content_hash = hashlib.sha256(result.body.encode("utf-8")).hexdigest()
+        
+        # Insert snapshot row
+        cursor.execute(
+            """
+            INSERT INTO snapshots (
+                customer_id, url, run_type, run_id, fetched_at,
+                status_code, final_url, redirect_chain, title,
+                canonical, meta_robots, content_hash, error_type, error
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                customer_id,
+                result.url,
+                "weekly",
+                run_id,
+                fetched_at,
+                result.status_code or 0,  # Use 0 for None
+                result.final_url or result.url,
+                "",  # redirect_chain - not tracked yet
+                None,  # title - not extracted yet
+                None,  # canonical - not extracted yet
+                None,  # meta_robots - not extracted yet
+                content_hash,
+                result.error_type,
+                result.error,
+            ),
+        )
+    
+    conn.commit()
+    
     log_structured(
         run_id,
         run_type="weekly",
         stage="persist_fetch",
-        status="info",
+        status="complete",
         customer_id=customer_id,
-        message=f"Would persist {len(results)} fetch results (schema TBD)",
+        persisted_count=len(results),
     )
