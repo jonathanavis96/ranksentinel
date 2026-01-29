@@ -203,7 +203,7 @@ Brain skills (open those relevant to the current item):
     - Final CTA
   - **If Blocked:** Ship hero + why-different + pricing + final CTA first, then fill remaining sections.
 
-- [ ] **4.2** Implement Feature Tabs component
+- [x] **4.2** Implement Feature Tabs component
   - **Goal:** Show breadth without clutter.
   - **References:** `docs/websites/04_page_requirements.md`.
   - **AC:** Tabs exist with correct labels and each has 3 bullets + preview snippet:

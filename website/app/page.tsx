@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Container, EmailReportPreview } from './components';
+import { Badge, Button, Card, Container, EmailReportPreview, FeatureTabs } from './components';
 
 export default function Home() {
   return (
@@ -263,6 +263,22 @@ export default function Home() {
           <p className="text-sm text-[var(--color-body-light)] text-center mt-12">
             Runs on a VPS with cron + Mailgun + PSI API key.
           </p>
+        </Container>
+      </section>
+
+      {/* Feature Tabs */}
+      <section id="features" className="py-20 md:py-32">
+        <Container size="lg">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-[var(--color-headline)]">
+              What RankSentinel monitors
+            </h2>
+            <p className="text-lg text-[var(--color-body)] max-w-2xl mx-auto">
+              Comprehensive SEO regression detection across multiple signals.
+            </p>
+          </div>
+
+          <FeatureTabs />
         </Container>
       </section>
 
