@@ -72,6 +72,20 @@ Brain skills (open those relevant to the current item):
 
 ## Website build tasks (atomic)
 
+### Phase 0-Lint: Markdown Lint Errors
+
+- [ ] **0.1** Fix MD024 in brain_upstream/cortex/PLAN_DONE.md
+  - **AC:** `markdownlint brain_upstream/cortex/PLAN_DONE.md` passes (no MD024 errors for "Archived on 2026-01-26")
+
+- [ ] **0.2** Fix MD056 table column count errors in brain_upstream/TEMPLATE_DRIFT_REPORT.md
+  - **AC:** `markdownlint brain_upstream/TEMPLATE_DRIFT_REPORT.md` passes (no MD056 errors on lines 61, 77, 87)
+
+- [ ] **0.3** Fix MD040 in brain_upstream/TEMPLATE_DRIFT_REPORT.md
+  - **AC:** `markdownlint brain_upstream/TEMPLATE_DRIFT_REPORT.md` passes (no MD040 errors on line 254)
+
+- [ ] **0.4** Fix MD056 table column count errors in brain_upstream/workers/ralph/THUNK.md
+  - **AC:** `markdownlint brain_upstream/workers/ralph/THUNK.md` passes (no MD056 errors on lines 829, 839, 841-848)
+
 ### Task 1: Planning sanity + IA confirmation
 
 - [ ] **1.1** Confirm MVP page list and section blueprint alignment
