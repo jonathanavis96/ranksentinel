@@ -1,7 +1,5 @@
 """Tests for list_sitemap_urls function."""
 
-import pytest
-
 from ranksentinel.runner.sitemap_parser import list_sitemap_urls
 
 
@@ -132,10 +130,7 @@ class TestListSitemapUrls:
     def test_large_urlset(self):
         """Test large urlset returns all URLs."""
         urls_xml = "\n".join(
-            [
-                f'  <url><loc>https://example.com/page{i}</loc></url>'
-                for i in range(100)
-            ]
+            [f"  <url><loc>https://example.com/page{i}</loc></url>" for i in range(100)]
         )
         xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

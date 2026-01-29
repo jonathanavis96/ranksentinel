@@ -1,6 +1,5 @@
 """Test sitemap fetch and artifact storage."""
 
-import sqlite3
 from unittest.mock import Mock, patch
 
 import pytest
@@ -140,7 +139,7 @@ def test_sitemap_missing_creates_finding(test_db):
         "SELECT severity, category, title FROM findings WHERE customer_id=? AND title=?",
         (customer_id, "Sitemap unreachable"),
     ).fetchall()
-    
+
     assert len(findings) == 1
     finding = findings[0]
     assert finding["severity"] == "critical"
@@ -177,13 +176,20 @@ def test_sitemap_no_change_no_store(test_db):
     # Pre-store the sitemap artifact
     import hashlib
     from datetime import datetime, timezone
-    
+
     sha = hashlib.sha256(sitemap_content.encode("utf-8")).hexdigest()
     fetched_at = datetime.now(timezone.utc).isoformat()
     conn.execute(
         "INSERT INTO artifacts(customer_id, kind, subject, artifact_sha, raw_content, fetched_at) "
         "VALUES (?, ?, ?, ?, ?, ?)",
-        (customer_id, "sitemap", "https://example.com/sitemap.xml", sha, sitemap_content, fetched_at),
+        (
+            customer_id,
+            "sitemap",
+            "https://example.com/sitemap.xml",
+            sha,
+            sitemap_content,
+            fetched_at,
+        ),
     )
     conn.commit()
 
@@ -221,5 +227,5 @@ def test_sitemap_no_change_no_store(test_db):
         "SELECT COUNT(*) as count FROM artifacts WHERE customer_id=? AND kind=?",
         (customer_id, "sitemap"),
     ).fetchone()["count"]
-    
+
     assert artifact_count == 1

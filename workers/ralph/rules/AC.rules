@@ -263,4 +263,3 @@ gate=warn
 desc=THOUGHTS.md passes markdownlint (if installed)
 cmd=bash -c 'command -v markdownlint &>/dev/null && markdownlint THOUGHTS.md 2>&1 | head -10 || echo "ok (markdownlint not installed)"'
 expect_stdout_regex=(^$|ok|THOUGHTS\.md)
-

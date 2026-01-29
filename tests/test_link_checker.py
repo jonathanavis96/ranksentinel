@@ -1,7 +1,5 @@
 """Tests for internal link extraction and broken link detection."""
 
-import pytest
-
 from ranksentinel.runner.link_checker import extract_internal_links, find_broken_links
 
 
@@ -17,9 +15,9 @@ def test_extract_internal_links_basic():
     </html>
     """
     base_url = "https://example.com"
-    
+
     links = extract_internal_links(html, base_url)
-    
+
     assert len(links) == 3
     assert "https://example.com/page1" in links
     assert "https://example.com/page2" in links
@@ -38,9 +36,9 @@ def test_extract_internal_links_excludes_external():
     </html>
     """
     base_url = "https://example.com"
-    
+
     links = extract_internal_links(html, base_url)
-    
+
     assert len(links) == 2
     assert "https://example.com/internal" in links
     assert "https://example.com/also-internal" in links
@@ -61,9 +59,9 @@ def test_extract_internal_links_excludes_fragments_and_special():
     </html>
     """
     base_url = "https://example.com"
-    
+
     links = extract_internal_links(html, base_url)
-    
+
     assert len(links) == 1
     assert "https://example.com/valid" in links
 
@@ -79,9 +77,9 @@ def test_extract_internal_links_removes_fragments():
     </html>
     """
     base_url = "https://example.com"
-    
+
     links = extract_internal_links(html, base_url)
-    
+
     # Should dedupe to a single URL without fragments
     assert len(links) == 1
     assert "https://example.com/page" in links
@@ -98,9 +96,9 @@ def test_extract_internal_links_handles_query_params():
     </html>
     """
     base_url = "https://example.com"
-    
+
     links = extract_internal_links(html, base_url)
-    
+
     assert len(links) == 2
     assert "https://example.com/page?foo=bar" in links
     assert "https://example.com/page?baz=qux" in links
@@ -131,9 +129,9 @@ def test_extract_internal_links_relative_paths():
     </html>
     """
     base_url = "https://example.com/subdir/"
-    
+
     links = extract_internal_links(html, base_url)
-    
+
     assert "https://example.com/subdir/page1" in links
     assert "https://example.com/subdir/page2" in links
     assert "https://example.com/page3" in links
@@ -141,7 +139,7 @@ def test_extract_internal_links_relative_paths():
 
 def test_find_broken_links_integration():
     """Test broken link detection with mock scenario.
-    
+
     Note: This is a minimal test. In a real scenario, you'd mock fetch_text
     or use a test server.
     """
@@ -154,11 +152,11 @@ def test_find_broken_links_integration():
     </html>
     """
     base_url = "https://httpbin.org"
-    
+
     # This will actually make network calls to httpbin.org/page1 and /page2
     # which should return 404s or connection errors
     broken = find_broken_links(base_url, html, max_links_to_check=2, timeout_s=5)
-    
+
     # Expect 2 broken links (404s or errors)
     assert len(broken) == 2
     for target_url, status_code, error_msg in broken:

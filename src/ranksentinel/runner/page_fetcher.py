@@ -9,16 +9,14 @@ Features:
 """
 
 import sqlite3
-from typing import Any
 
 from ranksentinel.http_client import FetchResult, fetch_text
-from ranksentinel.runner.fetch_scheduler import FetchScheduler
 from ranksentinel.runner.logging_utils import log_structured
 
 
 class PageFetchResult:
     """Result of fetching a single page."""
-    
+
     def __init__(
         self,
         url: str,
@@ -34,12 +32,12 @@ class PageFetchResult:
         self.body = body
         self.error = error
         self.error_type = error_type
-    
+
     @property
     def ok(self) -> bool:
         """Returns True if fetch was successful (2xx)."""
         return self.status_code is not None and 200 <= self.status_code < 300
-    
+
     @property
     def is_404(self) -> bool:
         """Returns True if page returned 404."""
@@ -55,7 +53,7 @@ def fetch_pages(
     attempts: int = 3,
 ) -> list[PageFetchResult]:
     """Fetch a list of URLs with crawl limit enforcement.
-    
+
     Args:
         run_id: Unique run identifier for logging
         customer_id: Customer ID for logging
@@ -63,7 +61,7 @@ def fetch_pages(
         crawl_limit: Maximum number of pages to fetch
         timeout: Request timeout in seconds
         attempts: Number of retry attempts per URL
-    
+
     Returns:
         List of PageFetchResult objects (up to crawl_limit entries)
     """
@@ -76,10 +74,10 @@ def fetch_pages(
         total_urls=len(urls),
         crawl_limit=crawl_limit,
     )
-    
+
     results = []
     urls_to_fetch = urls[:crawl_limit]
-    
+
     for idx, url in enumerate(urls_to_fetch, start=1):
         log_structured(
             run_id,
@@ -90,14 +88,14 @@ def fetch_pages(
             url=url,
             progress=f"{idx}/{len(urls_to_fetch)}",
         )
-        
+
         # Use existing http_client for retry/backoff
         fetch_result: FetchResult = fetch_text(
             url=url,
             timeout=timeout,
             attempts=attempts,
         )
-        
+
         # Convert to PageFetchResult
         result = PageFetchResult(
             url=url,
@@ -107,9 +105,9 @@ def fetch_pages(
             error=fetch_result.error,
             error_type=fetch_result.error_type.value if fetch_result.error_type else None,
         )
-        
+
         results.append(result)
-        
+
         # Log fetch outcome
         if result.ok:
             log_structured(
@@ -133,7 +131,7 @@ def fetch_pages(
                 error=result.error,
                 error_type=result.error_type,
             )
-    
+
     log_structured(
         run_id,
         run_type="weekly",
@@ -144,7 +142,7 @@ def fetch_pages(
         success_count=sum(1 for r in results if r.ok),
         error_count=sum(1 for r in results if not r.ok),
     )
-    
+
     return results
 
 
@@ -155,7 +153,7 @@ def persist_fetch_results(
     results: list[PageFetchResult],
 ) -> None:
     """Persist page fetch results to database.
-    
+
     Args:
         conn: Database connection
         run_id: Unique run identifier
@@ -164,16 +162,16 @@ def persist_fetch_results(
     """
     from datetime import datetime, timezone
     import hashlib
-    
+
     cursor = conn.cursor()
     fetched_at = datetime.now(timezone.utc).isoformat()
-    
+
     for result in results:
         # Calculate content hash (empty string for failed fetches)
         content_hash = ""
         if result.body:
             content_hash = hashlib.sha256(result.body.encode("utf-8")).hexdigest()
-        
+
         # Insert snapshot row
         cursor.execute(
             """
@@ -200,9 +198,9 @@ def persist_fetch_results(
                 result.error,
             ),
         )
-    
+
     conn.commit()
-    
+
     log_structured(
         run_id,
         run_type="weekly",

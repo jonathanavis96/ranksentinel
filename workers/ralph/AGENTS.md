@@ -7,7 +7,8 @@ Before any work, read in this order:
 1. `BOOTSTRAP.md` — MVP scope, schedules, severity model, normalization rules, cron semantics
 2. `workers/ralph/THOUGHTS.md` — product vision, goals/non-goals, success metrics
 3. `workers/ralph/VALIDATION_CRITERIA.md` — quality gates and verification commands
-4. `workers/IMPLEMENTATION_PLAN.md` — the prioritized task list
+4. `workers/IMPLEMENTATION_PLAN.md` — the prioritized task list (WEBSITE)
+5. `workers/PLAN_MAIN.md` — the backend/app implementation plan (reference)
 
 ## Task ordering rule (CRITICAL)
 
@@ -56,4 +57,5 @@ If you are blocked by missing knowledge (API quirks, PSI parsing, Mailgun edge c
 
 - Application code lives at project root (e.g., `src/`, `pyproject.toml`).
 - Ralph loop infra lives in `workers/ralph/`.
-- The primary task list lives in `workers/IMPLEMENTATION_PLAN.md`.
+- The primary task list lives in `workers/IMPLEMENTATION_PLAN.md` (website).
+- The backend/app plan is archived at `workers/PLAN_MAIN.md`.

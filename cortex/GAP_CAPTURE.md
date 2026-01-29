@@ -25,4 +25,3 @@ Local gap capture for this project. Gaps are synced to brain's
 ## Captured Gaps
 
 <!-- Add new gap entries below this line -->
-

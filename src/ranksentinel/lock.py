@@ -16,7 +16,7 @@ class FileLock:
 
     def __init__(self, lock_path: str, lock_name: str):
         """Initialize lock.
-        
+
         Args:
             lock_path: Directory where lock file will be created
             lock_name: Name of the lock file (e.g., 'daily', 'weekly')
@@ -29,29 +29,23 @@ class FileLock:
         """Acquire the lock."""
         # Ensure lock directory exists
         self.lock_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Open lock file
-        self.fd = os.open(
-            self.lock_file,
-            os.O_CREAT | os.O_WRONLY,
-            0o600
-        )
-        
+        self.fd = os.open(self.lock_file, os.O_CREAT | os.O_WRONLY, 0o600)
+
         # Try to acquire exclusive lock (non-blocking)
         try:
             fcntl.flock(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             os.close(self.fd)
             self.fd = None
-            raise LockError(
-                f"Another instance is already running (lock: {self.lock_file})"
-            )
-        
+            raise LockError(f"Another instance is already running (lock: {self.lock_file})")
+
         # Write PID to lock file
         os.ftruncate(self.fd, 0)
         os.write(self.fd, f"{os.getpid()}\n".encode())
         os.fsync(self.fd)
-        
+
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
@@ -73,17 +67,17 @@ class FileLock:
 
 def acquire_lock_or_exit(lock_path: str, lock_name: str) -> FileLock:
     """Acquire lock or exit with error code.
-    
+
     This is a convenience function for scripts that should exit
     if they cannot acquire the lock.
-    
+
     Args:
         lock_path: Directory where lock file will be created
         lock_name: Name of the lock file
-        
+
     Returns:
         FileLock context manager
-        
+
     Exits:
         With code 1 if lock cannot be acquired
     """

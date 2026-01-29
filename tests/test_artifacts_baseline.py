@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from ranksentinel.db import connect, get_latest_artifact, init_db, store_artifact
+from ranksentinel.db import get_latest_artifact, init_db, store_artifact
 
 
 @pytest.fixture
@@ -17,7 +17,12 @@ def db_conn():
     # Insert test customer
     conn.execute(
         "INSERT INTO customers(name, status, created_at, updated_at) VALUES(?, ?, ?, ?)",
-        ("Test Customer", "active", datetime.now(timezone.utc).isoformat(), datetime.now(timezone.utc).isoformat()),
+        (
+            "Test Customer",
+            "active",
+            datetime.now(timezone.utc).isoformat(),
+            datetime.now(timezone.utc).isoformat(),
+        ),
     )
     conn.commit()
     yield conn
@@ -54,15 +59,9 @@ def test_get_latest_artifact_returns_most_recent(db_conn):
     subject = "https://example.com/robots.txt"
 
     # Store three artifacts at different times
-    store_artifact(
-        db_conn, customer_id, kind, subject, "sha1", "content1", "2024-01-01T00:00:00Z"
-    )
-    store_artifact(
-        db_conn, customer_id, kind, subject, "sha2", "content2", "2024-01-02T00:00:00Z"
-    )
-    store_artifact(
-        db_conn, customer_id, kind, subject, "sha3", "content3", "2024-01-03T00:00:00Z"
-    )
+    store_artifact(db_conn, customer_id, kind, subject, "sha1", "content1", "2024-01-01T00:00:00Z")
+    store_artifact(db_conn, customer_id, kind, subject, "sha2", "content2", "2024-01-02T00:00:00Z")
+    store_artifact(db_conn, customer_id, kind, subject, "sha3", "content3", "2024-01-03T00:00:00Z")
 
     # Should get the most recent (sha3)
     result = get_latest_artifact(db_conn, customer_id, kind, subject)
@@ -76,7 +75,12 @@ def test_get_latest_artifact_customer_isolation(db_conn):
     # Add second customer
     db_conn.execute(
         "INSERT INTO customers(name, status, created_at, updated_at) VALUES(?, ?, ?, ?)",
-        ("Customer 2", "active", datetime.now(timezone.utc).isoformat(), datetime.now(timezone.utc).isoformat()),
+        (
+            "Customer 2",
+            "active",
+            datetime.now(timezone.utc).isoformat(),
+            datetime.now(timezone.utc).isoformat(),
+        ),
     )
     db_conn.commit()
 
@@ -84,13 +88,9 @@ def test_get_latest_artifact_customer_isolation(db_conn):
     subject = "https://example.com/robots.txt"
 
     # Store artifact for customer 1
-    store_artifact(
-        db_conn, 1, kind, subject, "sha1", "content1", "2024-01-01T00:00:00Z"
-    )
+    store_artifact(db_conn, 1, kind, subject, "sha1", "content1", "2024-01-01T00:00:00Z")
     # Store artifact for customer 2
-    store_artifact(
-        db_conn, 2, kind, subject, "sha2", "content2", "2024-01-02T00:00:00Z"
-    )
+    store_artifact(db_conn, 2, kind, subject, "sha2", "content2", "2024-01-02T00:00:00Z")
 
     # Each customer should get their own artifact
     result1 = get_latest_artifact(db_conn, 1, kind, subject)
@@ -107,7 +107,13 @@ def test_get_latest_artifact_kind_isolation(db_conn):
 
     # Store different kinds
     store_artifact(
-        db_conn, customer_id, "robots_txt", subject, "sha1", "robots content", "2024-01-01T00:00:00Z"
+        db_conn,
+        customer_id,
+        "robots_txt",
+        subject,
+        "sha1",
+        "robots content",
+        "2024-01-01T00:00:00Z",
     )
     store_artifact(
         db_conn, customer_id, "sitemap", subject, "sha2", "sitemap content", "2024-01-01T00:00:00Z"
@@ -128,10 +134,22 @@ def test_get_latest_artifact_subject_isolation(db_conn):
 
     # Store different subjects
     store_artifact(
-        db_conn, customer_id, kind, "https://example.com/robots.txt", "sha1", "content1", "2024-01-01T00:00:00Z"
+        db_conn,
+        customer_id,
+        kind,
+        "https://example.com/robots.txt",
+        "sha1",
+        "content1",
+        "2024-01-01T00:00:00Z",
     )
     store_artifact(
-        db_conn, customer_id, kind, "https://other.com/robots.txt", "sha2", "content2", "2024-01-01T00:00:00Z"
+        db_conn,
+        customer_id,
+        kind,
+        "https://other.com/robots.txt",
+        "sha2",
+        "content2",
+        "2024-01-01T00:00:00Z",
     )
 
     # Each subject should be retrieved independently
@@ -150,7 +168,7 @@ def test_get_latest_artifact_no_baseline(db_conn):
 
 def test_idempotent_run_scenario(db_conn):
     """Test that running the same job twice can load baseline without crashing.
-    
+
     This simulates:
     1. First run: no baseline exists, store new artifact
     2. Second run: baseline exists, load and compare
@@ -160,27 +178,23 @@ def test_idempotent_run_scenario(db_conn):
     subject = "https://example.com/robots.txt"
     content = "User-agent: *\nDisallow: /admin/"
     sha = "abc123"
-    
+
     # First run - no baseline
     baseline_run1 = get_latest_artifact(db_conn, customer_id, kind, subject)
     assert baseline_run1 is None  # No baseline on first run
-    
+
     # Store artifact after first run
-    store_artifact(
-        db_conn, customer_id, kind, subject, sha, content, "2024-01-01T00:00:00Z"
-    )
-    
+    store_artifact(db_conn, customer_id, kind, subject, sha, content, "2024-01-01T00:00:00Z")
+
     # Second run - baseline exists
     baseline_run2 = get_latest_artifact(db_conn, customer_id, kind, subject)
     assert baseline_run2 is not None  # Baseline exists
     assert baseline_run2["artifact_sha"] == sha
     assert baseline_run2["raw_content"] == content
-    
+
     # Simulate storing the same content again (unchanged)
-    store_artifact(
-        db_conn, customer_id, kind, subject, sha, content, "2024-01-02T00:00:00Z"
-    )
-    
+    store_artifact(db_conn, customer_id, kind, subject, sha, content, "2024-01-02T00:00:00Z")
+
     # Third run - should still load baseline without issues
     baseline_run3 = get_latest_artifact(db_conn, customer_id, kind, subject)
     assert baseline_run3 is not None

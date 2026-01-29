@@ -32,6 +32,7 @@ class CustomerSettingsPatch(BaseModel):
 
 class RunCoverageOut(BaseModel):
     """Model for run coverage statistics."""
+
     id: int
     customer_id: int
     run_id: str

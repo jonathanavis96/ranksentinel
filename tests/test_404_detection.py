@@ -1,7 +1,6 @@
 """Tests for 404 detection in weekly crawl."""
 
 import sqlite3
-from unittest.mock import Mock
 
 import pytest
 
@@ -28,7 +27,7 @@ def test_detect_404_creates_finding(test_conn):
         ("Test Customer", "active"),
     )
     customer_id = cursor.lastrowid
-    
+
     # Create a 404 fetch result
     fetch_results = [
         PageFetchResult(
@@ -40,7 +39,7 @@ def test_detect_404_creates_finding(test_conn):
             error_type=None,
         )
     ]
-    
+
     # Run 404 detection
     detect_new_404s(
         conn=test_conn,
@@ -49,14 +48,14 @@ def test_detect_404_creates_finding(test_conn):
         fetch_results=fetch_results,
         period="2026-W05",
     )
-    
+
     # Verify finding was created
     findings = fetch_all(
         test_conn,
         "SELECT * FROM findings WHERE customer_id=? AND category=?",
         (customer_id, "indexability"),
     )
-    
+
     assert len(findings) == 1
     finding = findings[0]
     assert finding["severity"] == "critical"
@@ -74,7 +73,7 @@ def test_detect_404_deduplicates_within_run(test_conn):
         ("Test Customer", "active"),
     )
     customer_id = cursor.lastrowid
-    
+
     # Create multiple 404 results for the same URL
     fetch_results = [
         PageFetchResult(
@@ -94,7 +93,7 @@ def test_detect_404_deduplicates_within_run(test_conn):
             error_type=None,
         ),
     ]
-    
+
     # Run 404 detection
     detect_new_404s(
         conn=test_conn,
@@ -103,14 +102,14 @@ def test_detect_404_deduplicates_within_run(test_conn):
         fetch_results=fetch_results,
         period="2026-W05",
     )
-    
+
     # Verify only one finding was created
     findings = fetch_all(
         test_conn,
         "SELECT * FROM findings WHERE customer_id=? AND category=?",
         (customer_id, "indexability"),
     )
-    
+
     assert len(findings) == 1
 
 
@@ -122,7 +121,7 @@ def test_detect_404_ignores_success_responses(test_conn):
         ("Test Customer", "active"),
     )
     customer_id = cursor.lastrowid
-    
+
     # Create successful fetch results
     fetch_results = [
         PageFetchResult(
@@ -142,7 +141,7 @@ def test_detect_404_ignores_success_responses(test_conn):
             error_type=None,
         ),
     ]
-    
+
     # Run 404 detection
     detect_new_404s(
         conn=test_conn,
@@ -151,14 +150,14 @@ def test_detect_404_ignores_success_responses(test_conn):
         fetch_results=fetch_results,
         period="2026-W05",
     )
-    
+
     # Verify no findings were created
     findings = fetch_all(
         test_conn,
         "SELECT * FROM findings WHERE customer_id=?",
         (customer_id,),
     )
-    
+
     assert len(findings) == 0
 
 
@@ -170,7 +169,7 @@ def test_detect_404_multiple_different_urls(test_conn):
         ("Test Customer", "active"),
     )
     customer_id = cursor.lastrowid
-    
+
     # Create multiple different 404 results
     fetch_results = [
         PageFetchResult(
@@ -198,7 +197,7 @@ def test_detect_404_multiple_different_urls(test_conn):
             error_type=None,
         ),
     ]
-    
+
     # Run 404 detection
     detect_new_404s(
         conn=test_conn,
@@ -207,14 +206,14 @@ def test_detect_404_multiple_different_urls(test_conn):
         fetch_results=fetch_results,
         period="2026-W05",
     )
-    
+
     # Verify all three findings were created
     findings = fetch_all(
         test_conn,
         "SELECT * FROM findings WHERE customer_id=? AND category=? ORDER BY url",
         (customer_id, "indexability"),
     )
-    
+
     assert len(findings) == 3
     assert "missing1" in findings[0]["url"]
     assert "missing2" in findings[1]["url"]
@@ -229,7 +228,7 @@ def test_detect_404_deduplicates_across_runs(test_conn):
         ("Test Customer", "active"),
     )
     customer_id = cursor.lastrowid
-    
+
     # Create a 404 result
     fetch_results = [
         PageFetchResult(
@@ -241,7 +240,7 @@ def test_detect_404_deduplicates_across_runs(test_conn):
             error_type=None,
         )
     ]
-    
+
     # Run 404 detection twice with same period
     detect_new_404s(
         conn=test_conn,
@@ -250,7 +249,7 @@ def test_detect_404_deduplicates_across_runs(test_conn):
         fetch_results=fetch_results,
         period="2026-W05",
     )
-    
+
     detect_new_404s(
         conn=test_conn,
         run_id="test-run-005b",
@@ -258,12 +257,12 @@ def test_detect_404_deduplicates_across_runs(test_conn):
         fetch_results=fetch_results,
         period="2026-W05",
     )
-    
+
     # Verify only one finding exists (deduped by dedupe_key)
     findings = fetch_all(
         test_conn,
         "SELECT * FROM findings WHERE customer_id=? AND category=?",
         (customer_id, "indexability"),
     )
-    
+
     assert len(findings) == 1

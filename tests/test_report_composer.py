@@ -1,9 +1,5 @@
 """Tests for weekly report composer."""
 
-import sqlite3
-
-import pytest
-
 from ranksentinel.reporting.report_composer import (
     CoverageStats,
     compose_weekly_report,
@@ -23,7 +19,7 @@ def test_parse_severity():
 def test_compose_weekly_report_empty():
     """Test composing report with no findings."""
     report = compose_weekly_report("TestCo", [])
-    
+
     assert report.customer_name == "TestCo"
     assert report.critical_count == 0
     assert report.warning_count == 0
@@ -76,33 +72,33 @@ def test_compose_weekly_report_with_findings():
             "created_at": "2026-01-29T10:03:00Z",
         },
     ]
-    
+
     # Convert to dict-like objects that support .get()
     class MockRow:
         def __init__(self, data):
             self._data = data
-        
+
         def __getitem__(self, key):
             return self._data[key]
-        
+
         def get(self, key, default=None):
             return self._data.get(key, default)
-    
+
     mock_rows = [MockRow(f) for f in findings]
-    
+
     report = compose_weekly_report("TestCo", mock_rows)
-    
+
     assert report.customer_name == "TestCo"
     assert report.critical_count == 2
     assert report.warning_count == 1
     assert report.info_count == 1
     assert report.total_count == 4
-    
+
     # Check sorting: critical should come first
     assert len(report.critical_findings) == 2
     assert report.critical_findings[0].title == "Homepage is now noindex"
     assert report.critical_findings[1].title == "Page not found (404)"
-    
+
     # Check recommendations are populated
     assert "noindex" in report.critical_findings[0].recommendation.lower()
     assert all(f.recommendation for f in report.critical_findings)
@@ -124,22 +120,22 @@ def test_weekly_report_text_format():
             "created_at": "2026-01-29T10:00:00Z",
         },
     ]
-    
+
     class MockRow:
         def __init__(self, data):
             self._data = data
-        
+
         def __getitem__(self, key):
             return self._data[key]
-        
+
         def get(self, key, default=None):
             return self._data.get(key, default)
-    
+
     mock_rows = [MockRow(f) for f in findings]
     report = compose_weekly_report("TestCo", mock_rows)
-    
+
     text = report.to_text()
-    
+
     # Check key sections are present
     assert "RankSentinel Weekly Digest — TestCo" in text
     assert "Executive Summary" in text
@@ -164,22 +160,22 @@ def test_weekly_report_html_format():
             "created_at": "2026-01-29T10:00:00Z",
         },
     ]
-    
+
     class MockRow:
         def __init__(self, data):
             self._data = data
-        
+
         def __getitem__(self, key):
             return self._data[key]
-        
+
         def get(self, key, default=None):
             return self._data.get(key, default)
-    
+
     mock_rows = [MockRow(f) for f in findings]
     report = compose_weekly_report("TestCo", mock_rows)
-    
+
     html = report.to_html()
-    
+
     # Check HTML structure
     assert "<html>" in html
     assert "<h1>RankSentinel Weekly Digest — TestCo</h1>" in html
@@ -235,25 +231,25 @@ def test_sorting_stability():
             "created_at": "2026-01-29T10:03:00Z",
         },
     ]
-    
+
     class MockRow:
         def __init__(self, data):
             self._data = data
-        
+
         def __getitem__(self, key):
             return self._data[key]
-        
+
         def get(self, key, default=None):
             return self._data.get(key, default)
-    
+
     mock_rows = [MockRow(f) for f in findings]
     report = compose_weekly_report("TestCo", mock_rows)
-    
+
     # Critical findings should be sorted by priority
     assert len(report.critical_findings) == 2
     assert report.critical_findings[0].title == "Homepage is now noindex"  # priority 1
     assert report.critical_findings[1].title == "Page not found (404)"  # priority 3
-    
+
     # Warning findings should be sorted by priority
     assert len(report.warning_findings) == 2
     assert report.warning_findings[0].title == "Canonical URL disappeared"  # priority 1
@@ -284,30 +280,32 @@ def test_bootstrap_findings_excluded_from_weekly_report():
             "created_at": "2026-01-28T12:00:00Z",
         },
     ]
-    
+
     class MockRow:
         def __init__(self, data):
             self._data = data
-        
+
         def __getitem__(self, key):
             return self._data[key]
-        
+
         def get(self, key, default=None):
             return self._data.get(key, default)
-    
+
     # Note: In practice, the SQL query excludes bootstrap findings,
     # but this tests the composer behavior if bootstrap findings slip through
     mock_rows = [MockRow(f) for f in findings]
     report = compose_weekly_report("TestCo", mock_rows)
-    
+
     # Report should include the bootstrap finding if passed (composer doesn't filter)
     # The actual filtering happens in the SQL query in weekly_digest.py
     assert report.info_count == 1
     assert report.critical_count == 1
-    
+
     # Verify bootstrap finding is in the report (composer doesn't filter)
     bootstrap_in_report = any(f.category == "bootstrap" for f in report.info_findings)
-    assert bootstrap_in_report, "Composer should include bootstrap if passed (filtering is SQL's job)"
+    assert (
+        bootstrap_in_report
+    ), "Composer should include bootstrap if passed (filtering is SQL's job)"
 
 
 def test_all_clear_text_output_no_critical_no_warnings():
@@ -325,22 +323,22 @@ def test_all_clear_text_output_no_critical_no_warnings():
             "created_at": "2026-01-29T10:00:00Z",
         },
     ]
-    
+
     class MockRow:
         def __init__(self, data):
             self._data = data
-        
+
         def __getitem__(self, key):
             return self._data[key]
-        
+
         def get(self, key, default=None):
             return self._data.get(key, default)
-    
+
     mock_rows = [MockRow(f) for f in findings]
     report = compose_weekly_report("TestCo", mock_rows)
-    
+
     text = report.to_text()
-    
+
     # Verify all clear message is present
     assert "✓ ALL CLEAR" in text
     assert "Great news! No critical issues or warnings detected this week." in text
@@ -352,9 +350,9 @@ def test_all_clear_text_output_no_critical_no_warnings():
 def test_all_clear_text_output_empty_report():
     """Test that 'All clear' message appears in text output when there are no findings at all."""
     report = compose_weekly_report("TestCo", [])
-    
+
     text = report.to_text()
-    
+
     # Verify all clear message is present
     assert "✓ ALL CLEAR" in text
     assert "Great news! No critical issues or warnings detected this week." in text
@@ -378,22 +376,22 @@ def test_all_clear_html_output_no_critical_no_warnings():
             "created_at": "2026-01-29T10:00:00Z",
         },
     ]
-    
+
     class MockRow:
         def __init__(self, data):
             self._data = data
-        
+
         def __getitem__(self, key):
             return self._data[key]
-        
+
         def get(self, key, default=None):
             return self._data.get(key, default)
-    
+
     mock_rows = [MockRow(f) for f in findings]
     report = compose_weekly_report("TestCo", mock_rows)
-    
+
     html = report.to_html()
-    
+
     # Verify all clear banner is present
     assert "<div class='all-clear'>" in html
     assert "<h2>✓ All Clear</h2>" in html
@@ -405,9 +403,9 @@ def test_all_clear_html_output_no_critical_no_warnings():
 def test_all_clear_html_output_empty_report():
     """Test that 'All clear' banner appears in HTML output when there are no findings at all."""
     report = compose_weekly_report("TestCo", [])
-    
+
     html = report.to_html()
-    
+
     # Verify all clear banner is present
     assert "<div class='all-clear'>" in html
     assert "<h2>✓ All Clear</h2>" in html
@@ -428,23 +426,23 @@ def test_no_all_clear_when_critical_present():
             "created_at": "2026-01-29T10:00:00Z",
         },
     ]
-    
+
     class MockRow:
         def __init__(self, data):
             self._data = data
-        
+
         def __getitem__(self, key):
             return self._data[key]
-        
+
         def get(self, key, default=None):
             return self._data.get(key, default)
-    
+
     mock_rows = [MockRow(f) for f in findings]
     report = compose_weekly_report("TestCo", mock_rows)
-    
+
     text = report.to_text()
     html = report.to_html()
-    
+
     # Verify all clear message is NOT present
     assert "ALL CLEAR" not in text
     assert "All Clear" not in html
@@ -464,23 +462,23 @@ def test_no_all_clear_when_warnings_present():
             "created_at": "2026-01-29T10:00:00Z",
         },
     ]
-    
+
     class MockRow:
         def __init__(self, data):
             self._data = data
-        
+
         def __getitem__(self, key):
             return self._data[key]
-        
+
         def get(self, key, default=None):
             return self._data.get(key, default)
-    
+
     mock_rows = [MockRow(f) for f in findings]
     report = compose_weekly_report("TestCo", mock_rows)
-    
+
     text = report.to_text()
     html = report.to_html()
-    
+
     # Verify all clear message is NOT present
     assert "ALL CLEAR" not in text
     assert "All Clear" not in html
@@ -497,10 +495,10 @@ def test_coverage_stats_in_text_report():
         http_429_count=2,
         http_404_count=3,
     )
-    
+
     report = compose_weekly_report("TestCo", [], coverage)
     text = report.to_text()
-    
+
     # Verify coverage section is present
     assert "COVERAGE" in text
     assert "Sitemap: https://example.com/sitemap.xml" in text
@@ -523,10 +521,10 @@ def test_coverage_stats_in_html_report():
         http_429_count=0,  # Test zero values not shown
         http_404_count=3,
     )
-    
+
     report = compose_weekly_report("TestCo", [], coverage)
     html = report.to_html()
-    
+
     # Verify coverage section is present
     assert "<strong>Coverage</strong>" in html
     assert "<li><strong>Sitemap:</strong> <code>https://example.com/sitemap.xml</code></li>" in html
@@ -541,10 +539,10 @@ def test_coverage_stats_in_html_report():
 def test_no_coverage_stats_when_not_provided():
     """Test that coverage section is absent when coverage is None."""
     report = compose_weekly_report("TestCo", [], None)
-    
+
     text = report.to_text()
     html = report.to_html()
-    
+
     # Verify coverage section is NOT present
     assert "COVERAGE" not in text
     assert "Coverage" not in html

@@ -114,9 +114,7 @@ RECOMMENDATION_RULES: list[Recommendation] = [
 ]
 
 
-def get_recommendation_for_finding(
-    category: str, title: str, severity: Severity
-) -> str:
+def get_recommendation_for_finding(category: str, title: str, severity: Severity) -> str:
     """Get actionable recommendation for a finding.
 
     Args:

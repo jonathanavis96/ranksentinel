@@ -9,52 +9,52 @@ NOISE_CLASS_ID_SUBSTRINGS = ("cookie", "consent", "gdpr")
 
 def normalize_url(base_url: str, url: str) -> str:
     """Normalize a URL to a canonical form.
-    
+
     Handles:
     - Resolving relative URLs against base_url
     - Lowercasing scheme and hostname
     - Stripping fragments
     - Normalizing trailing slash (removes for paths, keeps for domain-only)
     - Preserving query strings
-    
+
     Args:
         base_url: Base URL for resolving relative URLs
         url: URL to normalize (can be relative or absolute)
-        
+
     Returns:
         Normalized absolute URL string
     """
     if not url:
         return ""
-    
+
     # Resolve relative URLs to absolute
     absolute_url = urljoin(base_url, url.strip())
-    
+
     # Parse the URL
     parsed = urlparse(absolute_url)
-    
+
     # Only handle http/https schemes
     if parsed.scheme not in ("http", "https"):
         return ""
-    
+
     # Normalize scheme and netloc to lowercase
     scheme = parsed.scheme.lower()
     netloc = parsed.netloc.lower()
     path = parsed.path
     query = parsed.query
-    
+
     # Strip fragment
     fragment = ""
-    
+
     # Normalize trailing slash: remove from paths, keep for domain-only
     if path and path != "/":
         path = path.rstrip("/")
     elif not path:
         path = "/"
-    
+
     # Reconstruct the URL
     normalized = urlunparse((scheme, netloc, path, "", query, fragment))
-    
+
     return normalized
 
 

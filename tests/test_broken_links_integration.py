@@ -1,11 +1,10 @@
 """Integration test for broken link detection in weekly digest."""
 
-import sqlite3
 import tempfile
 from pathlib import Path
 
 from ranksentinel.config import Settings
-from ranksentinel.db import connect, execute, fetch_all, init_db
+from ranksentinel.db import connect, execute, init_db
 from ranksentinel.runner.weekly_digest import detect_broken_internal_links
 
 
@@ -15,17 +14,17 @@ def test_detect_broken_links_with_fixtures():
     with tempfile.TemporaryDirectory() as tmpdir:
         db_path = Path(tmpdir) / "test.db"
         settings = Settings(RANKSENTINEL_DB_PATH=str(db_path))
-        
+
         conn = connect(settings)
         init_db(conn)
-        
+
         # Create test customer
         customer_id = execute(
             conn,
             "INSERT INTO customers(name,status,created_at,updated_at) VALUES(?,?,?,?)",
             ("Test Customer", "active", "2024-01-01T00:00:00Z", "2024-01-01T00:00:00Z"),
         )
-        
+
         # Create a snapshot with a broken link fixture
         # Note: This is a controlled test - in real usage, snapshots are created by daily/weekly runs
         execute(
@@ -47,7 +46,7 @@ def test_detect_broken_links_with_fixtures():
                 "abc123",
             ),
         )
-        
+
         # Since detect_broken_internal_links fetches actual pages, we can't fully test
         # without mocking or a test server. This test verifies the function runs without crashing.
         try:
@@ -64,9 +63,9 @@ def test_detect_broken_links_with_fixtures():
         except Exception as e:
             print(f"Error: {e}")
             success = False
-        
+
         conn.close()
-        
+
         assert success, "detect_broken_internal_links should not crash"
 
 
@@ -75,21 +74,21 @@ def test_broken_links_table_schema():
     with tempfile.TemporaryDirectory() as tmpdir:
         db_path = Path(tmpdir) / "test.db"
         settings = Settings(RANKSENTINEL_DB_PATH=str(db_path))
-        
+
         conn = connect(settings)
         init_db(conn)
-        
+
         # Check table exists
         cursor = conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='broken_links'"
         )
         result = cursor.fetchone()
         assert result is not None, "broken_links table should exist"
-        
+
         # Check columns
         cursor = conn.execute("PRAGMA table_info(broken_links)")
         columns = {row[1] for row in cursor.fetchall()}
-        
+
         expected_columns = {
             "id",
             "customer_id",
@@ -100,7 +99,7 @@ def test_broken_links_table_schema():
             "run_type",
             "detected_at",
         }
-        
+
         assert columns == expected_columns, f"Expected columns {expected_columns}, got {columns}"
-        
+
         conn.close()

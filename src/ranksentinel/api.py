@@ -122,21 +122,21 @@ def trigger_first_insight_for_customer(
     settings: Settings,
 ) -> dict:
     """Internal hook for triggering First Insight report on payment success.
-    
+
     This function is designed to be called by payment webhook handlers
     (e.g., Stripe webhook) when a customer successfully completes payment.
-    
+
     Args:
         customer_id: ID of the customer who completed payment
         conn: Database connection
         settings: Application settings with API keys and email config
-        
+
     Returns:
         Dict with run_id, findings count, and email delivery status
-        
+
     Raises:
         ValueError: If customer_id is invalid or customer not found
-        
+
     Example:
         # From a future Stripe webhook handler:
         def handle_payment_success(stripe_customer_id: str, conn, settings):
@@ -147,12 +147,12 @@ def trigger_first_insight_for_customer(
     # Import here to avoid circular dependencies
     from ranksentinel.mailgun import MailgunClient
     from ranksentinel.runner.first_insight import trigger_first_insight_report
-    
+
     # Validate customer exists
     cust = fetch_one(conn, "SELECT id FROM customers WHERE id=?", (customer_id,))
     if not cust:
         raise ValueError(f"Customer {customer_id} not found")
-    
+
     # Initialize Mailgun client if configured
     mailgun_client = None
     recipient_email = None
@@ -162,22 +162,24 @@ def trigger_first_insight_for_customer(
             recipient_email = settings.MAILGUN_TO
         except Exception:
             pass  # Will run without email if Mailgun not configured
-    
+
     result = trigger_first_insight_report(
-        conn, 
-        customer_id, 
+        conn,
+        customer_id,
         psi_api_key=settings.PSI_API_KEY,
         mailgun_client=mailgun_client,
         recipient_email=recipient_email,
     )
-    
+
     return result
 
 
 @app.post("/admin/customers/{customer_id}/send_first_insight")
-def send_first_insight(customer_id: int, conn=Depends(get_conn), settings: Settings = Depends(get_settings)):
+def send_first_insight(
+    customer_id: int, conn=Depends(get_conn), settings: Settings = Depends(get_settings)
+):
     """Trigger a First Insight report for a customer (admin-only endpoint).
-    
+
     This endpoint sends an immediate onboarding report to help new customers
     see value quickly without waiting for the weekly schedule.
     """

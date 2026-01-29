@@ -16,7 +16,12 @@ from ranksentinel.db import (
     store_artifact,
 )
 from ranksentinel.http_client import fetch_text
-from ranksentinel.runner.logging_utils import generate_run_id, log_stage, log_structured, log_summary
+from ranksentinel.runner.logging_utils import (
+    generate_run_id,
+    log_stage,
+    log_structured,
+    log_summary,
+)
 from ranksentinel.runner.normalization import (
     extract_canonical,
     extract_meta_robots,
@@ -212,12 +217,12 @@ def check_title_change(
 
 def fetch_sitemap(sitemap_url: str, timeout_s: int = 20) -> dict[str, Any]:
     """Fetch sitemap content and return raw body.
-    
+
     Uses http_client.fetch_text for consistent retry/timeout behavior.
     Returns dict with status_code, body, and error info.
     """
     result = fetch_text(sitemap_url, timeout=timeout_s, attempts=3, base_delay=1.0)
-    
+
     if result.is_error:
         return {
             "is_error": True,
@@ -226,7 +231,7 @@ def fetch_sitemap(sitemap_url: str, timeout_s: int = 20) -> dict[str, Any]:
             "status_code": result.status_code,
             "body": None,
         }
-    
+
     return {
         "is_error": False,
         "error": None,
@@ -284,7 +289,7 @@ def check_robots_txt_change(
         # Check for expanded disallow patterns
         prev_disallows = [line for line in prev_lower.split("\n") if line.startswith("disallow:")]
         curr_disallows = [line for line in curr_lower.split("\n") if line.startswith("disallow:")]
-        
+
         if len(curr_disallows) > len(prev_disallows):
             # More disallow rules added
             severity = "warning"
@@ -455,21 +460,21 @@ def run(settings: Settings) -> None:
     """Daily critical checks with noindex, canonical, robots.txt, and PSI regression detection."""
     run_id = generate_run_id()
     start_time = time.time()
-    
+
     log_structured(run_id, run_type="daily", stage="init", status="start")
-    
+
     conn = connect(settings)
     try:
         init_db(conn)
         customers = fetch_all(conn, "SELECT id FROM customers WHERE status='active'")
-        
+
         log_structured(run_id, stage="init", status="complete", customer_count=len(customers))
 
         errors_by_customer = {}
-        
+
         for c in customers:
             customer_id = int(c["id"])
-            
+
             try:
                 with log_stage(run_id, "process_customer", customer_id=customer_id):
                     # Get customer settings (including sitemap_url for robots base URL)
@@ -499,6 +504,7 @@ def run(settings: Settings) -> None:
                     if customer_settings.get("sitemap_url"):
                         # Derive base URL from sitemap_url (e.g., https://example.com/sitemap.xml -> https://example.com)
                         from urllib.parse import urlparse
+
                         parsed = urlparse(str(customer_settings["sitemap_url"]))
                         robots_base_url = f"{parsed.scheme}://{parsed.netloc}"
                     else:
@@ -510,6 +516,7 @@ def run(settings: Settings) -> None:
                         )
                         if first_target:
                             from urllib.parse import urlparse
+
                             parsed = urlparse(str(first_target["url"]))
                             robots_base_url = f"{parsed.scheme}://{parsed.netloc}"
 
@@ -517,50 +524,73 @@ def run(settings: Settings) -> None:
                     sitemap_url = customer_settings.get("sitemap_url")
                     if sitemap_url:
                         try:
-                            with log_stage(run_id, "fetch_sitemap", customer_id=customer_id, url=sitemap_url):
+                            with log_stage(
+                                run_id, "fetch_sitemap", customer_id=customer_id, url=sitemap_url
+                            ):
                                 sitemap_result = fetch_sitemap(str(sitemap_url))
-                            
+
                             if not sitemap_result["is_error"]:
                                 sitemap_content = sitemap_result["body"] or ""
                                 sitemap_sha = sha256_text(sitemap_content)
                                 fetched_at = now_iso()
-                                
+
                                 # Extract URL count from sitemap
                                 url_count_data = extract_url_count(sitemap_content)
                                 url_count = url_count_data.get("url_count", 0)
                                 sitemap_type = url_count_data.get("sitemap_type", "unknown")
-                                
+
                                 # Check if sitemap changed before storing
-                                prev_sitemap_artifact = get_latest_artifact(conn, customer_id, "sitemap", str(sitemap_url))
-                                
+                                prev_sitemap_artifact = get_latest_artifact(
+                                    conn, customer_id, "sitemap", str(sitemap_url)
+                                )
+
                                 # Only store if changed
-                                if not prev_sitemap_artifact or prev_sitemap_artifact["artifact_sha"] != sitemap_sha:
+                                if (
+                                    not prev_sitemap_artifact
+                                    or prev_sitemap_artifact["artifact_sha"] != sitemap_sha
+                                ):
                                     store_artifact(
-                                        conn, customer_id, "sitemap", str(sitemap_url),
-                                        sitemap_sha, sitemap_content, fetched_at
+                                        conn,
+                                        customer_id,
+                                        "sitemap",
+                                        str(sitemap_url),
+                                        sitemap_sha,
+                                        sitemap_content,
+                                        fetched_at,
                                     )
-                                    
+
                                     log_structured(
-                                        run_id, customer_id=customer_id, stage="fetch_sitemap",
-                                        status="success", url=sitemap_url, sha=sitemap_sha[:12],
-                                        url_count=url_count, sitemap_type=sitemap_type
+                                        run_id,
+                                        customer_id=customer_id,
+                                        stage="fetch_sitemap",
+                                        status="success",
+                                        url=sitemap_url,
+                                        sha=sitemap_sha[:12],
+                                        url_count=url_count,
+                                        sitemap_type=sitemap_type,
                                     )
-                                    
+
                                     # Check for URL count changes (if we have a baseline)
                                     if prev_sitemap_artifact:
-                                        prev_content = str(prev_sitemap_artifact["raw_content"] or "")
+                                        prev_content = str(
+                                            prev_sitemap_artifact["raw_content"] or ""
+                                        )
                                         prev_count_data = extract_url_count(prev_content)
                                         prev_url_count = prev_count_data.get("url_count", 0)
-                                        
+
                                         # Detect significant changes
                                         if prev_url_count > 0:
                                             count_delta = url_count - prev_url_count
-                                            pct_change = (count_delta / prev_url_count) * 100 if prev_url_count > 0 else 0
-                                            
+                                            pct_change = (
+                                                (count_delta / prev_url_count) * 100
+                                                if prev_url_count > 0
+                                                else 0
+                                            )
+
                                             severity = None
                                             title = None
                                             details = None
-                                            
+
                                             # URL count disappeared (complete loss)
                                             if url_count == 0:
                                                 severity = "critical"
@@ -597,12 +627,19 @@ Review your sitemap generation to ensure pages are not being accidentally exclud
 - **Change:** {count_delta} URLs ({pct_change:+.1f}%)
 - **Sitemap URL:** `{sitemap_url}`
 - **Type:** {sitemap_type}"""
-                                            
+
                                             # Create finding if severity determined
                                             if severity and title and details:
-                                                period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                                period = datetime.fromisoformat(
+                                                    fetched_at
+                                                ).strftime("%Y-%m-%d")
                                                 dedupe_key = generate_finding_dedupe_key(
-                                                    customer_id, "daily", "indexability", title, None, period
+                                                    customer_id,
+                                                    "daily",
+                                                    "indexability",
+                                                    title,
+                                                    None,
+                                                    period,
                                                 )
                                                 execute(
                                                     conn,
@@ -624,11 +661,16 @@ Review your sitemap generation to ensure pages are not being accidentally exclud
                             else:
                                 # Missing or unreachable sitemap - create critical finding
                                 fetched_at = now_iso()
-                                period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                period = datetime.fromisoformat(fetched_at).strftime("%Y-%m-%d")
                                 dedupe_key = generate_finding_dedupe_key(
-                                    customer_id, "daily", "indexability", "Sitemap unreachable", None, period
+                                    customer_id,
+                                    "daily",
+                                    "indexability",
+                                    "Sitemap unreachable",
+                                    None,
+                                    period,
                                 )
-                                
+
                                 details = f"""Sitemap could not be fetched.
 
 - **URL:** `{sitemap_url}`
@@ -636,7 +678,7 @@ Review your sitemap generation to ensure pages are not being accidentally exclud
 - **Error Type:** {sitemap_result['error_type']}
 
 This may prevent search engines from discovering your pages."""
-                                
+
                                 execute(
                                     conn,
                                     "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
@@ -654,53 +696,86 @@ This may prevent search engines from discovering your pages."""
                                         fetched_at,
                                     ),
                                 )
-                                
+
                                 log_structured(
-                                    run_id, customer_id=customer_id, stage="fetch_sitemap",
-                                    status="error", url=sitemap_url, error=sitemap_result['error']
+                                    run_id,
+                                    customer_id=customer_id,
+                                    stage="fetch_sitemap",
+                                    status="error",
+                                    url=sitemap_url,
+                                    error=sitemap_result["error"],
                                 )
                         except Exception as e:  # noqa: BLE001
                             log_structured(
-                                run_id, customer_id=customer_id, stage="fetch_sitemap",
-                                status="error", url=sitemap_url, error=str(e)
+                                run_id,
+                                customer_id=customer_id,
+                                stage="fetch_sitemap",
+                                status="error",
+                                url=sitemap_url,
+                                error=str(e),
                             )
 
                     if robots_base_url:
                         robots_url = f"{robots_base_url}/robots.txt"
                         try:
-                            with log_stage(run_id, "fetch_robots", customer_id=customer_id, url=robots_url):
-                                robots_result = fetch_text(robots_url, timeout=10, attempts=2, base_delay=1.0)
-                            
+                            with log_stage(
+                                run_id, "fetch_robots", customer_id=customer_id, url=robots_url
+                            ):
+                                robots_result = fetch_text(
+                                    robots_url, timeout=10, attempts=2, base_delay=1.0
+                                )
+
                             if not robots_result.is_error:
                                 robots_content = robots_result.body or ""
                                 robots_sha = sha256_text(robots_content)
                                 fetched_at = now_iso()
-                                
+
                                 # Check for meaningful changes before storing
-                                prev_robots_artifact = get_latest_artifact(conn, customer_id, "robots_txt", robots_base_url)
-                                
+                                prev_robots_artifact = get_latest_artifact(
+                                    conn, customer_id, "robots_txt", robots_base_url
+                                )
+
                                 # Only store and check if changed
-                                if not prev_robots_artifact or prev_robots_artifact["artifact_sha"] != robots_sha:
+                                if (
+                                    not prev_robots_artifact
+                                    or prev_robots_artifact["artifact_sha"] != robots_sha
+                                ):
                                     # Store artifact (kind=robots_txt, subject=base_url)
                                     store_artifact(
-                                        conn, customer_id, "robots_txt", robots_base_url, 
-                                        robots_sha, robots_content, fetched_at
+                                        conn,
+                                        customer_id,
+                                        "robots_txt",
+                                        robots_base_url,
+                                        robots_sha,
+                                        robots_content,
+                                        fetched_at,
                                     )
-                                    
+
                                     log_structured(
-                                        run_id, customer_id=customer_id, stage="fetch_robots", 
-                                        status="success", url=robots_url, sha=robots_sha[:12]
+                                        run_id,
+                                        customer_id=customer_id,
+                                        stage="fetch_robots",
+                                        status="success",
+                                        url=robots_url,
+                                        sha=robots_sha[:12],
                                     )
-                                    
+
                                     # Check for meaningful robots.txt changes
                                     robots_result = check_robots_txt_change(
                                         conn, customer_id, robots_base_url, robots_content
                                     )
                                     if robots_result:
                                         severity, details = robots_result
-                                        period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                        period = datetime.fromisoformat(fetched_at).strftime(
+                                            "%Y-%m-%d"
+                                        )
                                         dedupe_key = generate_finding_dedupe_key(
-                                            customer_id, "daily", "indexability", "Robots.txt changed", None, period
+                                            customer_id,
+                                            "daily",
+                                            "indexability",
+                                            "Robots.txt changed",
+                                            None,
+                                            period,
                                         )
                                         execute(
                                             conn,
@@ -721,13 +796,21 @@ This may prevent search engines from discovering your pages."""
                                         )
                             else:
                                 log_structured(
-                                    run_id, customer_id=customer_id, stage="fetch_robots",
-                                    status="error", url=robots_url, error=robots_result.error
+                                    run_id,
+                                    customer_id=customer_id,
+                                    stage="fetch_robots",
+                                    status="error",
+                                    url=robots_url,
+                                    error=robots_result.error,
                                 )
                         except Exception as e:  # noqa: BLE001
                             log_structured(
-                                run_id, customer_id=customer_id, stage="fetch_robots",
-                                status="error", url=robots_url, error=str(e)
+                                run_id,
+                                customer_id=customer_id,
+                                stage="fetch_robots",
+                                status="error",
+                                url=robots_url,
+                                error=str(e),
                             )
 
                     targets = fetch_all(
@@ -746,13 +829,26 @@ This may prevent search engines from discovering your pages."""
                         # Normalize URL for consistency
                         url = normalize_url(raw_url, raw_url)
                         if not url:
-                            log_structured(run_id, customer_id=customer_id, stage="validate_url", status="skip", reason="invalid_url")
+                            log_structured(
+                                run_id,
+                                customer_id=customer_id,
+                                stage="validate_url",
+                                status="skip",
+                                reason="invalid_url",
+                            )
                             continue
                         try:
                             with log_stage(run_id, "fetch_url", customer_id=customer_id, url=url):
                                 data = fetch_url(url)
                         except Exception as e:  # noqa: BLE001
-                            log_structured(run_id, customer_id=customer_id, stage="fetch_url", status="error", url=url, error=str(e))
+                            log_structured(
+                                run_id,
+                                customer_id=customer_id,
+                                stage="fetch_url",
+                                status="error",
+                                url=url,
+                                error=str(e),
+                            )
                             continue
                         fetched_at = now_iso()
 
@@ -780,21 +876,39 @@ This may prevent search engines from discovering your pages."""
 
                         # Check for noindex regression (only-on-change)
                         meta_robots_changed = False
-                        prev_meta_artifact = get_latest_artifact(conn, customer_id, "meta_robots", url)
+                        prev_meta_artifact = get_latest_artifact(
+                            conn, customer_id, "meta_robots", url
+                        )
                         curr_meta_sha = sha256_text(data["meta_robots"])
-                        
-                        if not prev_meta_artifact or prev_meta_artifact["artifact_sha"] != curr_meta_sha:
+
+                        if (
+                            not prev_meta_artifact
+                            or prev_meta_artifact["artifact_sha"] != curr_meta_sha
+                        ):
                             meta_robots_changed = True
-                            store_artifact(conn, customer_id, "meta_robots", url, curr_meta_sha, data["meta_robots"], fetched_at)
-                            
+                            store_artifact(
+                                conn,
+                                customer_id,
+                                "meta_robots",
+                                url,
+                                curr_meta_sha,
+                                data["meta_robots"],
+                                fetched_at,
+                            )
+
                             noindex_result = check_noindex_regression(
                                 conn, customer_id, url, data["meta_robots"]
                             )
                             if noindex_result:
                                 severity, details = noindex_result
-                                period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                period = datetime.fromisoformat(fetched_at).strftime("%Y-%m-%d")
                                 dedupe_key = generate_finding_dedupe_key(
-                                    customer_id, "daily", "indexability", "Key page noindex detected", url, period
+                                    customer_id,
+                                    "daily",
+                                    "indexability",
+                                    "Key page noindex detected",
+                                    url,
+                                    period,
                                 )
                                 execute(
                                     conn,
@@ -815,18 +929,38 @@ This may prevent search engines from discovering your pages."""
                                 )
 
                         # Check for canonical drift (only-on-change)
-                        prev_canonical_artifact = get_latest_artifact(conn, customer_id, "canonical", url)
+                        prev_canonical_artifact = get_latest_artifact(
+                            conn, customer_id, "canonical", url
+                        )
                         curr_canonical_sha = sha256_text(data["canonical"])
-                        
-                        if not prev_canonical_artifact or prev_canonical_artifact["artifact_sha"] != curr_canonical_sha:
-                            store_artifact(conn, customer_id, "canonical", url, curr_canonical_sha, data["canonical"], fetched_at)
-                            
-                            canonical_result = check_canonical_drift(conn, customer_id, url, data["canonical"])
+
+                        if (
+                            not prev_canonical_artifact
+                            or prev_canonical_artifact["artifact_sha"] != curr_canonical_sha
+                        ):
+                            store_artifact(
+                                conn,
+                                customer_id,
+                                "canonical",
+                                url,
+                                curr_canonical_sha,
+                                data["canonical"],
+                                fetched_at,
+                            )
+
+                            canonical_result = check_canonical_drift(
+                                conn, customer_id, url, data["canonical"]
+                            )
                             if canonical_result:
                                 severity, details = canonical_result
-                                period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                period = datetime.fromisoformat(fetched_at).strftime("%Y-%m-%d")
                                 dedupe_key = generate_finding_dedupe_key(
-                                    customer_id, "daily", "indexability", "Canonical URL changed", url, period
+                                    customer_id,
+                                    "daily",
+                                    "indexability",
+                                    "Canonical URL changed",
+                                    url,
+                                    period,
                                 )
                                 execute(
                                     conn,
@@ -849,16 +983,32 @@ This may prevent search engines from discovering your pages."""
                         # Check for title change (only-on-change)
                         prev_title_artifact = get_latest_artifact(conn, customer_id, "title", url)
                         curr_title_sha = sha256_text(data["title"])
-                        
-                        if not prev_title_artifact or prev_title_artifact["artifact_sha"] != curr_title_sha:
-                            store_artifact(conn, customer_id, "title", url, curr_title_sha, data["title"], fetched_at)
-                            
+
+                        if (
+                            not prev_title_artifact
+                            or prev_title_artifact["artifact_sha"] != curr_title_sha
+                        ):
+                            store_artifact(
+                                conn,
+                                customer_id,
+                                "title",
+                                url,
+                                curr_title_sha,
+                                data["title"],
+                                fetched_at,
+                            )
+
                             title_result = check_title_change(conn, customer_id, url, data["title"])
                             if title_result:
                                 severity, details = title_result
-                                period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                period = datetime.fromisoformat(fetched_at).strftime("%Y-%m-%d")
                                 dedupe_key = generate_finding_dedupe_key(
-                                    customer_id, "daily", "content", "Page title changed", url, period
+                                    customer_id,
+                                    "daily",
+                                    "content",
+                                    "Page title changed",
+                                    url,
+                                    period,
                                 )
                                 execute(
                                     conn,
@@ -903,7 +1053,7 @@ This may prevent search engines from discovering your pages."""
                                     )
 
                                     # Create finding
-                                    period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                    period = datetime.fromisoformat(fetched_at).strftime("%Y-%m-%d")
                                     dedupe_key = generate_finding_dedupe_key(
                                         customer_id, "daily", "performance", title, url, period
                                     )
@@ -913,8 +1063,8 @@ This may prevent search engines from discovering your pages."""
                                         "VALUES(?,?,?,?,?,?,?,?,?,?)",
                                         (
                                             customer_id,
-                            run_id,
-                            "daily",
+                                            run_id,
+                                            "daily",
                                             severity,
                                             "performance",
                                             title,
@@ -943,7 +1093,9 @@ This may prevent search engines from discovering your pages."""
                                             customer_settings.get("psi_perf_drop_threshold", 10)
                                         )
                                         lcp_threshold_ms = int(
-                                            customer_settings.get("psi_lcp_increase_threshold_ms", 500)
+                                            customer_settings.get(
+                                                "psi_lcp_increase_threshold_ms", 500
+                                            )
                                         )
 
                                         if (
@@ -984,16 +1136,22 @@ This may prevent search engines from discovering your pages."""
                                 )
 
                                 psi_count += 1
-                            
+
             except Exception as e:  # noqa: BLE001
                 # Catch per-customer errors and record them, then continue to next customer
                 error_msg = f"Customer {customer_id} processing failed: {type(e).__name__}: {e}"
-                log_structured(run_id, customer_id=customer_id, stage="process_customer", status="error", error=error_msg)
+                log_structured(
+                    run_id,
+                    customer_id=customer_id,
+                    stage="process_customer",
+                    status="error",
+                    error=error_msg,
+                )
                 errors_by_customer[customer_id] = error_msg
                 # Log error to database for debugging
                 try:
                     error_time = now_iso()
-                    period = datetime.fromisoformat(error_time).strftime('%Y-%m-%d')
+                    period = datetime.fromisoformat(error_time).strftime("%Y-%m-%d")
                     dedupe_key = generate_finding_dedupe_key(
                         customer_id, "daily", "system", "Daily run processing error", None, period
                     )
@@ -1015,19 +1173,36 @@ This may prevent search engines from discovering your pages."""
                         ),
                     )
                 except Exception as db_error:  # noqa: BLE001
-                    log_structured(run_id, customer_id=customer_id, stage="log_error_to_db", status="error", error=str(db_error))
-        
+                    log_structured(
+                        run_id,
+                        customer_id=customer_id,
+                        stage="log_error_to_db",
+                        status="error",
+                        error=str(db_error),
+                    )
+
         # Calculate elapsed time and print summary
         total_elapsed_ms = int((time.time() - start_time) * 1000)
         total_customers = len(customers)
         failed_customers = len(errors_by_customer)
         successful_customers = total_customers - failed_customers
-        
-        log_summary(run_id, "daily", total_customers, successful_customers, failed_customers, total_elapsed_ms)
-        
+
+        log_summary(
+            run_id,
+            "daily",
+            total_customers,
+            successful_customers,
+            failed_customers,
+            total_elapsed_ms,
+        )
+
         if errors_by_customer:
-            log_structured(run_id, stage="summary", failed_customer_ids=",".join(str(cid) for cid in errors_by_customer.keys()))
-        
+            log_structured(
+                run_id,
+                stage="summary",
+                failed_customer_ids=",".join(str(cid) for cid in errors_by_customer.keys()),
+            )
+
         # Send daily critical alerts (only if critical findings exist)
         _send_daily_critical_alerts(conn, settings, run_id)
     finally:
@@ -1036,34 +1211,36 @@ This may prevent search engines from discovering your pages."""
 
 def _send_daily_critical_alerts(conn, settings: Settings, run_id: str) -> None:
     """Send daily critical alert emails to customers with critical findings.
-    
+
     Only sends email if critical findings exist for this run.
     Uses per-customer isolation - one customer's email failure doesn't affect others.
     """
-    from ranksentinel.db import fetch_all, fetch_one
+    from ranksentinel.db import fetch_all
     from ranksentinel.mailgun import MailgunClient, send_and_log
     from ranksentinel.reporting.email_templates import render_daily_critical_alert
     from ranksentinel.reporting.report_composer import compose_daily_critical_report
     from ranksentinel.runner.logging_utils import log_stage, log_structured
-    
+
     # Initialize Mailgun client (skip if not configured)
     try:
         mailgun_client = MailgunClient(settings)
     except (ValueError, Exception) as e:
-        log_structured(run_id, stage="email_init", status="skip", reason=f"Mailgun not configured: {e}")
+        log_structured(
+            run_id, stage="email_init", status="skip", reason=f"Mailgun not configured: {e}"
+        )
         return
-    
+
     # Get all active customers
     customers = fetch_all(conn, "SELECT id, name FROM customers WHERE status='active'")
-    
+
     for customer_row in customers:
         customer_id = int(customer_row["id"])
         customer_name = str(customer_row["name"])
-        
+
         # TODO: Get customer email from settings or separate contact table
         # For now, skip email if not available
         customer_email = None  # Placeholder until we have a proper email field
-        
+
         try:
             with log_stage(run_id, "daily_email", customer_id=customer_id):
                 # Check if there are any critical findings for this customer from today's run
@@ -1074,35 +1251,41 @@ def _send_daily_critical_alerts(conn, settings: Settings, run_id: str) -> None:
                     "WHERE customer_id=? AND run_type='daily' AND severity='critical' "
                     "AND datetime(created_at) >= datetime('now', '-24 hours') "
                     "ORDER BY created_at DESC",
-                    (customer_id,)
+                    (customer_id,),
                 )
-                
+
                 if not critical_findings:
                     # No critical findings - skip email (low-noise principle)
                     log_structured(
-                        run_id, customer_id=customer_id, stage="daily_email",
-                        status="skip", reason="no_critical_findings"
+                        run_id,
+                        customer_id=customer_id,
+                        stage="daily_email",
+                        status="skip",
+                        reason="no_critical_findings",
                     )
                     continue
-                
+
                 # Skip email if no recipient configured
                 if not customer_email:
                     log_structured(
-                        run_id, customer_id=customer_id, stage="daily_email",
-                        status="skip", reason="no_email_configured"
+                        run_id,
+                        customer_id=customer_id,
+                        stage="daily_email",
+                        status="skip",
+                        reason="no_email_configured",
                     )
                     continue
-                
+
                 # Compose critical-only report
                 report = compose_daily_critical_report(customer_name, critical_findings)
-                
+
                 # Extract critical section text and HTML from the report
                 critical_text = _extract_critical_section_text(report)
                 critical_html = _extract_critical_section_html(report)
-                
+
                 # Render email
                 email = render_daily_critical_alert(customer_name, critical_text, critical_html)
-                
+
                 # Send and log delivery
                 success = send_and_log(
                     conn=conn,
@@ -1114,23 +1297,29 @@ def _send_daily_critical_alerts(conn, settings: Settings, run_id: str) -> None:
                     text_body=email.text,
                     html_body=email.html,
                 )
-                
+
                 if success:
                     log_structured(
-                        run_id, customer_id=customer_id, stage="daily_email",
-                        status="sent", recipient=customer_email, critical_count=len(critical_findings)
+                        run_id,
+                        customer_id=customer_id,
+                        stage="daily_email",
+                        status="sent",
+                        recipient=customer_email,
+                        critical_count=len(critical_findings),
                     )
                 else:
                     log_structured(
-                        run_id, customer_id=customer_id, stage="daily_email",
-                        status="failed", recipient=customer_email
+                        run_id,
+                        customer_id=customer_id,
+                        stage="daily_email",
+                        status="failed",
+                        recipient=customer_email,
                     )
-        
+
         except Exception as e:  # noqa: BLE001
             # Per-customer isolation: log error and continue to next customer
             log_structured(
-                run_id, customer_id=customer_id, stage="daily_email",
-                status="error", error=str(e)
+                run_id, customer_id=customer_id, stage="daily_email", status="error", error=str(e)
             )
 
 
@@ -1140,7 +1329,7 @@ def _extract_critical_section_text(report) -> str:
     lines.append(f"CRITICAL ISSUES ({report.critical_count})")
     lines.append("-" * 60)
     lines.append("")
-    
+
     for idx, finding in enumerate(report.critical_findings, 1):
         lines.append(f"{idx}) {finding.title}")
         lines.append("")
@@ -1152,7 +1341,7 @@ def _extract_critical_section_text(report) -> str:
         lines.append("")
         lines.append(f"   → Recommended Action: {finding.recommendation}")
         lines.append("")
-    
+
     return "\n".join(lines)
 
 
@@ -1160,9 +1349,11 @@ def _extract_critical_section_html(report) -> str:
     """Extract HTML critical findings section from a report."""
     lines = []
     lines.append("<h2>Critical Issues</h2>")
-    
+
     for idx, finding in enumerate(report.critical_findings, 1):
-        lines.append("<div style='background: #fff; border-left: 4px solid #d32f2f; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>")
+        lines.append(
+            "<div style='background: #fff; border-left: 4px solid #d32f2f; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>"
+        )
         lines.append(f"<h3 style='margin-top: 0; color: #1a1a1a;'>{idx}) {finding.title}</h3>")
         lines.append("<div style='color: #666; font-size: 0.9em; margin: 10px 0;'>")
         if finding.url:
@@ -1170,7 +1361,9 @@ def _extract_critical_section_html(report) -> str:
         lines.append(f"<div><strong>Detected:</strong> {finding.created_at}</div>")
         lines.append("</div>")
         lines.append(f"<div style='margin: 15px 0; line-height: 1.6;'>{finding.details_md}</div>")
-        lines.append(f"<div style='background: #e8f5e9; border-radius: 4px; padding: 12px; margin-top: 15px;'><strong style='color: #2e7d32;'>→ Recommended Action:</strong> {finding.recommendation}</div>")
+        lines.append(
+            f"<div style='background: #e8f5e9; border-radius: 4px; padding: 12px; margin-top: 15px;'><strong style='color: #2e7d32;'>→ Recommended Action:</strong> {finding.recommendation}</div>"
+        )
         lines.append("</div>")
-    
+
     return "\n".join(lines)

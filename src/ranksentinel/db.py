@@ -167,49 +167,49 @@ def connect(settings: Settings) -> sqlite3.Connection:
 
 def init_db(conn: sqlite3.Connection) -> None:
     """Initialize database schema and apply migrations.
-    
+
     This function is idempotent and safe to run on both new and existing databases.
     It will:
     - Apply column-level migrations to existing tables first
     - Create all tables if they don't exist (via SCHEMA_SQL)
-    
+
     Args:
         conn: Database connection
     """
     cursor = conn.cursor()
-    
+
     # Check if tables exist before running SCHEMA_SQL
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='snapshots'")
     snapshots_exists = cursor.fetchone() is not None
-    
+
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='findings'")
     findings_exists = cursor.fetchone() is not None
-    
+
     # Apply column-level migrations BEFORE running SCHEMA_SQL
     # This allows existing tables to be updated before the schema tries to enforce constraints
-    
+
     if snapshots_exists:
         # Migration: Add run_id, error_type, error columns to snapshots if missing
         cursor.execute("PRAGMA table_info(snapshots)")
         snapshots_columns = {row[1] for row in cursor.fetchall()}
-        
+
         if "run_id" not in snapshots_columns:
             cursor.execute("ALTER TABLE snapshots ADD COLUMN run_id TEXT NOT NULL DEFAULT ''")
         if "error_type" not in snapshots_columns:
             cursor.execute("ALTER TABLE snapshots ADD COLUMN error_type TEXT")
         if "error" not in snapshots_columns:
             cursor.execute("ALTER TABLE snapshots ADD COLUMN error TEXT")
-    
+
     if findings_exists:
         # Migration: Add run_id column to findings if missing
         cursor.execute("PRAGMA table_info(findings)")
         findings_columns = {row[1] for row in cursor.fetchall()}
-        
+
         if "run_id" not in findings_columns:
             cursor.execute("ALTER TABLE findings ADD COLUMN run_id TEXT NOT NULL DEFAULT ''")
-    
+
     conn.commit()
-    
+
     # Now create tables that don't exist (CREATE TABLE IF NOT EXISTS handles this)
     conn.executescript(SCHEMA_SQL)
     conn.commit()
@@ -235,13 +235,13 @@ def get_latest_artifact(
     conn: sqlite3.Connection, customer_id: int, kind: str, subject: str
 ) -> sqlite3.Row | None:
     """Get the most recent artifact for a given (customer_id, kind, subject).
-    
+
     Args:
         conn: Database connection
         customer_id: Customer ID
         kind: Artifact kind (e.g., 'robots_txt', 'sitemap')
         subject: Artifact subject (e.g., URL or identifier)
-    
+
     Returns:
         Row with artifact data or None if no baseline exists
     """
@@ -265,7 +265,7 @@ def store_artifact(
     fetched_at: str,
 ) -> int:
     """Store a new artifact snapshot.
-    
+
     Args:
         conn: Database connection
         customer_id: Customer ID
@@ -274,7 +274,7 @@ def store_artifact(
         artifact_sha: SHA256 hash of the raw_content
         raw_content: The actual artifact content
         fetched_at: ISO timestamp of when artifact was fetched
-    
+
     Returns:
         ID of the inserted artifact row
     """
@@ -295,7 +295,7 @@ def generate_finding_dedupe_key(
     period: str,
 ) -> str:
     """Generate a deterministic dedupe key for a finding.
-    
+
     Args:
         customer_id: Customer ID
         run_type: 'daily' or 'weekly'
@@ -303,12 +303,12 @@ def generate_finding_dedupe_key(
         title: Finding title
         url: URL associated with the finding (optional)
         period: Period identifier (e.g., '2026-01-29' for daily, '2026-W05' for weekly)
-    
+
     Returns:
         SHA256 hash of the dedupe components
     """
     import hashlib
-    
+
     components = f"{customer_id}|{run_type}|{category}|{title}|{url or ''}|{period}"
     return hashlib.sha256(components.encode("utf-8")).hexdigest()
 
@@ -329,7 +329,7 @@ def insert_run_coverage(
     created_at: str,
 ) -> int:
     """Insert or update run coverage statistics.
-    
+
     Args:
         conn: Database connection
         customer_id: Customer ID
@@ -344,7 +344,7 @@ def insert_run_coverage(
         http_404_count: Number of 404 responses
         broken_link_count: Number of broken links detected
         created_at: ISO timestamp of when the run was created
-    
+
     Returns:
         ID of the inserted/updated row
     """
@@ -352,7 +352,7 @@ def insert_run_coverage(
         conn,
         """INSERT INTO run_coverage(
             customer_id, run_id, run_type, sitemap_url, total_urls, sampled_urls,
-            success_count, error_count, http_429_count, http_404_count, 
+            success_count, error_count, http_429_count, http_404_count,
             broken_link_count, created_at
         ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
         ON CONFLICT(customer_id, run_id, run_type) DO UPDATE SET
@@ -367,9 +367,18 @@ def insert_run_coverage(
             created_at=excluded.created_at
         """,
         (
-            customer_id, run_id, run_type, sitemap_url, total_urls, sampled_urls,
-            success_count, error_count, http_429_count, http_404_count,
-            broken_link_count, created_at
+            customer_id,
+            run_id,
+            run_type,
+            sitemap_url,
+            total_urls,
+            sampled_urls,
+            success_count,
+            error_count,
+            http_429_count,
+            http_404_count,
+            broken_link_count,
+            created_at,
         ),
     )
 
@@ -380,12 +389,12 @@ def get_latest_run_coverage(
     run_type: str,
 ) -> sqlite3.Row | None:
     """Get the most recent run coverage for a customer.
-    
+
     Args:
         conn: Database connection
         customer_id: Customer ID
         run_type: 'daily' or 'weekly'
-    
+
     Returns:
         Row with coverage data or None if no coverage exists
     """

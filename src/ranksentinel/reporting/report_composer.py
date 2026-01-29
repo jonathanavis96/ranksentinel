@@ -217,19 +217,33 @@ class WeeklyReport:
             lines.append("<strong>Coverage</strong>")
             lines.append("<ul>")
             if self.coverage.sitemap_url:
-                lines.append(f"<li><strong>Sitemap:</strong> <code>{self.coverage.sitemap_url}</code></li>")
+                lines.append(
+                    f"<li><strong>Sitemap:</strong> <code>{self.coverage.sitemap_url}</code></li>"
+                )
             if self.coverage.total_urls is not None:
-                lines.append(f"<li><strong>Total URLs in sitemap:</strong> {self.coverage.total_urls}</li>")
+                lines.append(
+                    f"<li><strong>Total URLs in sitemap:</strong> {self.coverage.total_urls}</li>"
+                )
             if self.coverage.sampled_urls is not None:
-                lines.append(f"<li><strong>URLs sampled (crawl limit):</strong> {self.coverage.sampled_urls}</li>")
+                lines.append(
+                    f"<li><strong>URLs sampled (crawl limit):</strong> {self.coverage.sampled_urls}</li>"
+                )
             if self.coverage.success_count is not None:
-                lines.append(f"<li><strong>Successful fetches:</strong> {self.coverage.success_count}</li>")
+                lines.append(
+                    f"<li><strong>Successful fetches:</strong> {self.coverage.success_count}</li>"
+                )
             if self.coverage.error_count is not None:
-                lines.append(f"<li><strong>Failed fetches:</strong> {self.coverage.error_count}</li>")
+                lines.append(
+                    f"<li><strong>Failed fetches:</strong> {self.coverage.error_count}</li>"
+                )
             if self.coverage.http_429_count is not None and self.coverage.http_429_count > 0:
-                lines.append(f"<li><strong>Rate limit (429) responses:</strong> {self.coverage.http_429_count}</li>")
+                lines.append(
+                    f"<li><strong>Rate limit (429) responses:</strong> {self.coverage.http_429_count}</li>"
+                )
             if self.coverage.http_404_count is not None and self.coverage.http_404_count > 0:
-                lines.append(f"<li><strong>404 responses:</strong> {self.coverage.http_404_count}</li>")
+                lines.append(
+                    f"<li><strong>404 responses:</strong> {self.coverage.http_404_count}</li>"
+                )
             lines.append("</ul>")
             lines.append("</div>")
 

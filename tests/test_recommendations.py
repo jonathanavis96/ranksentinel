@@ -1,7 +1,5 @@
 """Tests for recommendation rules engine."""
 
-import pytest
-
 from ranksentinel.reporting.recommendations import (
     FindingWithRecommendation,
     get_recommendation_for_finding,

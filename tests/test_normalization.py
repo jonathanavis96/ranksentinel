@@ -1,13 +1,10 @@
 """Tests for normalization and diff functions."""
 
-import pytest
-
 from ranksentinel.runner.normalization import (
     diff_summary,
     extract_canonical,
     extract_meta_robots,
     extract_title,
-    normalize_html_to_text,
     normalize_robots_txt,
 )
 
@@ -223,5 +220,7 @@ class TestExtractCanonical:
         assert extract_canonical(html) == ""
 
     def test_extract_canonical_with_whitespace(self):
-        html = '<html><head><link rel="canonical" href="  https://example.com/page  "></head></html>'
+        html = (
+            '<html><head><link rel="canonical" href="  https://example.com/page  "></head></html>'
+        )
         assert extract_canonical(html) == "https://example.com/page"

@@ -1,7 +1,5 @@
 """Tests for sitemap URL count extraction and delta detection."""
 
-import pytest
-
 from ranksentinel.runner.sitemap_parser import extract_url_count
 
 
@@ -112,10 +110,7 @@ class TestSitemapUrlCountExtraction:
     def test_large_urlset(self):
         """Test large urlset."""
         urls = "\n".join(
-            [
-                f'  <url><loc>https://example.com/page{i}</loc></url>'
-                for i in range(1000)
-            ]
+            [f"  <url><loc>https://example.com/page{i}</loc></url>" for i in range(1000)]
         )
         xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

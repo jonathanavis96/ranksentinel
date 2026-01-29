@@ -17,21 +17,22 @@ DeliveryStatus = Literal["sent", "skipped", "failed"]
 
 class MailgunError(Exception):
     """Raised when Mailgun API returns an error."""
+
     pass
 
 
 class MailgunClient:
     """Client for sending emails via Mailgun API."""
-    
+
     def __init__(self, settings: Settings):
         self.settings = settings
         self.api_key = settings.MAILGUN_API_KEY
         self.domain = settings.MAILGUN_DOMAIN
         self.from_address = settings.MAILGUN_FROM
-        
+
         if not self.api_key or not self.domain:
             raise ValueError("MAILGUN_API_KEY and MAILGUN_DOMAIN must be configured")
-    
+
     def send_email(
         self,
         to: str,
@@ -41,29 +42,29 @@ class MailgunClient:
         timeout: float = 30.0,
     ) -> tuple[bool, str | None, str | None]:
         """Send an email via Mailgun API.
-        
+
         Args:
             to: Recipient email address
             subject: Email subject
             text_body: Plain text email body
             html_body: HTML email body (optional)
             timeout: Request timeout in seconds
-        
+
         Returns:
             Tuple of (success, provider_message_id, error_message)
         """
         url = f"https://api.mailgun.net/v3/{self.domain}/messages"
-        
+
         data = {
             "from": self.from_address,
             "to": to,
             "subject": subject,
             "text": text_body,
         }
-        
+
         if html_body:
             data["html"] = html_body
-        
+
         try:
             response = requests.post(
                 url,
@@ -71,7 +72,7 @@ class MailgunClient:
                 data=data,
                 timeout=timeout,
             )
-            
+
             if response.status_code == 200:
                 result = response.json()
                 message_id = result.get("id", "")
@@ -81,17 +82,17 @@ class MailgunClient:
                 error_msg = f"Mailgun API error {response.status_code}: {response.text}"
                 logger.error(error_msg)
                 return (False, None, error_msg)
-        
+
         except requests.Timeout as e:
             error_msg = f"Mailgun request timeout: {e}"
             logger.error(error_msg)
             return (False, None, error_msg)
-        
+
         except requests.RequestException as e:
             error_msg = f"Mailgun request error: {e}"
             logger.error(error_msg)
             return (False, None, error_msg)
-        
+
         except Exception as e:
             error_msg = f"Unexpected error sending email: {e}"
             logger.error(error_msg)
@@ -109,7 +110,7 @@ def log_delivery(
     error: str | None = None,
 ) -> int:
     """Record an email delivery attempt in the deliveries table.
-    
+
     Args:
         conn: Database connection
         customer_id: Customer ID
@@ -119,18 +120,27 @@ def log_delivery(
         status: Delivery status ('sent', 'skipped', 'failed')
         provider_message_id: Mailgun message ID (if sent successfully)
         error: Error message (if failed)
-    
+
     Returns:
         ID of the inserted delivery row
     """
     sent_at = datetime.now(timezone.utc).isoformat()
-    
+
     return execute(
         conn,
         "INSERT INTO deliveries(customer_id, run_type, sent_at, recipient, subject, "
         "provider, provider_message_id, status, error) VALUES(?,?,?,?,?,?,?,?,?)",
-        (customer_id, run_type, sent_at, recipient, subject, "mailgun", 
-         provider_message_id, status, error),
+        (
+            customer_id,
+            run_type,
+            sent_at,
+            recipient,
+            subject,
+            "mailgun",
+            provider_message_id,
+            status,
+            error,
+        ),
     )
 
 
@@ -145,9 +155,9 @@ def send_and_log(
     html_body: str | None = None,
 ) -> bool:
     """Send an email and log the delivery attempt.
-    
+
     This is a convenience function that combines send_email and log_delivery.
-    
+
     Args:
         conn: Database connection
         client: MailgunClient instance
@@ -157,7 +167,7 @@ def send_and_log(
         subject: Email subject line
         text_body: Plain text email body
         html_body: HTML email body (optional)
-    
+
     Returns:
         True if email was sent successfully, False otherwise
     """
@@ -167,9 +177,9 @@ def send_and_log(
         text_body=text_body,
         html_body=html_body,
     )
-    
+
     status: DeliveryStatus = "sent" if success else "failed"
-    
+
     log_delivery(
         conn=conn,
         customer_id=customer_id,
@@ -180,5 +190,5 @@ def send_and_log(
         provider_message_id=message_id,
         error=error,
     )
-    
+
     return success

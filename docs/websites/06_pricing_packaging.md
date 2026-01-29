@@ -18,16 +18,29 @@ Agent rule:
 
 ## Pricing page copy (ready to embed)
 
-### Hero
+## Hash / anchor system (required)
+
+Pricing page anchors:
+
+- `#top`
+- `#what-you-get`
+- `#plans`
+- `#upgrade-triggers`
+- `#pages-monitored`
+- `#faq`
+
+---
+
+### Hero (anchor: #top)
 
 **Pricing that scales with your site — without noisy alerts.**
 
 Start small and upgrade when your monitoring footprint grows.
 
-Primary CTA: **Start monitoring**  
-Secondary CTA: **See a sample report**
+Primary CTA: **Get a sample report**  
+Secondary CTA: **See pricing** (scroll to plans)
 
-### What you get (all plans)
+### What you get (all plans) (anchor: #what-you-get)
 
 - **Weekly SEO regression digest** (Critical / Warning / Info)
 - **Daily critical alerts** (only when severity is Critical)
@@ -35,7 +48,7 @@ Secondary CTA: **See a sample report**
 - **Sitemap-aware weekly sampling** (capped)
 - **Action-first recommendations** (top priorities)
 
-### Plans
+### Plans (anchor: #plans)
 
 > Billing: monthly (annual option can be added later).
 
@@ -45,7 +58,7 @@ Secondary CTA: **See a sample report**
 | **Growth** | **$69/mo** | multiple sites or bigger footprint | up to **3 sites**, up to **200 pages monitored**, up to **25 key pages**, up to **10 recipients** |
 | **Agency** | **$199/mo** | agencies + multi-site portfolios | up to **10 sites**, up to **2,000 pages monitored**, up to **100 key pages**, up to **25 recipients**, priority onboarding |
 
-### Upgrade triggers (plain-English)
+### Upgrade triggers (plain-English) (anchor: #upgrade-triggers)
 
 Upgrade when:
 
@@ -53,7 +66,7 @@ Upgrade when:
 - you want a larger **weekly sample crawl**
 - you’re monitoring multiple sites
 
-### What “pages monitored” means (keep this honest)
+### What “pages monitored” means (keep this honest) (anchor: #pages-monitored)
 
 RankSentinel’s MVP crawl model is:
 
@@ -64,7 +77,7 @@ So “pages monitored” means:
 
 > Total pages monitored = key pages (daily) + weekly sampled pages (weekly cap)
 
-### FAQ (pricing)
+### FAQ (pricing) (anchor: #faq)
 
 **Do you crawl my entire site every day?**  
 No. Daily monitoring is focused on your key pages. The weekly digest includes a capped sitemap sample crawl.
