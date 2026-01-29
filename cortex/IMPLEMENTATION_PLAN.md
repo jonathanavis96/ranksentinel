@@ -376,7 +376,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** runbook and scripts agree on log location
   - **Validate:** run daily and confirm log file appears where configured
 
-- [ ] **5.4** Operator failure alerting (optional)
+- [x] **5.4** Operator failure alerting (optional)
   - **Goal:** make failures visible without spamming customers.
   - **AC:** optional `OPERATOR_EMAIL` receives failure notifications (no secrets in content)
   - **AC:** failures are logged with actionable context

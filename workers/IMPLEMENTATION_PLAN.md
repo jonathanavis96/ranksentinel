@@ -382,24 +382,24 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** failures are logged with actionable context
   - **Validate:** force an error and confirm operator path triggers
 
-- [ ] **5.5** Retention/cleanup job
+- [x] **5.5** Retention/cleanup job
   - **Goal:** DB doesn’t grow forever.
   - **AC:** a cleanup command deletes old findings/artifacts beyond retention policy
   - **AC:** retention defaults are documented (e.g., 90 days) and configurable
   - **Validate:** seed old rows; run cleanup; verify deletion
 
-- [ ] **5.6** DB migration stance
+- [x] **5.6** DB migration stance
   - **Goal:** explicitly decide “no migrations yet” vs “minimal migration tool”.
   - **AC:** decision is documented (in plan or `DECISIONS.md`) and repeatable
   - **Validate:** documented + agreed approach
 
-- [ ] **5.7** Cron runbook validation against real commands
+- [x] **5.7** Cron runbook validation against real commands
   - **Goal:** ensure docs match reality.
   - **AC:** `docs/RUNBOOK_VPS.md` commands match the scripts that actually exist
   - **AC:** runbook includes log locations and DB location per BOOTSTRAP
   - **Validate:** follow runbook on a clean machine (or local simulation) without guesswork
 
-- [ ] **5.8** Finding idempotency/deduping finalization
+- [x] **5.8** Finding idempotency/deduping finalization
   - **Goal:** ensure all finding kinds use dedupe keys consistently.
   - **AC:** dedupe is applied across all finding kinds (robots, sitemap, key pages, crawl)
   - **AC:** reruns do not duplicate findings for the same change in the same period
