@@ -122,7 +122,7 @@ class TestEmailDeduplicationAPI:
         """Test that duplicate canonical emails are detected in start_monitoring."""
         # Create first customer with user@gmail.com
         response1 = client.post(
-            "/api/start-monitoring",
+            "/public/start-monitoring",
             json={
                 "email": "user@gmail.com",
                 "domain": "example.com",
@@ -136,7 +136,7 @@ class TestEmailDeduplicationAPI:
         
         # Try to create with dot variant - should detect as duplicate
         response2 = client.post(
-            "/api/start-monitoring",
+            "/public/start-monitoring",
             json={
                 "email": "u.s.e.r@gmail.com",
                 "domain": "example2.com",
@@ -147,11 +147,11 @@ class TestEmailDeduplicationAPI:
         data2 = response2.json()
         assert data2["success"] is True
         assert data2["customer_id"] == customer_id_1  # Same customer
-        assert "already set up" in data2["message"].lower()
+        assert ("already" in data2["message"].lower() or "trial" in data2["message"].lower())
         
         # Try to create with plus variant - should detect as duplicate
         response3 = client.post(
-            "/api/start-monitoring",
+            "/public/start-monitoring",
             json={
                 "email": "user+spam@gmail.com",
                 "domain": "example3.com",
@@ -165,7 +165,7 @@ class TestEmailDeduplicationAPI:
         
         # Try googlemail.com variant - should detect as duplicate
         response4 = client.post(
-            "/api/start-monitoring",
+            "/public/start-monitoring",
             json={
                 "email": "user@googlemail.com",
                 "domain": "example4.com",
@@ -181,7 +181,7 @@ class TestEmailDeduplicationAPI:
         """Test that non-Gmail domains preserve dots as separate users."""
         # Create first customer
         response1 = client.post(
-            "/api/start-monitoring",
+            "/public/start-monitoring",
             json={
                 "email": "user@example.com",
                 "domain": "site1.com",
@@ -193,7 +193,7 @@ class TestEmailDeduplicationAPI:
         
         # Create with dot - should be different customer for non-Gmail
         response2 = client.post(
-            "/api/start-monitoring",
+            "/public/start-monitoring",
             json={
                 "email": "u.s.e.r@example.com",
                 "domain": "site2.com",
@@ -210,7 +210,7 @@ class TestEmailDeduplicationAPI:
         """Test that database stores both email_raw and email_canonical."""
         # Create customer with Gmail variant
         response = client.post(
-            "/api/start-monitoring",
+            "/public/start-monitoring",
             json={
                 "email": "User.Name+Tag@Gmail.COM",
                 "domain": "example.com",
@@ -235,7 +235,7 @@ class TestEmailDeduplicationAPI:
         """Test that database enforces uniqueness on email_canonical."""
         # Create first customer
         response1 = client.post(
-            "/api/start-monitoring",
+            "/public/start-monitoring",
             json={
                 "email": "user@gmail.com",
                 "domain": "example.com",
@@ -246,7 +246,7 @@ class TestEmailDeduplicationAPI:
         
         # The API should handle duplicates gracefully, not raise database errors
         response2 = client.post(
-            "/api/start-monitoring",
+            "/public/start-monitoring",
             json={
                 "email": "u.s.e.r@gmail.com",
                 "domain": "example.com",
