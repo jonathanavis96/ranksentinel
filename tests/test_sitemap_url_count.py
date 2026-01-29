@@ -27,6 +27,25 @@ class TestSitemapUrlCountExtraction:
         assert result["sitemap_type"] == "urlset"
         assert "error" not in result
 
+    def test_urlset_google_084_namespace(self):
+        """Test urlset with Google 0.84 namespace."""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.google.com/schemas/sitemap/0.84">
+  <url>
+    <loc>https://example.com/page1</loc>
+  </url>
+  <url>
+    <loc>https://example.com/page2</loc>
+  </url>
+  <url>
+    <loc>https://example.com/page3</loc>
+  </url>
+</urlset>"""
+        result = extract_url_count(xml)
+        assert result["url_count"] == 3
+        assert result["sitemap_type"] == "urlset"
+        assert "error" not in result
+
     def test_sitemapindex_basic(self):
         """Test sitemap index format."""
         xml = """<?xml version="1.0" encoding="UTF-8"?>

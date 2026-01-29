@@ -71,7 +71,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** Add a unit test that uses the Google 0.84 namespace and asserts URLs are extracted.
   - **Validate:** `pytest -q tests/test_list_sitemap_urls.py`
 
-- [ ] **0-S.3** Make `extract_url_count()` namespace-agnostic (support Google 0.84 urlset)
+- [x] **0-S.3** Make `extract_url_count()` namespace-agnostic (support Google 0.84 urlset)
   - **Goal:** URL counting must work on Google 0.84 sitemaps too.
   - **Files:** `src/ranksentinel/runner/sitemap_parser.py`, `tests/test_sitemap_url_count.py`
   - **AC:** For the same Google 0.84 sitemap sample, `extract_url_count()` returns correct `url_count` and `sitemap_type='urlset'`.
