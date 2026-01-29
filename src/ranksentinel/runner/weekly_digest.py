@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from ranksentinel.config import Settings
 from ranksentinel.db import connect, execute, fetch_all, fetch_one, generate_finding_dedupe_key, init_db
 from ranksentinel.http_client import fetch_text
+from ranksentinel.mailgun import MailgunClient, send_and_log
+from ranksentinel.reporting.report_composer import compose_weekly_report
 from ranksentinel.reporting.severity import CRITICAL
 from ranksentinel.runner.finding_utils import insert_finding
 from ranksentinel.runner.link_checker import find_broken_links
@@ -201,19 +203,30 @@ def detect_broken_internal_links(
 
 
 def run(settings: Settings) -> None:
-    """Weekly digest with broken link detection.
+    """Weekly digest with broken link detection and email delivery.
     
-    Full weekly digest logic is implemented in later phases.
+    Sends exactly one email per active customer with their weekly findings.
     """
     run_id = generate_run_id()
     start_time = time.time()
     
     log_structured(run_id, run_type="weekly", stage="init", status="start")
     
+    # Initialize Mailgun client (if configured)
+    mailgun_client = None
+    if settings.MAILGUN_API_KEY and settings.MAILGUN_DOMAIN:
+        try:
+            mailgun_client = MailgunClient(settings)
+            log_structured(run_id, stage="init", status="info", message="Mailgun client initialized")
+        except Exception as e:  # noqa: BLE001
+            log_structured(run_id, stage="init", status="warning", error=f"Mailgun init failed: {e}")
+    else:
+        log_structured(run_id, stage="init", status="info", message="Mailgun not configured, emails will be skipped")
+    
     conn = connect(settings)
     try:
         init_db(conn)
-        customers = fetch_all(conn, "SELECT id FROM customers WHERE status='active'")
+        customers = fetch_all(conn, "SELECT id, name FROM customers WHERE status='active'")
         
         log_structured(run_id, stage="init", status="complete", customer_count=len(customers))
 
@@ -335,6 +348,67 @@ def run(settings: Settings) -> None:
                             bootstrap_time,
                         ),
                     )
+                    
+                    # Send weekly email (isolated from processing errors)
+                    if mailgun_client and settings.MAILGUN_TO:
+                        try:
+                            # Fetch all findings for this customer from this week
+                            current_period = datetime.now(timezone.utc).strftime('%Y-W%U')
+                            findings_rows = fetch_all(
+                                conn,
+                                "SELECT * FROM findings WHERE customer_id=? AND run_type='weekly' "
+                                "AND created_at >= date('now', '-7 days') ORDER BY severity DESC, created_at DESC",
+                                (customer_id,)
+                            )
+                            
+                            # Compose report
+                            customer_name = c["name"]
+                            report = compose_weekly_report(customer_name, findings_rows)
+                            
+                            # Send email
+                            subject = f"RankSentinel Weekly Digest — {customer_name}"
+                            text_body = report.to_text()
+                            html_body = report.to_html()
+                            
+                            success = send_and_log(
+                                conn=conn,
+                                client=mailgun_client,
+                                customer_id=customer_id,
+                                run_type="weekly",
+                                recipient=settings.MAILGUN_TO,
+                                subject=subject,
+                                text_body=text_body,
+                                html_body=html_body,
+                            )
+                            
+                            if success:
+                                log_structured(
+                                    run_id,
+                                    run_type="weekly",
+                                    stage="send_email",
+                                    status="success",
+                                    customer_id=customer_id,
+                                    recipient=settings.MAILGUN_TO,
+                                )
+                            else:
+                                log_structured(
+                                    run_id,
+                                    run_type="weekly",
+                                    stage="send_email",
+                                    status="failed",
+                                    customer_id=customer_id,
+                                )
+                        except Exception as email_error:  # noqa: BLE001
+                            # Email failure should not crash the whole run
+                            log_structured(
+                                run_id,
+                                run_type="weekly",
+                                stage="send_email",
+                                status="error",
+                                customer_id=customer_id,
+                                error=f"Email send failed: {email_error}",
+                            )
+                    
             except Exception as e:  # noqa: BLE001
                 # Catch per-customer errors and record them, then continue to next customer
                 error_msg = f"Customer {customer_id} processing failed: {type(e).__name__}: {e}"

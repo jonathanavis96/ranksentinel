@@ -290,20 +290,20 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Phase 3: PSI regressions (atomic)
 
-- [ ] **3.1** PSI client + response persistence
+- [x] **3.1** PSI client + response persistence
   - **Goal:** integrate PageSpeed Insights safely and store raw responses.
   - **AC:** configurable via `PSI_API_KEY` and enabled/disabled via settings
   - **AC:** fetch PSI for key pages only and store raw JSON + sha
   - **Validate:** run daily/weekly with a real key and confirm rows stored
   - **If Blocked:** create `docs/SKILL_REQUEST_PSI.md` with API quirks + parsing examples
 
-- [ ] **3.2** PSI metric extraction (LCP/CLS/INP/TTFB/perf score)
+- [x] **3.2** PSI metric extraction (LCP/CLS/INP/TTFB/perf score)
   - **Goal:** extract the handful of SEO-relevant metrics from PSI JSON.
   - **AC:** store extracted metrics in structured form (columns or JSON)
   - **AC:** missing metrics handled gracefully (no crash)
   - **Validate:** run once and confirm metrics are persisted
 
-- [ ] **3.3** PSI regression thresholds (settings-driven)
+- [x] **3.3** PSI regression thresholds (settings-driven)
   - **Goal:** compute regressions vs baseline with low noise.
   - **AC:** thresholds exist in customer settings (defaults from BOOTSTRAP)
   - **AC:** regression creates a finding with before/after values
@@ -317,19 +317,19 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Phase 4: Email reporting (atomic)
 
-- [ ] **4.1** Recommendation rules engine
+- [x] **4.1** Recommendation rules engine
   - **Goal:** deterministic mapping from finding type -> “what to do next” recommendation text.
   - **AC:** each critical/warning finding kind has a short recommended action
   - **AC:** sorting is stable: severity first, then impact
   - **Validate:** unit test that given a findings list returns a stable ordered recommendation list
 
-- [ ] **4.2** Weekly report composer (no send)
+- [x] **4.2** Weekly report composer (no send)
   - **Goal:** generate the weekly digest text/HTML from findings.
   - **AC:** output matches `docs/SAMPLE_REPORT.md` sectioning (Critical/Warning/Info)
   - **AC:** includes prioritized recommendations derived from finding kinds (via the recommendation rules engine)
   - **Validate:** run weekly and print report to stdout or save to a local file (no email yet)
 
-- [ ] **4.3** Mailgun client + deliveries logging
+- [x] **4.3** Mailgun client + deliveries logging
   - **Goal:** send an email and record the delivery attempt.
   - **AC:** `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_FROM`, `MAILGUN_TO` used from env/settings
   - **AC:** deliveries table records status + provider message id + timestamps

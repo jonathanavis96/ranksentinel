@@ -336,7 +336,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:** run weekly with Mailgun configured and confirm deliveries row inserted
   - **If Blocked:** create `docs/SKILL_REQUEST_Mailgun.md` (auth, rate limits, error handling)
 
-- [ ] **4.4** Weekly digest sends via Mailgun
+- [x] **4.4** Weekly digest sends via Mailgun
   - **Goal:** connect report composer to Mailgun send.
   - **AC:** weekly run sends exactly one email per active customer
   - **AC:** failures do not crash the whole run (per-customer isolation)
