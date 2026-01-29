@@ -1,1 +1,120 @@
-# VPS Runbook (Hostinger) — RankSentinel\n\nThis runbook describes how to run RankSentinel autonomously on a Hostinger VPS using cron.\n\nRankSentinel is designed to be **silent on success** and **noisy on failure** (operator alerting only).\n\n## 1) Target layout\n\nRecommended:\n\n- Repo path: `/opt/ranksentinel`\n- Logs: `/opt/ranksentinel/logs/`\n- Database: `/opt/ranksentinel/ranksentinel.sqlite3`\n\n## 2) System prerequisites\n\n- Python 3.11+\n- `git`\n- `cron`\n\n## 3) Install\n\n```bash\nsudo mkdir -p /opt/ranksentinel\nsudo chown -R \"$USER\":\"$USER\" /opt/ranksentinel\n\ncd /opt/ranksentinel\n# clone your repository here (once GitHub is connected)\n# git clone ... .\n\npython3 -m venv .venv\n./.venv/bin/pip install -U pip\n./.venv/bin/pip install -e \"./[dev]\"\n```\n\n## 4) Configuration\n\nCreate `/opt/ranksentinel/.env` based on `.env.example`.\n\nRequired:\n\n- `MAILGUN_API_KEY`\n- `MAILGUN_DOMAIN`\n- `MAILGUN_FROM`\n- `PSI_API_KEY`\n\nOptional:\n\n- `RANKSENTINEL_OPERATOR_EMAIL`\n\nSecurity:\n\n- Do not commit `.env`.\n- Do not log secrets.\n\n## 5) Cron setup\n\nEdit crontab:\n\n```bash\ncrontab -e\n```\n\nAdd:\n\n```bash\n# Daily checks (01:15)\n15 1 * * * /bin/bash /opt/ranksentinel/scripts/run_daily.sh >> /opt/ranksentinel/logs/cron_daily.log 2>&1\n\n# Weekly digest (Monday 09:00)\n0 9 * * 1 /bin/bash /opt/ranksentinel/scripts/run_weekly.sh >> /opt/ranksentinel/logs/cron_weekly.log 2>&1\n```\n\nEnsure log directory exists:\n\n```bash\nmkdir -p /opt/ranksentinel/logs\n```\n\n## 6) Operational expectations\n\n- Jobs must be idempotent.\n- Jobs should retry transient network failures.\n- Job failure must surface to operator:\n  - write clear logs\n  - optional operator email on repeated failures\n\n## 7) Smoke test (manual)\n\nRun once:\n\n```bash\ncd /opt/ranksentinel\nbash scripts/run_daily.sh\nbash scripts/run_weekly.sh\n```\n\nCheck logs:\n\n```bash\ntail -n 200 /opt/ranksentinel/logs/cron_daily.log\n```\n
+# VPS Runbook (Hostinger) — RankSentinel
+
+This runbook describes how to run RankSentinel autonomously on a Hostinger VPS using cron.
+
+RankSentinel is designed to be **silent on success** and **noisy on failure** (operator alerting only).
+
+## 1) Target layout
+
+Recommended:
+
+- Repo path: `/opt/ranksentinel`
+- Logs: `/opt/ranksentinel/logs/`
+- Database: `/opt/ranksentinel/ranksentinel.sqlite3`
+
+## 2) System prerequisites
+
+- Python 3.11+
+- `git`
+- `cron`
+
+## 3) Install
+
+```bash
+sudo mkdir -p /opt/ranksentinel
+sudo chown -R \"$USER\":\"$USER\" /opt/ranksentinel
+
+cd /opt/ranksentinel
+# clone your repository here (once GitHub is connected)
+# git clone ... .
+
+python3 -m venv .venv
+./.venv/bin/pip install -U pip
+./.venv/bin/pip install -e \"./[dev]\"
+```
+
+## 4) Configuration
+
+Create `/opt/ranksentinel/.env` based on `.env.example`.
+
+Required:
+
+- `MAILGUN_API_KEY`
+- `MAILGUN_DOMAIN`
+- `MAILGUN_FROM`
+- `PSI_API_KEY`
+
+Optional:
+
+- `RANKSENTINEL_OPERATOR_EMAIL`
+
+Security:
+
+- Do not commit `.env`.
+- Do not log secrets.
+
+## 5) Cron setup
+
+Edit crontab:
+
+```bash
+crontab -e
+```
+
+Add:
+
+```bash
+# Daily checks (01:15)
+15 1 * * * cd /opt/ranksentinel && /bin/bash scripts/run_daily.sh
+
+# Weekly digest (Monday 09:00)
+0 9 * * 1 cd /opt/ranksentinel && /bin/bash scripts/run_weekly.sh
+```
+
+**Log configuration:**
+
+The scripts accept the `RANKSENTINEL_LOG_DIR` environment variable (default: `./logs`).
+
+To customize the log directory:
+
+```bash
+# Daily checks with custom log directory
+15 1 * * * cd /opt/ranksentinel && RANKSENTINEL_LOG_DIR=/opt/ranksentinel/logs /bin/bash scripts/run_daily.sh
+
+# Weekly digest with custom log directory
+0 9 * * 1 cd /opt/ranksentinel && RANKSENTINEL_LOG_DIR=/opt/ranksentinel/logs /bin/bash scripts/run_weekly.sh
+```
+
+The scripts automatically:
+
+- Create the log directory if it doesn't exist
+- Write to date-stamped log files: `daily_YYYYMMDD.log` and `weekly_YYYYMMDD.log`
+- Capture both stdout and stderr
+
+## 6) Operational expectations
+
+- Jobs must be idempotent.
+- Jobs should retry transient network failures.
+- Job failure must surface to operator:
+  - write clear logs
+  - optional operator email on repeated failures
+
+## 7) Smoke test (manual)
+
+Run once:
+
+```bash
+cd /opt/ranksentinel
+bash scripts/run_daily.sh
+bash scripts/run_weekly.sh
+```
+
+Check logs:
+
+```bash
+# View today's daily log
+tail -n 200 /opt/ranksentinel/logs/daily_$(date +%Y%m%d).log
+
+# View today's weekly log
+tail -n 200 /opt/ranksentinel/logs/weekly_$(date +%Y%m%d).log
+```

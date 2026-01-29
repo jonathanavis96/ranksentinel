@@ -370,7 +370,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** on failure: clear single-line failure summary + non-zero exit
   - **Validate:** run a success and a forced failure and check exit codes and output
 
-- [ ] **5.3** Log path standardization
+- [x] **5.3** Log path standardization
   - **Goal:** scripts write logs to predictable locations (especially on VPS).
   - **AC:** run scripts accept `RANKSENTINEL_LOG_DIR` (or documented default)
   - **AC:** runbook and scripts agree on log location
