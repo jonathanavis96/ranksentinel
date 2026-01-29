@@ -73,13 +73,13 @@ def test_sitemapindex_expansion_fetches_page_urls(tmp_path):
     # Create test settings
     test_settings = Settings(RANKSENTINEL_DB_PATH=str(db_path))
     
-    # Patch fetch_text in both modules
+    # Patch fetch_text in all modules (weekly now uses scheduled fetcher)
     with patch("ranksentinel.runner.weekly_digest.fetch_text", side_effect=mock_fetch_text), \
-         patch("ranksentinel.runner.page_fetcher.fetch_text", side_effect=mock_fetch_text) as mock_page_fetch:
+         patch("ranksentinel.runner.page_fetcher_scheduled.fetch_text", side_effect=mock_fetch_text) as mock_scheduled_fetch:
         run(test_settings)
         
         # Count page fetches (should be page URLs, not .xml sitemap URLs)
-        page_fetches = mock_page_fetch.call_args_list
+        page_fetches = mock_scheduled_fetch.call_args_list
         fetched_urls = [call.args[0] if call.args else call.kwargs.get('url') for call in page_fetches]
         
         # Should have fetched page URLs, not sitemap URLs
@@ -146,7 +146,7 @@ def test_sitemapindex_respects_crawl_limit(tmp_path):
     
     # Patch fetch_text
     with patch("ranksentinel.runner.weekly_digest.fetch_text", side_effect=mock_fetch_text), \
-         patch("ranksentinel.runner.page_fetcher.fetch_text", side_effect=mock_fetch_text) as mock_page_fetch:
+         patch("ranksentinel.runner.page_fetcher_scheduled.fetch_text", side_effect=mock_fetch_text) as mock_page_fetch:
         run(test_settings)
         
         # Should respect crawl_limit of 3
@@ -213,7 +213,7 @@ def test_sitemapindex_handles_child_fetch_errors(tmp_path):
     
     # Patch fetch_text
     with patch("ranksentinel.runner.weekly_digest.fetch_text", side_effect=mock_fetch_text), \
-         patch("ranksentinel.runner.page_fetcher.fetch_text", side_effect=mock_fetch_text) as mock_page_fetch:
+         patch("ranksentinel.runner.page_fetcher_scheduled.fetch_text", side_effect=mock_fetch_text) as mock_page_fetch:
         run(test_settings)
         
         # Should still fetch pages from working child sitemap

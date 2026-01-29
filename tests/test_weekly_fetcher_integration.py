@@ -49,13 +49,13 @@ def test_weekly_fetcher_enforces_crawl_limit(tmp_path):
     # Create test settings
     test_settings = Settings(RANKSENTINEL_DB_PATH=str(db_path))
     
-    # Patch fetch_text in both weekly_digest and page_fetcher modules
+    # Patch fetch_text in all relevant modules (weekly now uses scheduled fetcher)
     with patch("ranksentinel.runner.weekly_digest.fetch_text", side_effect=mock_fetch_text), \
-         patch("ranksentinel.runner.page_fetcher.fetch_text", side_effect=mock_fetch_text) as mock_page_fetch:
+         patch("ranksentinel.runner.page_fetcher_scheduled.fetch_text", side_effect=mock_fetch_text) as mock_scheduled_fetch:
         run(test_settings)
         
-        # Count page fetches from page_fetcher (actual page crawls)
-        page_fetches = mock_page_fetch.call_args_list
+        # Count page fetches from scheduled fetcher (actual page crawls)
+        page_fetches = mock_scheduled_fetch.call_args_list
         
         # Should have fetched exactly crawl_limit (25) pages, not all 100
         assert len(page_fetches) == 25, f"Expected 25 page fetches, got {len(page_fetches)}"

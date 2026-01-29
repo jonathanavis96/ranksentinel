@@ -24,6 +24,11 @@ from ranksentinel.runner.page_fetcher_scheduled import fetch_pages_scheduled
 from ranksentinel.runner.sitemap_parser import list_sitemap_urls
 
 
+def fetch_sitemap(run_id: str, customer_id: int, sitemap_url: str):
+    """Fetch sitemap XML for weekly processing."""
+    return fetch_text(sitemap_url, timeout=20, attempts=3)
+
+
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -398,6 +403,7 @@ def run(settings: Settings) -> None:
                         customer_id=customer_id,
                         sitemap_url=sitemap_url,
                         sitemap_xml=sitemap_result.body,
+                        crawl_limit=crawl_limit,
                     )
                     
                     # List URLs from sitemap

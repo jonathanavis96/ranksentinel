@@ -148,7 +148,7 @@ def test_weekly_skips_non_active_customers(tmp_path, monkeypatch):
     
     # Run weekly digest with mocked HTTP
     with patch("ranksentinel.runner.weekly_digest.fetch_text", side_effect=mock_fetch_text), \
-         patch("ranksentinel.runner.page_fetcher.fetch_text", side_effect=mock_fetch_text):
+         patch("ranksentinel.runner.page_fetcher_scheduled.fetch_text", side_effect=mock_fetch_text):
         run_weekly(settings)
     
     # Verify only active customer has snapshots
