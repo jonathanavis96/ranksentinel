@@ -364,7 +364,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** daily and weekly scripts acquire a lock (file lock) and exit non-zero or no-op if locked
   - **Validate:** start one run, start second => second exits quickly with clear log
 
-- [ ] **5.2** Exit-code + “silent on success” contract
+- [x] **5.2** Exit-code + “silent on success” contract
   - **Goal:** cron runs should be quiet unless there’s a failure or a customer email is sent.
   - **AC:** on success: minimal output (startup + SUMMARY line)
   - **AC:** on failure: clear single-line failure summary + non-zero exit

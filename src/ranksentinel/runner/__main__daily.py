@@ -21,8 +21,13 @@ def main() -> None:
         with FileLock(str(lock_dir), "daily"):
             run(settings)
     except LockError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
+        print(f"ERROR: Daily run failed (lock): {e}", file=sys.stderr)
         sys.exit(1)
+    except Exception as e:
+        print(f"ERROR: Daily run failed: {type(e).__name__}: {e}", file=sys.stderr)
+        sys.exit(1)
+    
+    # Success - exit 0 (implicit)
 
 
 if __name__ == "__main__":
