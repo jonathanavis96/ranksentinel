@@ -138,7 +138,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 > - "No issues" emails contain only a bootstrap placeholder finding and lack coverage stats.
 > - Emails can include stale findings from earlier in the week without making "resolved" vs "new" clear.
 
-- [ ] **0-E.1** Remove bootstrap placeholder finding from customer-facing weekly emails
+- [x] **0-E.1** Remove bootstrap placeholder finding from customer-facing weekly emails
   - **Goal:** Don’t send low-value “bootstrap” noise to customers.
   - **Files (likely):** `src/ranksentinel/runner/weekly_digest.py`, `src/ranksentinel/reporting/report_composer.py`
   - **Implementation guidance (choose one):**
