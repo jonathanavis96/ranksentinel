@@ -357,7 +357,7 @@ This regression was confirmed across {confirm_runs} consecutive runs."""
 
 
 def run(settings: Settings) -> None:
-    """Daily critical checks with noindex, canonical, and PSI regression detection."""
+    """Daily critical checks with noindex, canonical, robots.txt, and PSI regression detection."""
     run_id = generate_run_id()
     start_time = time.time()
     
@@ -377,10 +377,10 @@ def run(settings: Settings) -> None:
             
             try:
                 with log_stage(run_id, "process_customer", customer_id=customer_id):
-                    # Get customer settings
+                    # Get customer settings (including sitemap_url for robots base URL)
                     settings_row = fetch_one(
                         conn,
-                        "SELECT psi_enabled, psi_urls_limit, psi_confirm_runs, "
+                        "SELECT sitemap_url, psi_enabled, psi_urls_limit, psi_confirm_runs, "
                         "psi_perf_drop_threshold, psi_lcp_increase_threshold_ms "
                         "FROM settings WHERE customer_id=?",
                         (customer_id,),
@@ -391,12 +391,64 @@ def run(settings: Settings) -> None:
                         customer_settings = dict(settings_row)
                     else:
                         customer_settings = {
+                            "sitemap_url": None,
                             "psi_enabled": 1,
                             "psi_urls_limit": 5,
                             "psi_confirm_runs": 2,
                             "psi_perf_drop_threshold": 10,
                             "psi_lcp_increase_threshold_ms": 500,
                         }
+
+                    # Fetch and store robots.txt artifact
+                    robots_base_url = None
+                    if customer_settings.get("sitemap_url"):
+                        # Derive base URL from sitemap_url (e.g., https://example.com/sitemap.xml -> https://example.com)
+                        from urllib.parse import urlparse
+                        parsed = urlparse(str(customer_settings["sitemap_url"]))
+                        robots_base_url = f"{parsed.scheme}://{parsed.netloc}"
+                    else:
+                        # Fall back to first target URL's base
+                        first_target = fetch_one(
+                            conn,
+                            "SELECT url FROM targets WHERE customer_id=? AND is_key=1 LIMIT 1",
+                            (customer_id,),
+                        )
+                        if first_target:
+                            from urllib.parse import urlparse
+                            parsed = urlparse(str(first_target["url"]))
+                            robots_base_url = f"{parsed.scheme}://{parsed.netloc}"
+
+                    if robots_base_url:
+                        robots_url = f"{robots_base_url}/robots.txt"
+                        try:
+                            with log_stage(run_id, "fetch_robots", customer_id=customer_id, url=robots_url):
+                                robots_result = fetch_text(robots_url, timeout=10, attempts=2, base_delay=1.0)
+                            
+                            if not robots_result.is_error:
+                                robots_content = robots_result.body or ""
+                                robots_sha = sha256_text(robots_content)
+                                fetched_at = now_iso()
+                                
+                                # Store artifact (kind=robots_txt, subject=base_url)
+                                store_artifact(
+                                    conn, customer_id, "robots_txt", robots_base_url, 
+                                    robots_sha, robots_content, fetched_at
+                                )
+                                
+                                log_structured(
+                                    run_id, customer_id=customer_id, stage="fetch_robots", 
+                                    status="success", url=robots_url, sha=robots_sha[:12]
+                                )
+                            else:
+                                log_structured(
+                                    run_id, customer_id=customer_id, stage="fetch_robots",
+                                    status="error", url=robots_url, error=robots_result.error
+                                )
+                        except Exception as e:  # noqa: BLE001
+                            log_structured(
+                                run_id, customer_id=customer_id, stage="fetch_robots",
+                                status="error", url=robots_url, error=str(e)
+                            )
 
                     targets = fetch_all(
                         conn,

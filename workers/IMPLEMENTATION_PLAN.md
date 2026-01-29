@@ -167,7 +167,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:** run the same job twice and verify counts don't increase unexpectedly
   - **Completed:** Added `dedupe_key` column to findings table with UNIQUE constraint. Implemented `generate_finding_dedupe_key()` function that creates deterministic SHA256 hashes from (customer_id, run_type, category, title, url, period). Updated all INSERT statements in daily_checks.py and weekly_digest.py to use `INSERT OR IGNORE` with dedupe keys. Daily findings use '%Y-%m-%d' period format, weekly uses '%Y-W%U'. Comprehensive test coverage with 5 passing tests.
 
-- [ ] **1.4** Robots fetch + persist raw artifact
+- [x] **1.4** Robots fetch + persist raw artifact
   - **Goal:** reliably fetch `robots.txt` and store the raw content + sha for later diffs.
   - **AC:** daily run fetches `<site>/robots.txt` for each customer (or configured base URL)
   - **AC:** a `findings` (or artifact) row is recorded with:
@@ -177,6 +177,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:**
     - run `bash scripts/run_daily.sh`
     - confirm DB rows exist for robots findings (example): `sqlite3 ranksentinel.sqlite3 "select kind, count(*) from findings group by kind;"`
+  - **Completed:** Implemented robots.txt fetch in daily_checks.py. Derives base URL from sitemap_url (or falls back to first target URL). Fetches `/robots.txt` using http_client.fetch_text with 10s timeout and 2 retry attempts. Stores artifact with kind='robots_txt', subject=base_url, artifact_sha, and raw_content. Includes comprehensive error handling for 404s and fetch failures. Added 5 test cases covering: artifact storage, no-duplicate reruns, changed content detection, error handling, and fallback URL logic. Validated with live run against python.org showing successful fetch and storage.
 
 - [ ] **1.5** Robots diff + severity (Disallow risk)
   - **Goal:** detect meaningful robots changes and assign severity without noise.
