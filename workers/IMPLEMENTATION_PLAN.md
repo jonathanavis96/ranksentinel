@@ -153,7 +153,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** If `critical_count==0` and `warning_count==0`, text + HTML include an explicit "All clear" message.
   - **Validate:** Unit test for text + HTML output.
 
-- [ ] **0-E.3** Persist per-run coverage stats (needed for email/reporting)
+- [x] **0-E.3** Persist per-run coverage stats (needed for email/reporting)
   - **Goal:** Include what was checked (sitemap URL, total URLs, sampled URLs, success/error counts, 404 count, broken link count).
   - **Files (likely):** `src/ranksentinel/db.py`, `src/ranksentinel/runner/weekly_digest.py`
   - **Implementation guidance:**

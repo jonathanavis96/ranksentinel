@@ -28,3 +28,20 @@ class CustomerSettingsPatch(BaseModel):
     crawl_limit: int | None = Field(default=None, ge=1, le=5000)
     psi_enabled: bool | None = None
     psi_urls_limit: int | None = Field(default=None, ge=0, le=100)
+
+
+class RunCoverageOut(BaseModel):
+    """Model for run coverage statistics."""
+    id: int
+    customer_id: int
+    run_id: str
+    run_type: str
+    sitemap_url: str | None
+    total_urls: int | None
+    sampled_urls: int | None
+    success_count: int | None
+    error_count: int | None
+    http_429_count: int | None
+    http_404_count: int | None
+    broken_link_count: int | None
+    created_at: str

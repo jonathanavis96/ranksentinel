@@ -2,7 +2,15 @@ import time
 from datetime import datetime, timezone
 
 from ranksentinel.config import Settings
-from ranksentinel.db import connect, execute, fetch_all, fetch_one, generate_finding_dedupe_key, init_db
+from ranksentinel.db import (
+    connect,
+    execute,
+    fetch_all,
+    fetch_one,
+    generate_finding_dedupe_key,
+    init_db,
+    insert_run_coverage,
+)
 from ranksentinel.http_client import fetch_text
 from ranksentinel.mailgun import MailgunClient, send_and_log
 from ranksentinel.reporting.report_composer import compose_weekly_report
@@ -294,6 +302,12 @@ def run(settings: Settings) -> None:
                         crawl_limit=crawl_limit,
                     )
                     
+                    # Calculate coverage stats
+                    success_count = sum(1 for r in fetch_results if r.ok)
+                    error_count = sum(1 for r in fetch_results if not r.ok)
+                    http_429_count = sum(1 for r in fetch_results if r.status_code == 429)
+                    http_404_count = sum(1 for r in fetch_results if r.is_404)
+                    
                     log_structured(
                         run_id,
                         run_type="weekly",
@@ -302,7 +316,24 @@ def run(settings: Settings) -> None:
                         customer_id=customer_id,
                         total_urls=len(urls),
                         fetched_count=len(fetch_results),
-                        success_count=sum(1 for r in fetch_results if r.ok),
+                        success_count=success_count,
+                    )
+                    
+                    # Persist run coverage stats
+                    insert_run_coverage(
+                        conn=conn,
+                        customer_id=customer_id,
+                        run_id=run_id,
+                        run_type="weekly",
+                        sitemap_url=sitemap_url,
+                        total_urls=len(urls),
+                        sampled_urls=len(fetch_results),
+                        success_count=success_count,
+                        error_count=error_count,
+                        http_429_count=http_429_count,
+                        http_404_count=http_404_count,
+                        broken_link_count=0,  # Will be updated after broken link detection
+                        created_at=now_iso(),
                     )
                     
                     # Detect new 404s from sampled crawl

@@ -127,6 +127,26 @@ CREATE TABLE IF NOT EXISTS artifacts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_artifacts_lookup ON artifacts(customer_id, kind, subject, fetched_at DESC);
+
+CREATE TABLE IF NOT EXISTS run_coverage (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER NOT NULL,
+  run_id TEXT NOT NULL,
+  run_type TEXT NOT NULL CHECK(run_type IN ('daily','weekly')),
+  sitemap_url TEXT,
+  total_urls INTEGER,
+  sampled_urls INTEGER,
+  success_count INTEGER,
+  error_count INTEGER,
+  http_429_count INTEGER,
+  http_404_count INTEGER,
+  broken_link_count INTEGER,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY(customer_id) REFERENCES customers(id),
+  UNIQUE(customer_id, run_id, run_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_run_coverage_lookup ON run_coverage(customer_id, run_type, created_at DESC);
 """
 
 
@@ -239,3 +259,91 @@ def generate_finding_dedupe_key(
     
     components = f"{customer_id}|{run_type}|{category}|{title}|{url or ''}|{period}"
     return hashlib.sha256(components.encode("utf-8")).hexdigest()
+
+
+def insert_run_coverage(
+    conn: sqlite3.Connection,
+    customer_id: int,
+    run_id: str,
+    run_type: str,
+    sitemap_url: str | None,
+    total_urls: int | None,
+    sampled_urls: int | None,
+    success_count: int | None,
+    error_count: int | None,
+    http_429_count: int | None,
+    http_404_count: int | None,
+    broken_link_count: int | None,
+    created_at: str,
+) -> int:
+    """Insert or update run coverage statistics.
+    
+    Args:
+        conn: Database connection
+        customer_id: Customer ID
+        run_id: Unique run identifier
+        run_type: 'daily' or 'weekly'
+        sitemap_url: URL of the sitemap being monitored
+        total_urls: Total URLs found in sitemap
+        sampled_urls: Number of URLs sampled (based on crawl_limit)
+        success_count: Number of successful fetches
+        error_count: Number of failed fetches
+        http_429_count: Number of 429 rate limit responses
+        http_404_count: Number of 404 responses
+        broken_link_count: Number of broken links detected
+        created_at: ISO timestamp of when the run was created
+    
+    Returns:
+        ID of the inserted/updated row
+    """
+    return execute(
+        conn,
+        """INSERT INTO run_coverage(
+            customer_id, run_id, run_type, sitemap_url, total_urls, sampled_urls,
+            success_count, error_count, http_429_count, http_404_count, 
+            broken_link_count, created_at
+        ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(customer_id, run_id, run_type) DO UPDATE SET
+            sitemap_url=excluded.sitemap_url,
+            total_urls=excluded.total_urls,
+            sampled_urls=excluded.sampled_urls,
+            success_count=excluded.success_count,
+            error_count=excluded.error_count,
+            http_429_count=excluded.http_429_count,
+            http_404_count=excluded.http_404_count,
+            broken_link_count=excluded.broken_link_count,
+            created_at=excluded.created_at
+        """,
+        (
+            customer_id, run_id, run_type, sitemap_url, total_urls, sampled_urls,
+            success_count, error_count, http_429_count, http_404_count,
+            broken_link_count, created_at
+        ),
+    )
+
+
+def get_latest_run_coverage(
+    conn: sqlite3.Connection,
+    customer_id: int,
+    run_type: str,
+) -> sqlite3.Row | None:
+    """Get the most recent run coverage for a customer.
+    
+    Args:
+        conn: Database connection
+        customer_id: Customer ID
+        run_type: 'daily' or 'weekly'
+    
+    Returns:
+        Row with coverage data or None if no coverage exists
+    """
+    return fetch_one(
+        conn,
+        """SELECT id, customer_id, run_id, run_type, sitemap_url, total_urls,
+                  sampled_urls, success_count, error_count, http_429_count,
+                  http_404_count, broken_link_count, created_at
+           FROM run_coverage
+           WHERE customer_id=? AND run_type=?
+           ORDER BY created_at DESC LIMIT 1""",
+        (customer_id, run_type),
+    )
