@@ -147,7 +147,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
   - **AC:** `./.venv/bin/pytest -q tests/test_sitemap_fetch.py` passes.
 
-- [ ] **0-R.6** Fix `tests/test_page_fetcher.py::test_persist_fetch_results_placeholder` to initialize schema (call `init_db()` before using snapshots)
+- [x] **0-R.6** Fix `tests/test_page_fetcher.py::test_persist_fetch_results_placeholder` to initialize schema (call `init_db()` before using snapshots)
   - **Why:** Fails with `sqlite3.OperationalError: no such table: snapshots` because test creates a bare SQLite DB.
   - **Do:** In the test, call `init_db(conn)` (or use shared fixture) before invoking `persist_fetch_results()`.
   - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`

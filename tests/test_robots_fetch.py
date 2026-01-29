@@ -49,15 +49,21 @@ Disallow: /admin/
 Allow: /
 """
     
-    # Mock fetch_text for both robots.txt and HTML fetches
+    # Mock fetch_text for sitemap, robots.txt, and HTML fetches
     with patch("ranksentinel.runner.daily_checks.fetch_text") as mock_fetch:
-        # First call: robots.txt
+        # First call: sitemap fetch
+        sitemap_response = MagicMock()
+        sitemap_response.is_error = False
+        sitemap_response.body = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>'
+        sitemap_response.status_code = 200
+        
+        # Second call: robots.txt
         robots_response = MagicMock()
         robots_response.is_error = False
         robots_response.body = mock_robots_content
         robots_response.status_code = 200
         
-        # Second call: HTML page fetch
+        # Third call: HTML page fetch
         html_response = MagicMock()
         html_response.is_error = False
         html_response.body = "<html><head><title>Test</title></head><body>Content</body></html>"
@@ -65,7 +71,7 @@ Allow: /
         html_response.final_url = "https://example.com/page"
         html_response.redirect_chain = []
         
-        mock_fetch.side_effect = [robots_response, html_response]
+        mock_fetch.side_effect = [sitemap_response, robots_response, html_response]
         
         # Mock PSI (disabled by default in test)
         settings.PSI_API_KEY = ""
@@ -98,7 +104,7 @@ def test_robots_fetch_no_duplicate_on_rerun(test_db):
     
     with patch("ranksentinel.runner.daily_checks.fetch_text") as mock_fetch:
         # Setup mock responses
-        def make_response(body, is_html=False):
+        def make_response(body, is_html=False, is_sitemap=False):
             response = MagicMock()
             response.is_error = False
             response.body = body
@@ -108,8 +114,9 @@ def test_robots_fetch_no_duplicate_on_rerun(test_db):
                 response.redirect_chain = []
             return response
         
-        # First run
+        # First run (sitemap, robots, html)
         mock_fetch.side_effect = [
+            make_response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>', is_sitemap=True),
             make_response(mock_robots_content),
             make_response("<html><head><title>Test</title></head><body>Content</body></html>", is_html=True)
         ]
@@ -118,8 +125,9 @@ def test_robots_fetch_no_duplicate_on_rerun(test_db):
         
         first_count = len(fetch_all(conn, "SELECT * FROM artifacts WHERE kind='robots_txt'"))
         
-        # Second run with same content
+        # Second run with same content (sitemap, robots, html)
         mock_fetch.side_effect = [
+            make_response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>', is_sitemap=True),
             make_response(mock_robots_content),
             make_response("<html><head><title>Test</title></head><body>Content</body></html>", is_html=True)
         ]
@@ -140,7 +148,7 @@ def test_robots_fetch_changed_content(test_db):
     mock_robots_v2 = "User-agent: *\nDisallow: /"  # More restrictive
     
     with patch("ranksentinel.runner.daily_checks.fetch_text") as mock_fetch:
-        def make_response(body, is_html=False):
+        def make_response(body, is_html=False, is_sitemap=False):
             response = MagicMock()
             response.is_error = False
             response.body = body
@@ -150,16 +158,18 @@ def test_robots_fetch_changed_content(test_db):
                 response.redirect_chain = []
             return response
         
-        # First run
+        # First run (sitemap, robots, html)
         mock_fetch.side_effect = [
+            make_response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>', is_sitemap=True),
             make_response(mock_robots_v1),
             make_response("<html><head><title>Test</title></head><body>Content</body></html>", is_html=True)
         ]
         settings.PSI_API_KEY = ""
         run(settings)
         
-        # Second run with changed content
+        # Second run with changed content (sitemap, robots, html)
         mock_fetch.side_effect = [
+            make_response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>', is_sitemap=True),
             make_response(mock_robots_v2),
             make_response("<html><head><title>Test</title></head><body>Content</body></html>", is_html=True)
         ]
@@ -182,13 +192,19 @@ def test_robots_fetch_error_handling(test_db):
     conn, settings = test_db
     
     with patch("ranksentinel.runner.daily_checks.fetch_text") as mock_fetch:
-        # First call: robots.txt fails
+        # First call: sitemap succeeds
+        sitemap_response = MagicMock()
+        sitemap_response.is_error = False
+        sitemap_response.body = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>'
+        sitemap_response.status_code = 200
+        
+        # Second call: robots.txt fails
         robots_response = MagicMock()
         robots_response.is_error = True
         robots_response.error = "404 Not Found"
         robots_response.error_type = "http_error"
         
-        # Second call: HTML page succeeds
+        # Third call: HTML page succeeds
         html_response = MagicMock()
         html_response.is_error = False
         html_response.body = "<html><head><title>Test</title></head><body>Content</body></html>"
@@ -196,7 +212,7 @@ def test_robots_fetch_error_handling(test_db):
         html_response.final_url = "https://example.com/page"
         html_response.redirect_chain = []
         
-        mock_fetch.side_effect = [robots_response, html_response]
+        mock_fetch.side_effect = [sitemap_response, robots_response, html_response]
         settings.PSI_API_KEY = ""
         
         # Should not raise exception
@@ -231,6 +247,7 @@ def test_robots_fetch_fallback_to_target_url(test_db):
                 response.redirect_chain = []
             return response
         
+        # No sitemap, so only robots + html
         mock_fetch.side_effect = [
             make_response(mock_robots_content),
             make_response("<html><head><title>Test</title></head><body>Content</body></html>", is_html=True)

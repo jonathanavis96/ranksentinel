@@ -19,7 +19,7 @@ Notes:
 
 ## Distill.io
 
-- Pricing page: https://distill.io/pricing
+- Pricing page: <https://distill.io/pricing>
 - Evidence source: JSON-LD offers embedded in page.
 
 Observed plans (monthly):
@@ -33,7 +33,7 @@ Observed plans (monthly):
 
 ## Little Warden
 
-- Pricing page: https://littlewarden.com/pricing
+- Pricing page: <https://littlewarden.com/pricing>
 - Evidence source: server-rendered HTML text.
 
 Observed plans (monthly; USD selector available):
@@ -46,7 +46,7 @@ Observed plans (monthly; USD selector available):
 
 ## Visualping
 
-- Pricing page: https://visualping.io/pricing
+- Pricing page: <https://visualping.io/pricing>
 - Evidence source: headless `google-chrome-stable --dump-dom` capture.
 
 Observed headline plan prices:
@@ -73,7 +73,7 @@ Also advertised: support plans (Basic **$50/mo**, Advanced **$100/mo**, Dedicate
 
 ## Hexowatch
 
-- Pricing page: https://hexowatch.com/pricing
+- Pricing page: <https://hexowatch.com/pricing>
 - Evidence source: headless `google-chrome-stable --dump-dom` capture.
 
 Observed prices (annual billed; displayed as monthly equivalent):
@@ -87,7 +87,7 @@ Observed prices (annual billed; displayed as monthly equivalent):
 
 ## ContentKing
 
-- Pricing page: https://www.contentkingapp.com/pricing/
+- Pricing page: <https://www.contentkingapp.com/pricing/>
 - Evidence source: headless retrieval reached a page titled "Start your free trial".
 
 Notes:
@@ -98,7 +98,7 @@ Notes:
 
 ## Conductor
 
-- Pricing page: https://www.conductor.com/pricing/
+- Pricing page: <https://www.conductor.com/pricing/>
 
 Notes:
 
