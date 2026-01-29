@@ -619,6 +619,46 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Phase 4: Email reporting (atomic)
 
+- [ ] **4.6a** First Insight: add admin trigger endpoint (no payment integration)
+  - **Goal:** Provide an internal/admin-only way to send a one-off “First Insight” report immediately.
+  - **Files (likely):** `src/ranksentinel/api.py`
+  - **Implementation guidance:**
+    - Add `POST /admin/customers/{customer_id}/send_first_insight`.
+    - Endpoint calls an internal function (no duplicated business logic in API layer).
+  - **Skills:** `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/backend/auth-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **AC:** Hitting the endpoint returns 200 and enqueues/executes the first-insight flow for that customer.
+  - **Validate:** Unit test for endpoint routing + mocked service call.
+
+- [ ] **4.6b** First Insight: implement runner/service to generate report input data
+  - **Goal:** Reuse weekly/daily signal collection to generate a “first run” snapshot set without waiting for Monday.
+  - **Files (likely):** `src/ranksentinel/runner/first_insight.py`, `src/ranksentinel/runner/daily_checks.py`, `src/ranksentinel/runner/weekly_digest.py`
+  - **Implementation guidance (MVP):**
+    - Collect the highest-signal checks:
+      - key pages: status/redirect/title/canonical/noindex + normalized content hash
+      - robots.txt + sitemap hash
+      - optional PSI on key pages (respect caps)
+    - Write findings scoped to a new run type (e.g., `run_type='first_insight'`) or reuse weekly composer but with a distinct header.
+  - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **AC:** Running the first insight runner produces a report payload with Critical/Warning/Info sections.
+  - **Validate:** Unit test for “first insight” report composition given fixture inputs.
+
+- [ ] **4.6c** First Insight: email send + delivery logging
+  - **Goal:** Send the first-insight email via Mailgun and record exactly one delivery.
+  - **Files (likely):** `src/ranksentinel/mailgun.py`, `src/ranksentinel/reporting/email_templates.py`, `src/ranksentinel/db.py`
+  - **Implementation guidance:**
+    - Reuse existing weekly email template/layout if possible, but label as “First Insight”.
+    - Ensure idempotency: repeated trigger within same day should not send duplicates (dedupe key).
+  - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/infrastructure/observability-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **AC:** Exactly one email is sent per trigger window; a delivery row is recorded with `run_type='first_insight'`.
+  - **Validate:** Integration test with mocked Mailgun client asserts exactly one delivery recorded.
+
+- [ ] **4.6d** First Insight: payment integration hook (deferred wiring)
+  - **Goal:** When payments exist, automatically trigger First Insight on successful payment.
+  - **Scope:** Do not implement Stripe/payment processor in this task unless already in scope.
+  - **Skills:** `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/backend/error-handling-patterns.md`
+  - **AC:** A single internal function exists that the future webhook handler can call.
+  - **Validate:** Code structure supports calling `trigger_first_insight(customer_id)` from webhook code.
+
 - [x] **4.1** Recommendation rules engine
   - **Goal:** deterministic mapping from finding type -> “what to do next” recommendation text.
   - **AC:** each critical/warning finding kind has a short recommended action
