@@ -181,6 +181,7 @@ This repository serves as a **skills knowledge base** for RovoDev and parallel a
   - [Code Consistency](domains/code-quality/code-consistency.md) - Documentation accuracy, terminology, parsing consistency
   - [Config Patterns](domains/backend/config-patterns.md) - Portable configs, templates, environment variables
   - [Database Patterns](domains/backend/database-patterns.md) - Schema design, ORMs, query optimization, migrations, transactions
+  - [SQLite Schema/Test Alignment](domains/backend/sqlite-schema-test-alignment.md) - Keep schema, migrations, and pytest fixtures in lockstep (avoid missing table / NOT NULL drift)
   - [Markdown Patterns](domains/code-quality/markdown-patterns.md) - Lint rules (MD040, MD024, MD050), documentation accuracy
   - [Python Patterns](domains/languages/python/python-patterns.md) - datetime, f-strings, JSON handling, type hints, import scope
   - [Testing Patterns](domains/code-quality/testing-patterns.md) - Unit, integration, e2e testing across Jest, pytest, Go testing
