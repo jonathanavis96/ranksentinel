@@ -7,7 +7,14 @@ Before any work, read in this order:
 1. `BOOTSTRAP.md` — MVP scope, schedules, severity model, normalization rules, cron semantics
 2. `workers/ralph/THOUGHTS.md` — product vision, goals/non-goals, success metrics
 3. `workers/ralph/VALIDATION_CRITERIA.md` — quality gates and verification commands
-4. `workers/IMPLEMENTATION_PLAN.md` — the prioritized task list (do the first unchecked task)
+4. `workers/IMPLEMENTATION_PLAN.md` — the prioritized task list
+
+## Task ordering rule (CRITICAL)
+
+- Always work **top-to-bottom** in `workers/IMPLEMENTATION_PLAN.md`.
+- In each BUILD iteration, implement **only the first unchecked** task (`- [ ]`) in file order.
+- Do **not** skip to later task IDs unless the current first task is explicitly blocked.
+  - If blocked, mark it `[?]` and add an **If Blocked** note, then continue to the next unchecked task.
 
 ## Brain Knowledge Base (optional integration)
 
@@ -17,7 +24,7 @@ Progressive disclosure:
 
 1. `./brain/skills/SUMMARY.md` — knowledge base overview
 2. `./brain/skills/index.md` — find relevant skills
-3. Open only the specific skill file you need.
+3. Open only the specific skill file you need
 
 Suggested skills likely relevant to RankSentinel:
 
@@ -35,30 +42,18 @@ If you are blocked by missing knowledge (API quirks, PSI parsing, Mailgun edge c
    - Constraints (no stealth scraping, respect robots, no secrets in logs)
    - Examples
    - Acceptance criteria
-2. Mark the current task as blocked with a clear **If Blocked** note pointing to the doc.
+2. Mark the current task as blocked (`[?]`) with a clear **If Blocked** note pointing to the doc.
 3. Continue with the next safe task if possible.
 
-The intention is to later upstream this as a reusable Brain skill.
-
 ## Core operating rules
-
-### Autonomy and safety
 
 - Default to safe behavior: respect robots rules, no anti-bot bypassing.
 - Avoid alert spam: prefer severity scoring and normalization.
 - Jobs must be idempotent and safe to rerun.
-- Never commit secrets (`MAILGUN_API_KEY`, `PSI_API_KEY`, Stripe secrets).
+- Never commit secrets (`MAILGUN_API_KEY`, `PSI_API_KEY`, etc.).
 
-### Project structure
+## Project structure
 
 - Application code lives at project root (e.g., `src/`, `pyproject.toml`).
 - Ralph loop infra lives in `workers/ralph/`.
 - The primary task list lives in `workers/IMPLEMENTATION_PLAN.md`.
-
-### How to work (Ralph loop)
-
-- In each BUILD iteration:
-  - Read `workers/IMPLEMENTATION_PLAN.md` first.
-  - Implement only the first unchecked task.
-  - Validate against `workers/ralph/VALIDATION_CRITERIA.md`.
-  - Commit and stop.

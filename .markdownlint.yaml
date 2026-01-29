@@ -1,0 +1,105 @@
+# Markdownlint configuration for brain repository
+# Docs: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+
+# Default: enable all rules
+default: true
+
+# =============================================================================
+# Disabled Rules (too strict for our use case)
+# =============================================================================
+
+# MD013 - Line length
+# Disabled: We have tables and code blocks that exceed 80 chars
+MD013: false
+
+# MD033 - Inline HTML
+# Disabled: Sometimes needed for complex formatting
+MD033: false
+
+# MD041 - First line should be a top-level heading
+# Disabled: Some files start with frontmatter or comments
+MD041: false
+
+# MD024 - Multiple headings with same content
+# Allow siblings with same name (common in IMPLEMENTATION_PLAN.md)
+MD024:
+  siblings_only: true
+
+# =============================================================================
+# Customized Rules
+# =============================================================================
+
+# MD003 - Heading style (use ATX style: # Heading)
+MD003:
+  style: atx
+
+# MD004 - Unordered list style (use dashes)
+MD004:
+  style: dash
+
+# MD007 - Unordered list indentation
+MD007:
+  indent: 2
+
+# MD009 - Trailing spaces
+# Allow 2 trailing spaces for line breaks
+MD009:
+  br_spaces: 2
+
+# MD010 - Hard tabs
+# Allow in code blocks only
+MD010:
+  code_blocks: false
+
+# MD012 - Multiple consecutive blank lines
+MD012:
+  maximum: 2
+
+# MD022 - Headings should be surrounded by blank lines
+MD022:
+  lines_above: 1
+  lines_below: 1
+
+# MD025 - Single top-level heading
+# Allow multiple H1s in certain files
+MD025: false
+
+# MD029 - Ordered list item prefix
+# Disabled: Code blocks interrupt lists and cause false positives
+MD029: false
+
+# MD035 - Horizontal rule style
+MD035:
+  style: "---"
+
+# MD046 - Code block style
+# Use fenced code blocks with language tags
+MD046:
+  style: fenced
+
+# MD048 - Code fence style
+# Use backticks, not tildes
+MD048:
+  style: backtick
+
+# MD049 - Emphasis style
+# Use asterisks for italic
+MD049:
+  style: asterisk
+
+# MD050 - Strong style
+# Use asterisks for bold
+MD050:
+  style: asterisk
+
+# MD036 - No emphasis as heading
+# Disabled: We use bold for labels like "Correct ✅" intentionally
+MD036: false
+
+# MD051 - Link fragments should be valid
+# Disabled: False positives with special characters in headings (N+1, etc.)
+MD051: false
+
+# MD060 - Table column style
+# Disabled: Too strict about mixed styles within tables
+MD060: false

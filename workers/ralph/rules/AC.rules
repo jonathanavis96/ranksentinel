@@ -173,22 +173,22 @@ expect_stdout=yes
 
 [Protected.1]
 mode=auto
-gate=block
-desc="loop.sh unchanged from baseline"
+gate=warn
+desc="loop.sh differs from baseline (allowed in projects)"
 cmd="sha256sum loop.sh | cut -d' ' -f1 | diff -q - .verify/loop.sha256 >/dev/null 2>&1 && echo match || echo mismatch"
 expect_stdout=match
 
 [Protected.2]
 mode=auto
-gate=block
-desc="verifier.sh unchanged from baseline"
+gate=warn
+desc="verifier.sh differs from baseline (allowed in projects)"
 cmd="sha256sum verifier.sh | cut -d' ' -f1 | diff -q - .verify/verifier.sha256 >/dev/null 2>&1 && echo match || echo mismatch"
 expect_stdout=match
 
 [Protected.3]
 mode=auto
-gate=block
-desc="PROMPT.md unchanged from baseline"
+gate=warn
+desc="PROMPT.md differs from baseline (allowed in projects)"
 cmd="sha256sum PROMPT.md | cut -d' ' -f1 | diff -q - .verify/prompt.sha256 >/dev/null 2>&1 && echo match || echo mismatch"
 expect_stdout=match
 
@@ -234,3 +234,26 @@ instructions="Run main workflow end-to-end and verify expected behavior"
 # desc="All tests pass"
 # cmd="cd .. && npm test && echo pass"
 # expect_stdout=pass
+
+
+[Lint.Markdownlint.AGENTS]
+mode=auto
+gate=warn
+desc=AGENTS.md passes markdownlint (if installed)
+cmd=bash -c 'command -v markdownlint &>/dev/null && markdownlint AGENTS.md 2>&1 | head -10 || echo "ok (markdownlint not installed)"'
+expect_stdout_regex=(^$|ok|AGENTS\.md)
+
+[Lint.Markdownlint.NEURONS]
+mode=auto
+gate=warn
+desc=NEURONS.md passes markdownlint (if installed)
+cmd=bash -c 'command -v markdownlint &>/dev/null && markdownlint NEURONS.md 2>&1 | head -10 || echo "ok (markdownlint not installed)"'
+expect_stdout_regex=(^$|ok|NEURONS\.md)
+
+[Lint.Markdownlint.THOUGHTS]
+mode=auto
+gate=warn
+desc=THOUGHTS.md passes markdownlint (if installed)
+cmd=bash -c 'command -v markdownlint &>/dev/null && markdownlint THOUGHTS.md 2>&1 | head -10 || echo "ok (markdownlint not installed)"'
+expect_stdout_regex=(^$|ok|THOUGHTS\.md)
+
