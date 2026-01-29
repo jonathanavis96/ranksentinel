@@ -6,6 +6,7 @@ from pathlib import Path
 
 from ranksentinel.config import get_settings
 from ranksentinel.lock import FileLock, LockError
+from ranksentinel.operator_alert import send_operator_alert
 from ranksentinel.runner.weekly_digest import run
 
 
@@ -21,10 +22,25 @@ def main() -> None:
         with FileLock(str(lock_dir), "weekly"):
             run(settings)
     except LockError as e:
-        print(f"ERROR: Weekly run failed (lock): {e}", file=sys.stderr)
+        error_msg = f"Weekly run failed (lock): {e}"
+        print(f"ERROR: {error_msg}", file=sys.stderr)
+        send_operator_alert(
+            settings=settings,
+            run_type="weekly",
+            error_type="LockError",
+            error_message=str(e),
+            context={"lock_dir": str(lock_dir)},
+        )
         sys.exit(1)
     except Exception as e:
-        print(f"ERROR: Weekly run failed: {type(e).__name__}: {e}", file=sys.stderr)
+        error_msg = f"Weekly run failed: {type(e).__name__}: {e}"
+        print(f"ERROR: {error_msg}", file=sys.stderr)
+        send_operator_alert(
+            settings=settings,
+            run_type="weekly",
+            error_type=type(e).__name__,
+            error_message=str(e),
+        )
         sys.exit(1)
     
     # Success - exit 0 (implicit)

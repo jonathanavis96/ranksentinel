@@ -37,6 +37,15 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 - [x] **0-W.3** Fix MD032 in workers/ralph/THUNK.md
   - **AC:** `markdownlint workers/ralph/THUNK.md` passes (no MD032 errors)
 
+- [x] **0-W.4** Update PROMPT.md baseline hash after intentional changes
+  - **AC:** `sha256sum PROMPT.md | cut -d' ' -f1 | diff -q - .verify/prompt.sha256` passes
+  - **Note:** This is informational - PROMPT.md changes are allowed in projects
+
+- [?] **0-W.5** Manual integration test - Core workflow end-to-end
+  - **AC:** Run main workflow end-to-end and verify expected behavior
+  - **Note:** Manual validation required per Manual.Integration.1
+  - **If Blocked:** Requires human operator to run end-to-end workflow test and validate behavior. Cannot be automated by Ralph. Human should test daily/weekly runs and mark [x] when satisfied.
+
 ## Phase 0: Bootstrap verification and local run path (atomic)
 
 > Phase 0 is about making the repo runnable end-to-end locally with minimal behavior.
@@ -336,13 +345,13 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:** run weekly with Mailgun configured and confirm deliveries row inserted
   - **If Blocked:** create `docs/SKILL_REQUEST_Mailgun.md` (auth, rate limits, error handling)
 
-- [ ] **4.4** Weekly digest sends via Mailgun
+- [x] **4.4** Weekly digest sends via Mailgun
   - **Goal:** connect report composer to Mailgun send.
   - **AC:** weekly run sends exactly one email per active customer
   - **AC:** failures do not crash the whole run (per-customer isolation)
   - **Validate:** run weekly and confirm one delivery per customer
 
-- [ ] **4.5** Daily critical email gating
+- [x] **4.5** Daily critical email gating
   - **Goal:** keep daily alerts low-noise.
   - **AC:** daily run sends email only if critical findings exist for that run
   - **AC:** email includes only critical section + next actions
@@ -355,13 +364,13 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** daily and weekly scripts acquire a lock (file lock) and exit non-zero or no-op if locked
   - **Validate:** start one run, start second => second exits quickly with clear log
 
-- [ ] **5.2** Exit-code + “silent on success” contract
+- [x] **5.2** Exit-code + “silent on success” contract
   - **Goal:** cron runs should be quiet unless there’s a failure or a customer email is sent.
   - **AC:** on success: minimal output (startup + SUMMARY line)
   - **AC:** on failure: clear single-line failure summary + non-zero exit
   - **Validate:** run a success and a forced failure and check exit codes and output
 
-- [ ] **5.3** Log path standardization
+- [x] **5.3** Log path standardization
   - **Goal:** scripts write logs to predictable locations (especially on VPS).
   - **AC:** run scripts accept `RANKSENTINEL_LOG_DIR` (or documented default)
   - **AC:** runbook and scripts agree on log location
