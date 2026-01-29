@@ -405,7 +405,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 - [ ] **6.6** Fix MD013 in cortex/DECISIONS.md
   - **AC:** `markdownlint cortex/DECISIONS.md` passes (no MD013 errors)
 
-- [ ] **6.7** Fix MD013 in cortex/GAP_CAPTURE.md
+- [x] **6.7** Fix MD013 in cortex/GAP_CAPTURE.md
   - **AC:** `markdownlint cortex/GAP_CAPTURE.md` passes (no MD013 errors)
 
 - [ ] **6.8** Fix MD013 in cortex/IMPLEMENTATION_PLAN.md
@@ -434,3 +434,6 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 - [ ] **6.16** Fix MD013 in workers/IMPLEMENTATION_PLAN.md
   - **AC:** `markdownlint workers/IMPLEMENTATION_PLAN.md` passes (no MD013 errors)
+
+- [ ] **6.17** Fix MD013 in cortex/AGENTS.md
+  - **AC:** `markdownlint cortex/AGENTS.md` passes (no MD013 errors)
