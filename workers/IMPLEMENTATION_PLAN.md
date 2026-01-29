@@ -83,6 +83,47 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** The fixture includes the Google 0.84 namespace and at least 2 `<url><loc>...` entries.
   - **Validate:** `pytest -q`
 
+## Phase 0-R: Real-world crawl resilience (rate limiting + auditability)
+
+> Motivation: real sites frequently rate-limit bots (HTTP 429), and weekly runs must persist snapshots for auditability/diffing.
+> Evidence observed in manual tests:
+> - `www.djangoproject.com` returned many 429s during weekly crawl.
+> - Weekly page fetch executed and findings were created, but `snapshots` rows were not persisted as expected.
+
+- [ ] **0-R.1** Treat HTTP 429 as retryable with backoff (and `Retry-After` support)
+  - **Goal:** Reduce false-negative errors caused by temporary rate limiting; improve successful fetch rate.
+  - **Files (likely):** `src/ranksentinel/http_client.py`, `src/ranksentinel/runner/page_fetcher.py`
+  - **Implementation guidance:**
+    - If response status is 429:
+      - classify as retryable (not a permanent http_4xx failure)
+      - if `Retry-After` header is present, respect it (cap to a sane maximum)
+      - otherwise exponential backoff with jitter
+    - Ensure retries are bounded (max attempts) and timeouts remain sane.
+    - Log clearly: include `status_code=429`, attempt number, and chosen sleep duration.
+  - **AC:** A simulated 429 response is retried and can succeed on a later attempt.
+  - **Validate:** Add/extend unit tests (e.g., `tests/test_http_client.py`) using a mocked transport.
+
+- [ ] **0-R.2** Ensure weekly page fetch persists `snapshots` (and relevant artifacts) for all attempted URLs
+  - **Goal:** Weekly runs must leave an audit trail in SQLite for reporting/diffing and customer support.
+  - **Files (likely):** `src/ranksentinel/runner/weekly_digest.py`, `src/ranksentinel/runner/page_fetcher.py`, `src/ranksentinel/db.py`
+  - **Implementation guidance:**
+    - Confirm intended contract:
+      - On each attempted fetch (success or error), persist a `snapshots` row with:
+        - `customer_id`, `url`, `run_type='weekly'`, `fetched_at`, `status_code`, `final_url`, `redirect_chain`, `content_hash` (use empty hash on error if needed)
+      - For successes, persist parsed fields (`title`, `canonical`, `meta_robots`) and/or artifacts as currently designed.
+    - If persistence is intentionally only on success today, change it to persist at least the status/redirect metadata for failures too.
+  - **AC:** After a weekly run with `crawl_limit=N`, there are `N` new `snapshots` rows for that customer/run_type (or fewer only if sitemap has < N URLs).
+  - **Validate:**
+    - Add/extend an integration test (e.g., `tests/test_weekly_fetcher_integration.py`) that runs weekly against a controlled local fixture/mocked HTTP client and asserts snapshot rows inserted.
+
+- [ ] **0-R.3** Add regression coverage for rate-limited site behavior
+  - **Goal:** Prevent future regressions where 429 causes large error_count and zero snapshots.
+  - **Files:** likely `tests/test_page_fetcher.py` and/or `tests/test_weekly_fetcher_integration.py`
+  - **AC:** A test scenario where a URL returns 429 twice then 200 results in:
+    - final snapshot status_code=200
+    - no critical 404 finding created
+  - **Validate:** `pytest -q`
+
 ## Phase 0-H: Human go-live checklist (required to start charging)
 
 > This section is intentionally **human-owned**. These items are the practical prerequisites to operate RankSentinel reliably and accept payments.
