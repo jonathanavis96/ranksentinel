@@ -12,6 +12,7 @@ import sqlite3
 from typing import Any
 
 from ranksentinel.http_client import FetchResult, fetch_text
+from ranksentinel.runner.fetch_scheduler import FetchScheduler
 from ranksentinel.runner.logging_utils import log_structured
 
 

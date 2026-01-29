@@ -193,7 +193,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - No unbounded sleep; runtime remains bounded by caps.
     - Add/extend a test using mocked HTTP responses to simulate: A(429), B(200), C(200), A(429), B(200), ... and assert interleaving behavior.
 
-- [ ] **0-R.9a** Round-robin + cooldown scheduler implementation skeleton (helper + wiring)
+- [x] **0-R.9a** Round-robin + cooldown scheduler implementation skeleton (helper + wiring)
   - **Goal:** Make 0-R.9 easy to implement in one pass by providing a concrete code structure.
   - **Do:**
     - Add a small scheduler helper (new module or local helper) that:
@@ -201,6 +201,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
       - yields the next `(customer_id, url)` to fetch based on cooldown + round-robin fairness
       - tracks attempts per task and enforces caps
     - Wire weekly fetch loop to use this helper (likely in `src/ranksentinel/runner/weekly_digest.py` / `page_fetcher.py`).
+  - **Done:** Implemented `fetch_scheduler.py` with round-robin scheduling, per-domain cooldown, exponential backoff with jitter, attempt tracking, and 429 threshold caps. Created `page_fetcher_scheduled.py` for multi-customer scheduled fetching. Refactored `weekly_digest.py` into 3 phases: (1) collect URLs, (2) scheduled fetch across all customers, (3) process results. All scheduler tests passing (9/9).
     - Add structured logs for scheduling decisions: `event=schedule_defer`, `domain`, `cooldown_ms`, `queue_len`, `customer_id`.
   - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/infrastructure/observability-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
   - **AC:**

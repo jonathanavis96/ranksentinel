@@ -20,6 +20,7 @@ from ranksentinel.runner.link_checker import find_broken_links
 from ranksentinel.runner.logging_utils import generate_run_id, log_stage, log_structured, log_summary
 from ranksentinel.runner.normalization import normalize_url
 from ranksentinel.runner.page_fetcher import PageFetchResult, fetch_pages, persist_fetch_results
+from ranksentinel.runner.page_fetcher_scheduled import fetch_pages_scheduled
 from ranksentinel.runner.sitemap_parser import list_sitemap_urls
 
 
@@ -353,6 +354,95 @@ def run(settings: Settings) -> None:
 
         errors_by_customer = {}
         
+        # Phase 1: Collect all URLs to fetch (for scheduled multi-customer fetching)
+        customer_urls: dict[int, list[str]] = {}
+        crawl_limits: dict[int, int] = {}
+        
+        for c in customers:
+            customer_id = int(c["id"])
+            
+            try:
+                # Fetch customer settings (sitemap_url, crawl_limit)
+                settings_row = fetch_one(
+                    conn,
+                    "SELECT sitemap_url, crawl_limit FROM settings WHERE customer_id=?",
+                    (customer_id,)
+                )
+                
+                if not settings_row or not settings_row["sitemap_url"]:
+                    log_structured(
+                        run_id,
+                        run_type="weekly",
+                        stage="skip_customer",
+                        status="info",
+                        customer_id=customer_id,
+                        reason="No sitemap_url configured"
+                    )
+                    continue
+                
+                sitemap_url = settings_row["sitemap_url"]
+                crawl_limit = settings_row["crawl_limit"] or 100
+                crawl_limits[customer_id] = crawl_limit
+                
+                # Fetch sitemap
+                with log_stage(run_id, "fetch_sitemap", customer_id=customer_id):
+                    sitemap_result = fetch_sitemap(run_id, customer_id, sitemap_url)
+                    
+                    if not sitemap_result.ok:
+                        errors_by_customer[customer_id] = f"Sitemap fetch failed: {sitemap_result.error}"
+                        continue
+                    
+                    # Expand sitemap index if needed
+                    urls = expand_sitemap_index(
+                        run_id=run_id,
+                        customer_id=customer_id,
+                        sitemap_url=sitemap_url,
+                        sitemap_xml=sitemap_result.body,
+                    )
+                    
+                    # List URLs from sitemap
+                    if not urls:
+                        urls = list_sitemap_urls(
+                            customer_id=customer_id,
+                            sitemap_url=sitemap_url,
+                            sitemap_xml=sitemap_result.body,
+                            crawl_limit=crawl_limit,
+                        )
+                        
+                        if not urls:
+                            log_structured(
+                                run_id,
+                                run_type="weekly",
+                                stage="fetch_sitemap",
+                                status="warning",
+                                customer_id=customer_id,
+                                reason="No URLs found in sitemap"
+                            )
+                            continue
+                    
+                    customer_urls[customer_id] = urls
+                    
+            except Exception as e:  # noqa: BLE001
+                log_structured(
+                    run_id,
+                    run_type="weekly",
+                    stage="collect_urls",
+                    status="error",
+                    customer_id=customer_id,
+                    error=str(e)
+                )
+                errors_by_customer[customer_id] = f"URL collection failed: {e}"
+        
+        # Phase 2: Fetch all URLs using scheduled fetcher (handles 429 with round-robin)
+        all_fetch_results: dict[int, list[PageFetchResult]] = {}
+        if customer_urls:
+            all_fetch_results = fetch_pages_scheduled(
+                run_id=run_id,
+                customer_urls=customer_urls,
+                crawl_limits=crawl_limits,
+            )
+        
+        # Phase 3: Process results for each customer
         for c in customers:
             customer_id = int(c["id"])
             
@@ -414,13 +504,19 @@ def run(settings: Settings) -> None:
                             )
                             continue
                     
-                    # Fetch sampled pages (up to crawl_limit)
-                    fetch_results = fetch_pages(
-                        run_id=run_id,
-                        customer_id=customer_id,
-                        urls=urls,
-                        crawl_limit=crawl_limit,
-                    )
+                    # Get fetch results from scheduled fetcher (Phase 2)
+                    fetch_results = all_fetch_results.get(customer_id, [])
+                    
+                    if not fetch_results:
+                        log_structured(
+                            run_id,
+                            run_type="weekly",
+                            stage="process_customer",
+                            status="warning",
+                            customer_id=customer_id,
+                            reason="No fetch results available"
+                        )
+                        continue
                     
                     # Persist fetch results to snapshots table
                     persist_fetch_results(
