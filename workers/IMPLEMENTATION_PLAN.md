@@ -196,7 +196,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `bash scripts/run_daily.sh`
     - `sqlite3 ranksentinel.sqlite3 "select kind, severity, count(*) from findings group by kind, severity;"`
 
-- [ ] **1.7** Sitemap URL count + delta severity
+- [x] **1.7** Sitemap URL count + delta severity
   - **Goal:** compute sitemap URL count and detect big drops without false positives.
   - **AC:** URL count is extracted from sitemap XML (supports sitemap index + urlset)
   - **AC:** store URL count as a numeric field (or JSON in finding payload)
