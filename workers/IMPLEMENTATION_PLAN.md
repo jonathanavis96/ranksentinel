@@ -228,7 +228,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Phase 2: Weekly crawl sample and link integrity (atomic)
 
-- [ ] **2.0** Pytest harness + fixtures for parsing/diff/noise logic
+- [x] **2.0** Pytest harness + fixtures for parsing/diff/noise logic
   - **Goal:** prevent regressions in SEO signal extraction/normalization.
   - **AC:** `pytest -q` runs in CI/local and covers at least ~10 tests
   - **AC:** fixtures exist for:

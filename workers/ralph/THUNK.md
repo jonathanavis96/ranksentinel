@@ -96,3 +96,4 @@ Started: 2026-01-28
 **Files Modified:**
 - `tests/test_normalization.py`: Added 8 new tests for meta robots and canonical extraction
 
+| 2.0 | Created central conftest.py with shared pytest fixtures: db_conn, test_db, robots (5 variants), sitemap (4 variants), HTML (5 variants), PSI (4 variants). Added test_fixtures.py to validate fixtures. 104 tests collected, 96 passed. | 2026-01-29 |
