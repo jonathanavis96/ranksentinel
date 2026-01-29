@@ -37,6 +37,14 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 - [x] **0-W.3** Fix MD032 in workers/ralph/THUNK.md
   - **AC:** `markdownlint workers/ralph/THUNK.md` passes (no MD032 errors)
 
+- [x] **0-W.4** Update PROMPT.md baseline hash after intentional changes
+  - **AC:** `sha256sum PROMPT.md | cut -d' ' -f1 | diff -q - .verify/prompt.sha256` passes
+  - **Note:** This is informational - PROMPT.md changes are allowed in projects
+
+- [ ] **0-W.5** Manual integration test - Core workflow end-to-end
+  - **AC:** Run main workflow end-to-end and verify expected behavior
+  - **Note:** Manual validation required per Manual.Integration.1
+
 ## Phase 0: Bootstrap verification and local run path (atomic)
 
 > Phase 0 is about making the repo runnable end-to-end locally with minimal behavior.
