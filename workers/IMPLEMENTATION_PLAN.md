@@ -73,10 +73,11 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** Prompt contains explicit language: “MUST consult brain skills first” and “If blocked, MUST create docs/SKILL_REQUEST_*.md before proceeding.”
   - **Validate:** `bash tools/validate_protected_hashes.sh` passes (update hash baseline intentionally).
 
-- [ ] **0-K.3** Plan convention: every `[?]` blocked task must include an “If Blocked: docs/SKILL_REQUEST_<topic>.md” line
+- [x] **0-K.3** Plan convention: every `[?]` blocked task must include an "If Blocked: docs/SKILL_REQUEST_<topic>.md" line
   - **Goal:** Make the expectation visible at the task-contract level.
   - **Files:** `workers/IMPLEMENTATION_PLAN.md`
-  - **AC:** For any future task marked `[?]`, the task contains an “If Blocked:” line naming a `docs/SKILL_REQUEST_*.md` artifact.
+  - **AC:** For any future task marked `[?]`, the task contains an "If Blocked:" line naming a `docs/SKILL_REQUEST_*.md` artifact.
+  - **Note:** Currently no `[?]` tasks exist in plan. Convention is documented in AGENTS.md and will be enforced for future blocked tasks.
 
 - [ ] **0-K.4** Verifier enforcement: fail if blocked tasks exist without SKILL_REQUEST artifacts
   - **Goal:** Mechanical enforcement.

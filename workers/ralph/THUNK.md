@@ -155,3 +155,4 @@ Started: 2026-01-28
 | 2026-01-29T14:44:32Z | 0-K.1 | Fixed brain/skills symlink; vendored from upstream repo using sync_brain_skills.sh --from-repo | AC: brain/skills/SUMMARY.md exists and is not a symlink |
 
 | 2026-01-29 | 0-K.2 | Updated PROMPT.md to require Brain skills consultation before implementation and SKILL_REQUEST doc creation when blocked. Added mandatory section with clear rules and example notation. |
+| 2026-01-29 | 0-K.3 | Documented plan convention: all future [?] blocked tasks must include "If Blocked: docs/SKILL_REQUEST_<topic>.md" line. No current blocked tasks exist. Convention enforced in AGENTS.md. |
