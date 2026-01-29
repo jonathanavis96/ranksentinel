@@ -46,6 +46,14 @@ class WeeklyReport:
         lines.append(f"RankSentinel Weekly Digest — {self.customer_name}")
         lines.append("=" * 60)
         lines.append("")
+        
+        # Add "All clear" header if no critical or warnings
+        if self.critical_count == 0 and self.warning_count == 0:
+            lines.append("✓ ALL CLEAR")
+            lines.append("")
+            lines.append("Great news! No critical issues or warnings detected this week.")
+            lines.append("")
+        
         lines.append("Executive Summary")
         lines.append("")
         lines.append(f"- {self.critical_count} Critical")
@@ -118,6 +126,8 @@ class WeeklyReport:
         lines.append("body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }")
         lines.append("h1 { color: #1a1a1a; border-bottom: 3px solid #4CAF50; padding-bottom: 10px; }")
         lines.append("h2 { color: #333; margin-top: 40px; }")
+        lines.append(".all-clear { background: #e8f5e9; border-left: 4px solid #4CAF50; padding: 20px; margin: 20px 0; border-radius: 8px; }")
+        lines.append(".all-clear h2 { margin-top: 0; color: #2e7d32; }")
         lines.append(".summary { background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0; }")
         lines.append(".summary ul { margin: 10px 0; }")
         lines.append(".finding { background: #fff; border-left: 4px solid #ddd; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }")
@@ -132,6 +142,13 @@ class WeeklyReport:
         lines.append("</style></head><body>")
         
         lines.append(f"<h1>RankSentinel Weekly Digest — {self.customer_name}</h1>")
+        
+        # Add "All clear" banner if no critical or warnings
+        if self.critical_count == 0 and self.warning_count == 0:
+            lines.append("<div class='all-clear'>")
+            lines.append("<h2>✓ All Clear</h2>")
+            lines.append("<p>Great news! No critical issues or warnings detected this week.</p>")
+            lines.append("</div>")
         
         lines.append("<div class='summary'>")
         lines.append("<strong>Executive Summary</strong>")

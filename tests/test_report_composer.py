@@ -304,3 +304,179 @@ def test_bootstrap_findings_excluded_from_weekly_report():
     # Verify bootstrap finding is in the report (composer doesn't filter)
     bootstrap_in_report = any(f.category == "bootstrap" for f in report.info_findings)
     assert bootstrap_in_report, "Composer should include bootstrap if passed (filtering is SQL's job)"
+
+
+def test_all_clear_text_output_no_critical_no_warnings():
+    """Test that 'All clear' message appears in text output when critical_count==0 and warning_count==0."""
+    # Only info findings - no critical, no warnings
+    findings = [
+        {
+            "id": 1,
+            "customer_id": 1,
+            "severity": "info",
+            "category": "content",
+            "title": "Page title changed",
+            "details_md": "The page title was updated.",
+            "url": "https://example.com/page",
+            "created_at": "2026-01-29T10:00:00Z",
+        },
+    ]
+    
+    class MockRow:
+        def __init__(self, data):
+            self._data = data
+        
+        def __getitem__(self, key):
+            return self._data[key]
+        
+        def get(self, key, default=None):
+            return self._data.get(key, default)
+    
+    mock_rows = [MockRow(f) for f in findings]
+    report = compose_weekly_report("TestCo", mock_rows)
+    
+    text = report.to_text()
+    
+    # Verify all clear message is present
+    assert "✓ ALL CLEAR" in text
+    assert "Great news! No critical issues or warnings detected this week." in text
+    assert "0 Critical" in text
+    assert "0 Warnings" in text
+    assert "1 Info" in text
+
+
+def test_all_clear_text_output_empty_report():
+    """Test that 'All clear' message appears in text output when there are no findings at all."""
+    report = compose_weekly_report("TestCo", [])
+    
+    text = report.to_text()
+    
+    # Verify all clear message is present
+    assert "✓ ALL CLEAR" in text
+    assert "Great news! No critical issues or warnings detected this week." in text
+    assert "0 Critical" in text
+    assert "0 Warnings" in text
+    assert "0 Info" in text
+
+
+def test_all_clear_html_output_no_critical_no_warnings():
+    """Test that 'All clear' banner appears in HTML output when critical_count==0 and warning_count==0."""
+    # Only info findings - no critical, no warnings
+    findings = [
+        {
+            "id": 1,
+            "customer_id": 1,
+            "severity": "info",
+            "category": "content",
+            "title": "Page title changed",
+            "details_md": "The page title was updated.",
+            "url": "https://example.com/page",
+            "created_at": "2026-01-29T10:00:00Z",
+        },
+    ]
+    
+    class MockRow:
+        def __init__(self, data):
+            self._data = data
+        
+        def __getitem__(self, key):
+            return self._data[key]
+        
+        def get(self, key, default=None):
+            return self._data.get(key, default)
+    
+    mock_rows = [MockRow(f) for f in findings]
+    report = compose_weekly_report("TestCo", mock_rows)
+    
+    html = report.to_html()
+    
+    # Verify all clear banner is present
+    assert "<div class='all-clear'>" in html
+    assert "<h2>✓ All Clear</h2>" in html
+    assert "Great news! No critical issues or warnings detected this week." in html
+    assert "0</strong> Critical" in html
+    assert "0</strong> Warnings" in html
+
+
+def test_all_clear_html_output_empty_report():
+    """Test that 'All clear' banner appears in HTML output when there are no findings at all."""
+    report = compose_weekly_report("TestCo", [])
+    
+    html = report.to_html()
+    
+    # Verify all clear banner is present
+    assert "<div class='all-clear'>" in html
+    assert "<h2>✓ All Clear</h2>" in html
+    assert "Great news! No critical issues or warnings detected this week." in html
+
+
+def test_no_all_clear_when_critical_present():
+    """Test that 'All clear' message does NOT appear when there are critical findings."""
+    findings = [
+        {
+            "id": 1,
+            "customer_id": 1,
+            "severity": "critical",
+            "category": "indexability",
+            "title": "Page not found (404)",
+            "details_md": "Page returns 404.",
+            "url": "https://example.com/missing",
+            "created_at": "2026-01-29T10:00:00Z",
+        },
+    ]
+    
+    class MockRow:
+        def __init__(self, data):
+            self._data = data
+        
+        def __getitem__(self, key):
+            return self._data[key]
+        
+        def get(self, key, default=None):
+            return self._data.get(key, default)
+    
+    mock_rows = [MockRow(f) for f in findings]
+    report = compose_weekly_report("TestCo", mock_rows)
+    
+    text = report.to_text()
+    html = report.to_html()
+    
+    # Verify all clear message is NOT present
+    assert "ALL CLEAR" not in text
+    assert "All Clear" not in html
+
+
+def test_no_all_clear_when_warnings_present():
+    """Test that 'All clear' message does NOT appear when there are warning findings."""
+    findings = [
+        {
+            "id": 1,
+            "customer_id": 1,
+            "severity": "warning",
+            "category": "content",
+            "title": "Canonical URL changed",
+            "details_md": "The canonical URL has changed.",
+            "url": "https://example.com/page",
+            "created_at": "2026-01-29T10:00:00Z",
+        },
+    ]
+    
+    class MockRow:
+        def __init__(self, data):
+            self._data = data
+        
+        def __getitem__(self, key):
+            return self._data[key]
+        
+        def get(self, key, default=None):
+            return self._data.get(key, default)
+    
+    mock_rows = [MockRow(f) for f in findings]
+    report = compose_weekly_report("TestCo", mock_rows)
+    
+    text = report.to_text()
+    html = report.to_html()
+    
+    # Verify all clear message is NOT present
+    assert "ALL CLEAR" not in text
+    assert "All Clear" not in html

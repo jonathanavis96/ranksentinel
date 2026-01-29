@@ -147,7 +147,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** Weekly email contains no "Weekly digest executed (bootstrap)" item.
   - **Validate:** Add/extend `tests/test_report_composer.py` (or integration test) to assert bootstrap findings are excluded.
 
-- [ ] **0-E.2** Add an "All clear" header when there are 0 Critical and 0 Warnings
+- [x] **0-E.2** Add an "All clear" header when there are 0 Critical and 0 Warnings
   - **Goal:** Make a healthy week feel like a positive outcome.
   - **Files:** `src/ranksentinel/reporting/report_composer.py`
   - **AC:** If `critical_count==0` and `warning_count==0`, text + HTML include an explicit "All clear" message.
