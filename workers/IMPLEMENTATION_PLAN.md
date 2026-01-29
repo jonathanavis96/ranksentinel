@@ -245,7 +245,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** if robots fetch fails: default behavior is explicitly chosen and documented (skip crawl OR restrict crawl to explicitly-allowed key URLs)
   - **Validate:** fixture robots rules block `/private`; confirm those URLs are skipped by the sampler/fetcher
 
-- [ ] **2.2** Sitemap parsing utility: enumerate canonical URL list
+- [x] **2.2** Sitemap parsing utility: enumerate canonical URL list
   - **Goal:** share sitemap parsing for sampling + later signals.
   - **AC:** code exposes `list_sitemap_urls(sitemap_xml) -> list[str]` (or equivalent)
   - **AC:** supports sitemap index files

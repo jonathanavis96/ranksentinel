@@ -4,6 +4,59 @@ import xml.etree.ElementTree as ET
 from typing import Any
 
 
+def list_sitemap_urls(sitemap_xml: str) -> list[str]:
+    """Extract list of URLs from sitemap XML.
+    
+    Supports both sitemap index and urlset formats.
+    - For urlset: returns list of <loc> URLs from <url> entries
+    - For sitemapindex: returns list of <loc> URLs from <sitemap> entries
+    
+    Args:
+        sitemap_xml: Raw XML content of sitemap
+        
+    Returns:
+        List of URL strings. Empty list on parse failure or empty sitemap.
+    """
+    if not sitemap_xml or not sitemap_xml.strip():
+        return []
+    
+    try:
+        root = ET.fromstring(sitemap_xml)
+        
+        # Remove namespace from tag for easier matching
+        tag = root.tag
+        if "}" in tag:
+            tag = tag.split("}", 1)[1]
+        
+        ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+        urls = []
+        
+        if tag == "sitemapindex":
+            # Sitemap index - extract <loc> from <sitemap> entries
+            sitemaps = root.findall(".//sm:sitemap/sm:loc", ns)
+            if not sitemaps:
+                # Try without namespace
+                sitemaps = root.findall(".//sitemap/loc")
+            
+            urls = [sitemap.text.strip() for sitemap in sitemaps if sitemap.text]
+            
+        elif tag == "urlset":
+            # Standard sitemap - extract <loc> from <url> entries
+            url_locs = root.findall(".//sm:url/sm:loc", ns)
+            if not url_locs:
+                # Try without namespace
+                url_locs = root.findall(".//url/loc")
+            
+            urls = [loc.text.strip() for loc in url_locs if loc.text]
+        
+        return urls
+        
+    except ET.ParseError:
+        return []
+    except Exception:
+        return []
+
+
 def extract_url_count(sitemap_xml: str) -> dict[str, Any]:
     """Extract URL count from sitemap XML.
     
