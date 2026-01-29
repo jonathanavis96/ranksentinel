@@ -240,7 +240,7 @@ Brain skills (open those relevant to the current item):
     - Has a primary CTA “Get a sample report”.
   - **If Blocked:** Embed a truncated sample and link to the full doc.
 
-- [ ] **5.3** Implement `/privacy` and `/terms`
+- [x] **5.3** Implement `/privacy` and `/terms`
   - **Goal:** Reduce procurement friction and improve trust.
   - **References:** `docs/WEBSITE_REQUIREMENTS.md`.
   - **AC:** Pages exist and are linked in the footer.
