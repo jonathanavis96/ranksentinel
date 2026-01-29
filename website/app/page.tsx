@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Container, EmailReportPreview, FeatureTabs } from './components';
+import { Badge, Button, Card, Container, EmailReportPreview, FAQAccordion, FeatureTabs } from './components';
 
 export default function Home() {
   return (
@@ -487,6 +487,61 @@ export default function Home() {
                 See pricing
               </Button>
             </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-24 bg-gray-50">
+        <Container>
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Frequently Asked Questions
+              </h2>
+              <p className="text-lg text-gray-600">
+                Common questions about RankSentinel's approach to SEO monitoring.
+              </p>
+            </div>
+            <FAQAccordion
+              items={[
+                {
+                  id: 'noise',
+                  question: 'Will it spam me with alerts?',
+                  answer:
+                    'No. RankSentinel is designed to avoid false alerts through severity scoring, confirmation logic, and deduplication. Daily emails are sent only when severity is Critical. All other findings are batched into the weekly digest, grouped by severity (Critical / Warning / Info).',
+                },
+                {
+                  id: 'js-sites',
+                  question: 'Does it work on JavaScript-heavy sites?',
+                  answer:
+                    'Version 1 uses requests/BeautifulSoup for HTML parsing, which works well for server-rendered and hybrid sites. For client-side rendered apps that require JavaScript execution, a Playwright-based fallback is on the roadmap. If your site uses server-side rendering or pre-rendering, RankSentinel will work out of the box.',
+                },
+                {
+                  id: 'setup',
+                  question: 'What do I need to set up?',
+                  answer:
+                    'You need a VPS with cron access, a Mailgun account for email delivery, and a Google PageSpeed Insights API key. Setup is one-time: configure your domain, add key pages to monitor, set recipient emails, and schedule the daily and weekly cron jobs. No ongoing maintenance required.',
+                },
+              ]}
+            />
+          </div>
+        </Container>
+      </section>
+
+      {/* Final CTA */}
+      <section id="final-cta" className="py-24 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <Container>
+          <div className="text-center max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Ready to catch regressions before traffic drops?
+            </h2>
+            <p className="text-lg text-gray-600 mb-8">
+              Weekly clarity. Critical-only alerts. No dashboard required.
+            </p>
+            <Button as="link" href="#sample-report" variant="primary" size="lg">
+              Get a sample report
+            </Button>
           </div>
         </Container>
       </section>

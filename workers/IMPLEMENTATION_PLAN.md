@@ -213,7 +213,7 @@ Brain skills (open those relevant to the current item):
     - PSI Monitoring
   - **If Blocked:** Replace tabs with a 4-card grid; keep same content.
 
-- [ ] **4.3** Implement FAQ accordion (accessible)
+- [x] **4.3** Implement FAQ accordion (accessible)
   - **Goal:** Handle core objections with low friction.
   - **References:** `docs/websites/04_page_requirements.md`, `brain/skills/domains/frontend/accessibility-patterns.md`.
   - **AC:**
