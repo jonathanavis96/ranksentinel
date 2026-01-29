@@ -303,7 +303,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** missing metrics handled gracefully (no crash)
   - **Validate:** run once and confirm metrics are persisted
 
-- [ ] **3.3** PSI regression thresholds (settings-driven)
+- [x] **3.3** PSI regression thresholds (settings-driven)
   - **Goal:** compute regressions vs baseline with low noise.
   - **AC:** thresholds exist in customer settings (defaults from BOOTSTRAP)
   - **AC:** regression creates a finding with before/after values

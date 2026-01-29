@@ -114,3 +114,5 @@ Started: 2026-01-28
 | 2026-01-29 | 3.1 | PSI client + response persistence | Verified existing implementation complete: fetch_psi_metrics() with API key config, psi_results table with raw JSON storage, psi_enabled setting for enable/disable control |
 
 | 2026-01-29 | 3.2 | PSI metric extraction (LCP/CLS/INP/TTFB/perf score) | Verified existing implementation complete: fetch_psi_metrics() extracts perf_score (0-100 int), lcp_ms, cls_score (float), inp_ms from PSI JSON. Stored in psi_results table columns. Missing metrics handled gracefully with None values. Validation test confirmed metrics persist correctly. All AC satisfied. |
+
+| 2026-01-29 | 3.3 | PSI regression thresholds (settings-driven) | Verified existing implementation complete: psi_perf_drop_threshold (default 10) and psi_lcp_increase_threshold_ms (default 500) exist in settings table. check_psi_regression() reads thresholds from settings_row and applies them to detect regressions. Findings include before/after values with severity=critical. All AC satisfied. |
