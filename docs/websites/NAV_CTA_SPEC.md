@@ -5,6 +5,7 @@
 **Status:** MVP specification (approved for implementation)
 
 **References:**
+
 - `docs/websites/04_page_requirements.md` (global layout requirements)
 - `docs/websites/05_copy_system.md` (voice + tone)
 - `brain/skills/domains/websites/copywriting/cta-optimizer.md` (CTA best practices)
@@ -38,9 +39,11 @@
 ### Alternative Links (Post-MVP)
 
 If `/product` becomes a separate page:
+
 - **Product** → `/product` (instead of `/#features`)
 
 If `/faq` becomes a separate page:
+
 - **FAQ** → `/faq` (instead of `/#faq`)
 
 ---
@@ -54,19 +57,23 @@ Multi-column layout with links grouped by category.
 ### Footer Links (MVP)
 
 **Column 1: Product**
+
 - Product → `/#features`
 - Pricing → `/pricing`
 - Sample Report → `/sample-report`
 
 **Column 2: Resources**
+
 - FAQ → `/#faq`
 - Documentation → (placeholder for future `/docs`)
 
 **Column 3: Company**
+
 - About → (placeholder for future `/about`)
 - Contact → (placeholder for future `/contact` or `mailto:`)
 
 **Column 4: Legal**
+
 - Privacy Policy → (placeholder for future `/privacy`)
 - Terms of Service → (placeholder for future `/terms`)
 

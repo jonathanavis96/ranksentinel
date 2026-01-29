@@ -72,9 +72,23 @@ Brain skills (open those relevant to the current item):
 
 ## Website build tasks (atomic)
 
+### Phase 0-Lint: Markdown Lint Errors
+
+- [x] **0.1** Fix MD024 in brain_upstream/cortex/PLAN_DONE.md
+  - **AC:** `markdownlint brain_upstream/cortex/PLAN_DONE.md` passes (no MD024 errors for "Archived on 2026-01-26")
+
+- [x] **0.2** Fix MD056 table column count errors in brain_upstream/TEMPLATE_DRIFT_REPORT.md
+  - **AC:** `markdownlint brain_upstream/TEMPLATE_DRIFT_REPORT.md` passes (no MD056 errors on lines 61, 77, 87)
+
+- [x] **0.3** Fix MD040 in brain_upstream/TEMPLATE_DRIFT_REPORT.md
+  - **AC:** `markdownlint brain_upstream/TEMPLATE_DRIFT_REPORT.md` passes (no MD040 errors on line 254)
+
+- [x] **0.4** Fix MD056 table column count errors in brain_upstream/workers/ralph/THUNK.md
+  - **AC:** `markdownlint brain_upstream/workers/ralph/THUNK.md` passes (no MD056 errors on lines 829, 839, 841-848)
+
 ### Task 1: Planning sanity + IA confirmation
 
-- [ ] **1.1** Confirm MVP page list and section blueprint alignment
+- [x] **1.1** Confirm MVP page list and section blueprint alignment
   - **Goal:** Ensure IA matches the section blueprint and we’re shipping the right pages first.
   - **References:** `docs/websites/03_ia_sitemap.md`, `docs/websites/04_page_requirements.md`, `brain/skills/domains/websites/architecture/sitemap-builder.md`.
   - **AC:**
@@ -82,19 +96,20 @@ Brain skills (open those relevant to the current item):
     - Any contradictions with `04_page_requirements.md` are resolved and documented.
   - **If Blocked:** Add a short “Open Questions” list to `03_ia_sitemap.md` and proceed with homepage/pricing/sample-report as MVP.
 
-- [ ] **1.2** Lock nav labels + destinations + CTA placement rules
+- [x] **1.2** Lock nav labels + destinations + CTA placement rules
   - **Goal:** Make the site consistent and avoid conversion-killing copy drift.
   - **References:** `docs/websites/05_copy_system.md`, `brain/skills/domains/websites/copywriting/cta-optimizer.md`.
   - **AC:**
     - Nav labels and URLs are explicitly listed (header + footer).
-    - “One primary CTA per page view” is documented with examples.
+    - "One primary CTA per page view" is documented with examples.
   - **If Blocked:** Default to:
     - Links: Product, Pricing, Sample report, FAQ.
-    - Buttons: homepage “Get a sample report”; pricing “Start monitoring”.
+    - Buttons: homepage "Get a sample report"; pricing "Start monitoring".
+  - **Completed:** Created `docs/websites/NAV_CTA_SPEC.md` with comprehensive navigation and CTA rules.
 
 ### Task 2: Frontend scaffold (Next.js static export)
 
-- [ ] **2.1** Create Next.js App Router site under `website/` configured for static export
+- [x] **2.1** Create Next.js App Router site under `website/` configured for static export
   - **Goal:** Establish the marketing site codebase with reproducible builds.
   - **References:** `brain/skills/domains/frontend/react-patterns.md`.
   - **AC:**
@@ -102,7 +117,7 @@ Brain skills (open those relevant to the current item):
     - Static output is compatible with GitHub Pages.
   - **If Blocked:** If static export limitations block routing/metadata, document constraints and switch to a compatible static approach (still Next.js-based) with user approval.
 
-- [ ] **2.2** Add basic tooling for the website (lint/format/typecheck)
+- [x] **2.2** Add basic tooling for the website (lint/format/typecheck)
   - **Goal:** Prevent formatting drift and obvious bugs.
   - **AC:**
     - `website/` has scripts: `lint`, `format` (or `fmt`), `typecheck` (if TS).
@@ -111,7 +126,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 3: Design tokens + base components (Palette A)
 
-- [ ] **3.1** Implement Palette A tokens (hex) as CSS variables (and/or Tailwind theme)
+- [x] **3.1** Implement Palette A tokens (hex) as CSS variables (and/or Tailwind theme)
   - **Goal:** Make design consistent and easy to evolve.
   - **References:** `docs/websites/10_design_ux.md`, `brain/skills/domains/websites/design/color-system.md`.
   - **AC:**
@@ -122,7 +137,7 @@ Brain skills (open those relevant to the current item):
       - Hero gradient per doc.
   - **If Blocked:** Use CSS variables only (no Tailwind), but keep naming consistent.
 
-- [ ] **3.2** Implement layout primitives (container widths, spacing scale)
+- [x] **3.2** Implement layout primitives (container widths, spacing scale)
   - **Goal:** Create a predictable “soft SaaS” rhythm and readable measure.
   - **References:** `docs/websites/10_design_ux.md`, `brain/skills/domains/websites/design/spacing-layout.md`.
   - **AC:**
@@ -130,7 +145,7 @@ Brain skills (open those relevant to the current item):
     - Spacing scale is documented or encoded in utility classes.
   - **If Blocked:** Use a minimal container + spacing utilities and document defaults.
 
-- [ ] **3.3** Implement core UI components
+- [x] **3.3** Implement core UI components
   - **Goal:** Standardize nav/buttons/cards to match the design direction.
   - **References:** `docs/websites/10_design_ux.md`, `brain/skills/domains/frontend/accessibility-patterns.md`.
   - **Scope:** Header/Nav, Footer, Button (primary/secondary), Card, Badge/Pill.
@@ -138,6 +153,7 @@ Brain skills (open those relevant to the current item):
     - Rounded corners + light borders + subtle shadows match the doc.
     - Focus states are visible and keyboard navigation works.
   - **If Blocked:** Prefer accessibility correctness over visual parity; note visual deltas.
+  - **Completed:** 2026-01-30 - All core UI components created with accessibility features
 
 - [ ] **3.4** Implement the Email Report Preview (hero object)
   - **Goal:** Make the value instantly legible: “email-first monitoring, no dashboard required.”

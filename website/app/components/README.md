@@ -28,6 +28,7 @@ import Container from '@/app/components/Container';
 ```
 
 **Sizes:**
+
 - `sm`: 640px (narrow content like blog posts)
 - `md`: 768px (medium content)
 - `lg`: 1024px (standard content)
@@ -35,6 +36,7 @@ import Container from '@/app/components/Container';
 - `2xl`: 1536px (full-width sections)
 
 **Responsive behavior:**
+
 - Mobile: 16px horizontal padding
 - Desktop (≥768px): 32px horizontal padding
 
@@ -62,6 +64,7 @@ Available via CSS variables in `globals.css`:
 ```
 
 **Tailwind equivalents:**
+
 - Use Tailwind's default spacing scale (already 8px-based)
 - Or use CSS custom properties: `style={{ paddingTop: 'var(--space-20)' }}`
 

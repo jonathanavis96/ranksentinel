@@ -18,6 +18,21 @@ Last Updated: 2026-01-29 23:10:00
   - `ranksentinel.com` (marketing site): GitHub Pages + custom domain.
   - `api.ranksentinel.com` (FastAPI): Hostinger VPS.
 - **Design direction:** “Soft SaaS landing” + Palette A (Signal Teal + Ink).
+
+## Phase 0-Warn: Verifier Warnings
+
+- [ ] **0.1** Fix MD032 errors in docs/websites/NAV_CTA_SPEC.md
+  - **AC:** `markdownlint docs/websites/NAV_CTA_SPEC.md` passes (no MD032 errors)
+
+- [ ] **0.2** Fix MD032 errors in website/app/components/README.md
+  - **AC:** `markdownlint website/app/components/README.md` passes (no MD032 errors)
+
+- [ ] **0.3** Fix markdown errors in website/node_modules/@alloc/quick-lru/readme.md
+  - **AC:** `markdownlint website/node_modules/@alloc/quick-lru/readme.md` passes (no MD040, MD014, MD010 errors)
+
+- [ ] **0.4** Fix markdown errors in website/node_modules/@babel/parser/CHANGELOG.md
+  - **AC:** `markdownlint website/node_modules/@babel/parser/CHANGELOG.md` passes (no MD032, MD028, MD034, MD049, MD022, MD004, MD007 errors)
+
   - Source of truth: `docs/websites/10_design_ux.md`.
 - **CTA system:** Dual (contextual, one primary CTA per page view).
   - Homepage primary CTA: **Get a sample report** → `POST /public/leads`.
