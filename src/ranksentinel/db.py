@@ -17,6 +17,11 @@ CREATE TABLE IF NOT EXISTS customers (
   digest_weekday INTEGER,
   digest_time_local TEXT,
   digest_timezone TEXT,
+  trial_started_at TEXT,
+  paywalled_since TEXT,
+  weekly_digest_sent_count INTEGER NOT NULL DEFAULT 0,
+  post_trial_unlocked_critical_remaining INTEGER NOT NULL DEFAULT 1,
+  post_trial_locked_critical_remaining INTEGER NOT NULL DEFAULT 2,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -245,6 +250,16 @@ def init_db(conn: sqlite3.Connection) -> None:
             cursor.execute("ALTER TABLE customers ADD COLUMN digest_time_local TEXT")
         if "digest_timezone" not in customers_columns:
             cursor.execute("ALTER TABLE customers ADD COLUMN digest_timezone TEXT")
+        if "trial_started_at" not in customers_columns:
+            cursor.execute("ALTER TABLE customers ADD COLUMN trial_started_at TEXT")
+        if "paywalled_since" not in customers_columns:
+            cursor.execute("ALTER TABLE customers ADD COLUMN paywalled_since TEXT")
+        if "weekly_digest_sent_count" not in customers_columns:
+            cursor.execute("ALTER TABLE customers ADD COLUMN weekly_digest_sent_count INTEGER NOT NULL DEFAULT 0")
+        if "post_trial_unlocked_critical_remaining" not in customers_columns:
+            cursor.execute("ALTER TABLE customers ADD COLUMN post_trial_unlocked_critical_remaining INTEGER NOT NULL DEFAULT 1")
+        if "post_trial_locked_critical_remaining" not in customers_columns:
+            cursor.execute("ALTER TABLE customers ADD COLUMN post_trial_locked_critical_remaining INTEGER NOT NULL DEFAULT 2")
 
     conn.commit()
 

@@ -368,7 +368,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 10: Trial expiry + paywall campaign emails
 
-- [ ] **10.1** Enforce trial expiry and transition `trial → paywalled`
+- [x] **10.1** Enforce trial expiry and transition `trial → paywalled`
   - **Goal:** Automatically end trials deterministically.
   - **Rules:** Trial ends after 7 days OR 1 weekly digest.
   - **Counters (confirmed):**
@@ -376,6 +376,7 @@ Brain skills (open those relevant to the current item):
     - `post_trial_locked_critical_remaining = 2`
   - **AC:** Trial transitions are idempotent and test-covered.
   - **If Blocked:** End trials by date only and add follow-up for digest-count path.
+  - **Completed:** 2026-01-30 - Added trial tracking columns to customers table (trial_started_at, paywalled_since, weekly_digest_sent_count, post_trial_unlocked/locked_critical_remaining), implemented check_and_expire_trials() function with idempotent trial→paywalled transitions based on 7-day OR 1-digest rule, updated start_monitoring endpoint to set trial_started_at, added comprehensive test coverage (9 tests) verifying expiry logic, idempotency, and edge cases.
 
 - [ ] **10.2** Weekly paywall emails for 4 weeks, then `previously_interested` monthly reminder
   - **Goal:** Convert trials while keeping cadence familiar.

@@ -363,8 +363,8 @@ def start_monitoring(payload: StartMonitoringRequest, conn=Depends(get_conn), se
         # Create new trial customer with both raw and canonical email
         customer_id = execute(
             conn,
-            "INSERT INTO customers(name,email_raw,email_canonical,status,created_at,updated_at) VALUES(?,?,?,?,?,?)",
-            (email_raw, email_raw, email_canonical, "trial", ts, ts),
+            "INSERT INTO customers(name,email_raw,email_canonical,status,trial_started_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?)",
+            (email_raw, email_raw, email_canonical, "trial", ts, ts, ts),
         )
         execute(conn, "INSERT OR IGNORE INTO settings(customer_id) VALUES(?)", (customer_id,))
     

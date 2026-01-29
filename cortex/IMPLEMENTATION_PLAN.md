@@ -25,6 +25,10 @@ Last Updated: 2026-01-29 23:10:00
   - **AC:** `markdownlint docs/websites/NAV_CTA_SPEC.md` passes (no MD032 errors)
   - **Completed:** 2026-01-30 - Added blank lines around lists
 
+- [x] **0.2** Fix MD009/no-trailing-spaces in workers/ralph/THUNK.md
+  - **AC:** `markdownlint workers/ralph/THUNK.md` passes (no MD009 errors)
+  - **Completed:** 2026-01-30 - Removed trailing space from line 199
+
 - [x] **0.2** Fix MD032 errors in website/app/components/README.md
   - **AC:** `markdownlint website/app/components/README.md` passes (no MD032 errors)
   - **Completed:** 2026-01-30 - Added blank lines around lists
@@ -246,14 +250,14 @@ Brain skills (open those relevant to the current item):
   - **AC:** Pages exist and are linked in the footer.
   - **If Blocked:** Ship minimal placeholders labeled “Draft” and create follow-up tasks.
 
-- [ ] **5.4** Implement `/404`
+- [x] **5.4** Implement `/404`
   - **Goal:** Avoid dead ends.
   - **AC:** Has navigation back to `/` and `/pricing`.
   - **If Blocked:** Use a basic 404 page without custom styling.
 
 ### Task 6: API contract + forms integration
 
-- [ ] **6.1** Write website↔API contract doc
+- [x] **6.1** Write website↔API contract doc
   - **Goal:** Prevent frontend/backend mismatch.
   - **AC:** A doc under `docs/` includes:
     - endpoints
@@ -262,7 +266,7 @@ Brain skills (open those relevant to the current item):
     - error handling
   - **If Blocked:** Document as a section inside `docs/WEBSITE_REQUIREMENTS.md`.
 
-- [ ] **6.2** Implement website forms (frictionless)
+- [x] **6.2** Implement website forms (frictionless)
   - **Goal:** Max conversions with minimal inputs.
   - **AC:**
     - Homepage form uses: email (required), domain (required), key pages optional.
@@ -272,7 +276,7 @@ Brain skills (open those relevant to the current item):
     - Honeypot present.
   - **If Blocked:** Remove key pages and keep only email+domain.
 
-- [ ] **6.3** Wire website forms to API (`/public/leads`, `/public/start-monitoring`)
+- [x] **6.3** Wire website forms to API (`/public/leads`, `/public/start-monitoring`)
   - **Goal:** End-to-end conversions.
   - **AC:**
     - Success state is clean.
@@ -282,7 +286,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 7: Anti-abuse + email canonicalization
 
-- [ ] **7.1** Implement email canonicalization and dedupe (Gmail dot/plus)
+- [x] **7.1** Implement email canonicalization and dedupe (Gmail dot/plus)
   - **Goal:** Prevent trial abuse via email variants.
   - **Requirements:**
     - Lowercase and trim.
@@ -296,7 +300,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 8: Scheduling settings follow-up (email link → schedule page)
 
-- [ ] **8.1** Implement schedule settings page (`/schedule`) with timezone auto-detect
+- [x] **8.1** Implement schedule settings page (`/schedule`) with timezone auto-detect
   - **Goal:** Let motivated users customize cadence without hurting initial conversion.
   - **Timezone UX (confirmed):**
     - Default timezone from `Intl.DateTimeFormat().resolvedOptions().timeZone`.
@@ -314,20 +318,20 @@ Brain skills (open those relevant to the current item):
   - **AC:** Matches UX rules above.
   - **If Blocked:** Skip preview and show only the API-computed next run after save.
 
-- [ ] **8.2** Implement schedule token link in emails (30-day expiry, scoped, rotated)
+- [x] **8.2** Implement schedule token link in emails (30-day expiry, scoped, rotated)
   - **Goal:** Passwordless schedule settings.
   - **Requirements (confirmed):**
     - Expiry: 30 days.
     - Scope: schedule update only.
     - Rotate/single-use token after successful update.
-    - Include “Set schedule” link in:
+    - Include "Set schedule" link in:
       - confirmation emails
       - unlocked weekly digest emails
       - paywalled weekly emails
   - **AC:** Token works, cannot be guessed, and old token no longer works after update.
-  - **If Blocked:** Use a short-lived token and include a “request new link” endpoint.
+  - **If Blocked:** Use a short-lived token and include a "request new link" endpoint.
 
-- [ ] **8.3** Implement `POST /public/schedule` (API source of truth)
+- [x] **8.3** Implement `POST /public/schedule` (API source of truth)
   - **Goal:** Persist schedule + return authoritative next run.
   - **Request:** token, digest_weekday, digest_time_local, digest_timezone.
   - **Response (required):**
@@ -340,15 +344,16 @@ Brain skills (open those relevant to the current item):
 
 ### Task 9: Funnel endpoints + trial provisioning
 
-- [ ] **9.1** Implement `POST /public/leads`
+- [x] **9.1** Implement `POST /public/leads`
   - **Goal:** Capture demand and deliver sample report.
   - **AC:**
     - Stores lead.
     - Sends sample report email.
-    - Includes optional “Start monitoring” next-step link.
+    - Includes optional "Start monitoring" next-step link.
   - **If Blocked:** Store lead only and log a TODO for email send.
+  - **Completed:** 2026-01-30 - Added `render_sample_report()` email template, updated endpoint to send sample report with CTA to start monitoring, tests verify email sending and graceful failure handling.
 
-- [ ] **9.2** Implement `POST /public/start-monitoring` with immediate trial provisioning
+- [x] **9.2** Implement `POST /public/start-monitoring` with immediate trial provisioning
   - **Goal:** Deliver instant value while controlling abuse.
   - **Status model:** `trial` → `paywalled` → `previously_interested` → `active`.
   - **Trial limits (confirmed):**
@@ -359,6 +364,7 @@ Brain skills (open those relevant to the current item):
     - Weekly digest: on (limited by caps)
   - **AC:** Customer is provisioned as `trial`, jobs scheduled under trial limits, confirmation email sent.
   - **If Blocked:** Provision customer record only and queue jobs later.
+  - **Completed:** 2026-01-30 - Updated database schema to support trial/paywalled/previously_interested statuses, implemented trial provisioning endpoint with 5 key page limit, 50 URL crawl limit, 1 PSI page limit, added `render_trial_confirmation()` email template, tests verify trial status creation, limit enforcement, and confirmation email sending.
 
 ### Task 10: Trial expiry + paywall campaign emails
 
