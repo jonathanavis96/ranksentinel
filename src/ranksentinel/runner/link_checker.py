@@ -1,10 +1,11 @@
 """Internal link extraction and broken link detection."""
 
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 
 from ranksentinel.http_client import fetch_text
+from ranksentinel.runner.normalization import normalize_url
 
 
 def extract_internal_links(html: str, base_url: str) -> list[str]:
@@ -31,17 +32,16 @@ def extract_internal_links(html: str, base_url: str) -> list[str]:
         if not href or href.startswith(("#", "javascript:", "mailto:", "tel:")):
             continue
         
-        # Resolve relative URLs to absolute
-        absolute_url = urljoin(base_url, href)
-        parsed = urlparse(absolute_url)
+        # Normalize URL using shared normalization utility
+        normalized_url = normalize_url(base_url, href)
+        if not normalized_url:
+            continue
+        
+        parsed = urlparse(normalized_url)
         
         # Only include same-domain links (internal)
-        if parsed.netloc == base_domain and parsed.scheme in ("http", "https"):
-            # Remove fragment
-            clean_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
-            if parsed.query:
-                clean_url += f"?{parsed.query}"
-            internal_links.add(clean_url)
+        if parsed.netloc == base_domain:
+            internal_links.add(normalized_url)
     
     return sorted(internal_links)
 

@@ -11,6 +11,7 @@ from ranksentinel.runner.normalization import (
     extract_meta_robots,
     extract_title,
     normalize_html_to_text,
+    normalize_url,
 )
 
 
@@ -387,7 +388,12 @@ def run(settings: Settings) -> None:
             psi_enabled = bool(customer_settings.get("psi_enabled", 1))
 
             for t in targets:
-                url = str(t["url"])
+                raw_url = str(t["url"])
+                # Normalize URL for consistency
+                url = normalize_url(raw_url, raw_url)
+                if not url:
+                    print(f"Skipping invalid URL for customer {customer_id}: {raw_url}")
+                    continue
                 try:
                     data = fetch_url(url)
                 except Exception as e:  # noqa: BLE001

@@ -102,7 +102,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `python -c "import ranksentinel; print('ok')"`
     - run daily with an intentionally bad URL in settings and confirm logs show retries/backoff and error classification
 
-- [ ] **0.9** URL normalization utilities (shared)
+- [x] **0.9** URL normalization utilities (shared)
   - **Goal:** canonical URL rules used everywhere (strip fragments, normalize trailing slash policy, lower-case scheme/host, resolve relatives).
   - **AC:** code exposes `normalize_url(base_url, url)` (or equivalent) and it is used by:
     - sitemap URL extraction

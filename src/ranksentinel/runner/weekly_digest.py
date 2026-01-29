@@ -4,6 +4,7 @@ from ranksentinel.config import Settings
 from ranksentinel.db import connect, execute, fetch_all, fetch_one, init_db
 from ranksentinel.http_client import fetch_text
 from ranksentinel.runner.link_checker import find_broken_links
+from ranksentinel.runner.normalization import normalize_url
 
 
 def now_iso() -> str:
@@ -39,7 +40,11 @@ def detect_broken_internal_links(
     total_broken = 0
     
     for snapshot in snapshots:
-        source_url = str(snapshot["url"])
+        raw_url = str(snapshot["url"])
+        # Normalize URL for consistency
+        source_url = normalize_url(raw_url, raw_url)
+        if not source_url:
+            continue
         
         # Fetch the page content
         result = fetch_text(source_url, timeout=20, attempts=2, base_delay=1.0)
@@ -55,7 +60,7 @@ def detect_broken_internal_links(
             timeout_s=10,
         )
         
-        # Store broken links in database
+        # Store broken links in database (URLs already normalized by link_checker)
         for target_url, status_code, error_msg in broken_links:
             execute(
                 conn,
