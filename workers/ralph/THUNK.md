@@ -74,3 +74,25 @@ Started: 2026-01-28
 | 1.6 | Sitemap fetch + persist raw artifact | Implemented fetch_sitemap() function with retry/timeout logic using http_client.fetch_text(). Added sitemap fetch logic to daily_checks.py run() that fetches sitemap_url from settings, stores artifact with SHA when changed, and creates critical finding when sitemap is unreachable. Added 3 comprehensive tests covering: successful fetch+store, missing sitemap creates critical finding, unchanged sitemap not re-stored. | 2026-01-29 |
 | 2026-01-29T03:26 | 1.7 | Sitemap URL count + delta severity | Implemented sitemap_parser.py with URL count extraction (urlset/index), integrated into daily_checks.py with severity thresholds (critical: 0 URLs or >30% drop, warning: 10-30% drop), added comprehensive tests | f244d93 |
 | 2026-01-29T14:03 | 1.8 | Key-page HTML fetch + normalization snapshot | Task already complete - daily_checks.py fetch_url() fetches HTML for is_key=1 targets with retry/backoff (3 attempts), normalizes via normalize_html_to_text(), computes SHA256 hash, and stores content_hash in snapshots table per run. Verified implementation meets all ACs. | ee7d9a7 |
+
+## 2026-01-29 14:06 - Task 1.10: Key-page tag extraction (meta robots + canonical)
+
+**Completed:** ✅
+
+**What was done:**
+- Verified that `check_noindex_regression` and `check_canonical_drift` functions already exist in `src/ranksentinel/runner/daily_checks.py`
+- Confirmed these checks are already integrated into the daily runner workflow at lines 786 and 819
+- Added comprehensive test coverage in `tests/test_normalization.py`:
+  - `TestExtractMetaRobots`: 4 tests for meta robots tag extraction
+  - `TestExtractCanonical`: 4 tests for canonical URL extraction
+- All tests pass successfully
+
+**Acceptance Criteria Met:**
+- ✅ Extract and persist meta robots (presence + content) and canonical href
+- ✅ Severity rules: newly introduced `noindex` => critical (line 99 in daily_checks.py)
+- ✅ Canonical changes => warning/critical based on risk (lines 127-145 in daily_checks.py)
+- ✅ Validation: tests added and passing
+
+**Files Modified:**
+- `tests/test_normalization.py`: Added 8 new tests for meta robots and canonical extraction
+

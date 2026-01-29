@@ -185,3 +185,43 @@ class TestCanonicalDiffIntegration:
     def test_canonical_unchanged(self):
         url = "https://example.com/page"
         assert diff_summary(url, url) == ""
+
+
+class TestExtractMetaRobots:
+    """Test meta robots tag extraction."""
+
+    def test_extract_meta_robots_basic(self):
+        html = '<html><head><meta name="robots" content="noindex, nofollow"></head></html>'
+        assert extract_meta_robots(html) == "noindex, nofollow"
+
+    def test_extract_meta_robots_missing(self):
+        html = "<html><head></head></html>"
+        assert extract_meta_robots(html) == ""
+
+    def test_extract_meta_robots_case_insensitive(self):
+        html = '<html><head><meta name="ROBOTS" content="INDEX, FOLLOW"></head></html>'
+        assert extract_meta_robots(html) == "INDEX, FOLLOW"
+
+    def test_extract_meta_robots_empty_content(self):
+        html = '<html><head><meta name="robots" content=""></head></html>'
+        assert extract_meta_robots(html) == ""
+
+
+class TestExtractCanonical:
+    """Test canonical URL extraction."""
+
+    def test_extract_canonical_basic(self):
+        html = '<html><head><link rel="canonical" href="https://example.com/page"></head></html>'
+        assert extract_canonical(html) == "https://example.com/page"
+
+    def test_extract_canonical_missing(self):
+        html = "<html><head></head></html>"
+        assert extract_canonical(html) == ""
+
+    def test_extract_canonical_empty_href(self):
+        html = '<html><head><link rel="canonical" href=""></head></html>'
+        assert extract_canonical(html) == ""
+
+    def test_extract_canonical_with_whitespace(self):
+        html = '<html><head><link rel="canonical" href="  https://example.com/page  "></head></html>'
+        assert extract_canonical(html) == "https://example.com/page"
