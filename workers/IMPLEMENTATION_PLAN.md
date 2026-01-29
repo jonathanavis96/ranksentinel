@@ -300,7 +300,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 8: Scheduling settings follow-up (email link → schedule page)
 
-- [ ] **8.1** Implement schedule settings page (`/schedule`) with timezone auto-detect
+- [x] **8.1** Implement schedule settings page (`/schedule`) with timezone auto-detect
   - **Goal:** Let motivated users customize cadence without hurting initial conversion.
   - **Timezone UX (confirmed):**
     - Default timezone from `Intl.DateTimeFormat().resolvedOptions().timeZone`.
