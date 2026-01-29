@@ -89,7 +89,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** The fixture includes the Google 0.84 namespace and at least 2 `<url><loc>...` entries.
   - **Validate:** `pytest -q`
 
-- [ ] **0-S.5** Shopify sitemap index expansion (crawl actual page URLs, not child sitemap XML)
+- [x] **0-S.5** Shopify sitemap index expansion (crawl actual page URLs, not child sitemap XML)
   - **Goal:** Handle common Shopify pattern where `sitemap.xml` is a `sitemapindex` of child sitemaps (`sitemap_pages_*.xml`, `sitemap_products_*.xml`, etc.). Weekly should crawl URLs inside those child sitemaps.
   - **Files (likely):** `src/ranksentinel/runner/weekly_digest.py`, `src/ranksentinel/runner/sitemap_parser.py`, `tests/test_weekly_fetcher_integration.py`
   - **Implementation guidance (MVP):**
