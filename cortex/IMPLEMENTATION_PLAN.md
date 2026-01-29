@@ -147,25 +147,25 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
   - **AC:** `./.venv/bin/pytest -q tests/test_sitemap_fetch.py` passes.
 
-- [ ] **0-R.6** Fix `tests/test_page_fetcher.py::test_persist_fetch_results_placeholder` to initialize schema (call `init_db()` before using snapshots)
+- [x] **0-R.6** Fix `tests/test_page_fetcher.py::test_persist_fetch_results_placeholder` to initialize schema (call `init_db()` before using snapshots)
   - **Why:** Fails with `sqlite3.OperationalError: no such table: snapshots` because test creates a bare SQLite DB.
   - **Do:** In the test, call `init_db(conn)` (or use shared fixture) before invoking `persist_fetch_results()`.
   - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
   - **AC:** `./.venv/bin/pytest -q tests/test_page_fetcher.py::test_persist_fetch_results_placeholder` passes.
 
-- [ ] **0-R.7** Align robots fetch tests with current artifact storage semantics
+- [x] **0-R.7** Align robots fetch tests with current artifact storage semantics
   - **Why:** `tests/test_robots_fetch.py` has failing assertions vs actual implementation (subject/raw_content expectations).
   - **Do:** Inspect current daily robots persistence (kind/subject normalization, newline normalization, etc.) and update tests to assert the real contract (ideally via `get_latest_artifact()` rather than raw SQL).
   - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
   - **AC:** `./.venv/bin/pytest -q tests/test_robots_fetch.py` passes.
 
-- [ ] **0-R.8** Ensure customer status gating tests create data consistent with schema + runner behavior
+- [x] **0-R.8** Ensure customer status gating tests create data consistent with schema + runner behavior
   - **Why:** `tests/test_customer_status_gating.py` is currently failing in full suite.
   - **Do:** Ensure test DB setup inserts required `created_at/updated_at` fields and any required settings rows so the runner can proceed without error.
   - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
   - **AC:** `./.venv/bin/pytest -q tests/test_customer_status_gating.py` passes.
 
-- [ ] **0-R.9** Weekly crawl resilience: handle HTTP 429 without hanging the whole run
+- [x] **0-R.9** Weekly crawl resilience: handle HTTP 429 without hanging the whole run
   - **Why:** weekly entrypoint can stall/timeout due to rate limits (429) when fetching many URLs.
   - **Do (MVP scheduler):** Implement a **fair round-robin fetch scheduler** with **per-domain cooldown** so rate-limited customers are **interleaved** with other customers (not deferred until the end).
     - Model work as tasks: `(customer_id, url)`.
@@ -185,6 +185,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
       - no unbounded sleep (scheduler keeps working on other tasks while cooling down)
     - Persist auditability:
       - when skipping due to threshold, create snapshots/run_coverage entries that make it obvious we were rate-limited.
+  - **Done:** Fixed `page_fetcher_scheduled.py` to persist 429 responses to results dict so they get counted in `run_coverage.http_429_count`. All AC requirements verified: (1) Weekly run completes with repeated 429s, (2) Rate-limited customers are interleaved (not deferred), (3) http_429_count recorded correctly, (4) Runtime bounded by caps, (5) Interleaving behavior confirmed via integration test. All existing tests pass (12/12 for scheduler + weekly fetcher integration).
   - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/infrastructure/observability-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
   - **AC:**
     - Weekly run completes even when a customer domain responds with repeated 429s.
@@ -193,7 +194,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - No unbounded sleep; runtime remains bounded by caps.
     - Add/extend a test using mocked HTTP responses to simulate: A(429), B(200), C(200), A(429), B(200), ... and assert interleaving behavior.
 
-- [ ] **0-R.9a** Round-robin + cooldown scheduler implementation skeleton (helper + wiring)
+- [x] **0-R.9a** Round-robin + cooldown scheduler implementation skeleton (helper + wiring)
   - **Goal:** Make 0-R.9 easy to implement in one pass by providing a concrete code structure.
   - **Do:**
     - Add a small scheduler helper (new module or local helper) that:
@@ -201,13 +202,14 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
       - yields the next `(customer_id, url)` to fetch based on cooldown + round-robin fairness
       - tracks attempts per task and enforces caps
     - Wire weekly fetch loop to use this helper (likely in `src/ranksentinel/runner/weekly_digest.py` / `page_fetcher.py`).
+  - **Done:** Implemented `fetch_scheduler.py` with round-robin scheduling, per-domain cooldown, exponential backoff with jitter, attempt tracking, and 429 threshold caps. Created `page_fetcher_scheduled.py` for multi-customer scheduled fetching. Refactored `weekly_digest.py` into 3 phases: (1) collect URLs, (2) scheduled fetch across all customers, (3) process results. All scheduler tests passing (9/9).
     - Add structured logs for scheduling decisions: `event=schedule_defer`, `domain`, `cooldown_ms`, `queue_len`, `customer_id`.
   - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/infrastructure/observability-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
   - **AC:**
     - Unit test exists for scheduler ordering under cooldown (A deferred, B/C proceed, A retried later).
     - Weekly integration test for interleaving remains green.
 
-- [ ] **0-R.10** Restore green test suite after above fixes
+- [x] **0-R.10** Restore green test suite after above fixes
   - **Why:** Currently `pytest -q` reports `9 failed`.
   - **Do:** Run full suite and fix any remaining failures introduced by changes.
   - **Skills:** `brain/skills/playbooks/investigate-test-failures.md`, `brain/skills/domains/code-quality/testing-patterns.md`
@@ -619,8 +621,8 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Phase 4: Email reporting (atomic)
 
-- [ ] **4.6a** First Insight: add admin trigger endpoint (no payment integration)
-  - **Goal:** Provide an internal/admin-only way to send a one-off “First Insight” report immediately.
+- [x] **4.6a** First Insight: add admin trigger endpoint (no payment integration)
+  - **Goal:** Provide an internal/admin-only way to send a one-off "First Insight" report immediately.
   - **Files (likely):** `src/ranksentinel/api.py`
   - **Implementation guidance:**
     - Add `POST /admin/customers/{customer_id}/send_first_insight`.
@@ -628,6 +630,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Skills:** `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/backend/auth-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
   - **AC:** Hitting the endpoint returns 200 and enqueues/executes the first-insight flow for that customer.
   - **Validate:** Unit test for endpoint routing + mocked service call.
+  - **Completed:** Added endpoint with stub service function and full test coverage
 
 - [ ] **4.6b** First Insight: implement runner/service to generate report input data
   - **Goal:** Reuse weekly/daily signal collection to generate a “first run” snapshot set without waiting for Monday.
