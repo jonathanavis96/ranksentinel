@@ -202,6 +202,60 @@ def parse_severity(severity_str: str) -> Severity:
         return INFO  # Default to INFO for unknown severities
 
 
+def compose_daily_critical_report(customer_name: str, findings_rows: list[Any]) -> WeeklyReport:
+    """Compose a daily critical report from database findings rows.
+    
+    Similar to compose_weekly_report but intended for daily critical alerts.
+    Uses the same WeeklyReport structure for consistency.
+    
+    Args:
+        customer_name: Customer name for the report
+        findings_rows: List of sqlite3.Row objects from findings table (critical severity only)
+        
+    Returns:
+        WeeklyReport with only critical findings populated
+    """
+    # Convert rows to FindingWithRecommendation objects
+    findings_with_recs: list[FindingWithRecommendation] = []
+    
+    for row in findings_rows:
+        severity = parse_severity(row["severity"])
+        category = row["category"]
+        title = row["title"]
+        
+        # Get recommendation and priority
+        recommendation = get_recommendation_for_finding(category, title, severity)
+        priority = get_recommendation_priority(category, title, severity)
+        
+        findings_with_recs.append(
+            FindingWithRecommendation(
+                finding_id=row["id"],
+                customer_id=row["customer_id"],
+                severity=severity,
+                category=category,
+                title=title,
+                details_md=row["details_md"],
+                url=row["url"] if row["url"] else None,
+                created_at=row["created_at"],
+                recommendation=recommendation,
+                priority=priority,
+            )
+        )
+    
+    # Sort findings by priority
+    sorted_findings = sort_findings_with_recommendations(findings_with_recs)
+    
+    # Only critical findings for daily alerts
+    critical_findings = [f for f in sorted_findings if f.severity == CRITICAL]
+    
+    return WeeklyReport(
+        customer_name=customer_name,
+        critical_findings=critical_findings,
+        warning_findings=[],
+        info_findings=[],
+    )
+
+
 def compose_weekly_report(customer_name: str, findings_rows: list[Any]) -> WeeklyReport:
     """Compose a weekly report from database findings rows.
 

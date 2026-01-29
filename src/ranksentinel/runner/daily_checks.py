@@ -1018,5 +1018,139 @@ This may prevent search engines from discovering your pages."""
         
         if errors_by_customer:
             log_structured(run_id, stage="summary", failed_customer_ids=",".join(str(cid) for cid in errors_by_customer.keys()))
+        
+        # Send daily critical alerts (only if critical findings exist)
+        _send_daily_critical_alerts(conn, settings, run_id)
     finally:
         conn.close()
+
+
+def _send_daily_critical_alerts(conn, settings: Settings, run_id: str) -> None:
+    """Send daily critical alert emails to customers with critical findings.
+    
+    Only sends email if critical findings exist for this run.
+    Uses per-customer isolation - one customer's email failure doesn't affect others.
+    """
+    from ranksentinel.db import fetch_all, fetch_one
+    from ranksentinel.mailgun import MailgunClient, send_and_log
+    from ranksentinel.reporting.email_templates import render_daily_critical_alert
+    from ranksentinel.reporting.report_composer import compose_daily_critical_report
+    from ranksentinel.runner.logging_utils import log_stage, log_structured
+    
+    # Initialize Mailgun client (skip if not configured)
+    try:
+        mailgun_client = MailgunClient(settings)
+    except (ValueError, Exception) as e:
+        log_structured(run_id, stage="email_init", status="skip", reason=f"Mailgun not configured: {e}")
+        return
+    
+    # Get all active customers
+    customers = fetch_all(conn, "SELECT id, name, email FROM customers WHERE status='active'")
+    
+    for customer_row in customers:
+        customer_id = int(customer_row["id"])
+        customer_name = str(customer_row["name"])
+        customer_email = str(customer_row["email"])
+        
+        try:
+            with log_stage(run_id, "daily_email", customer_id=customer_id):
+                # Check if there are any critical findings for this customer from today's run
+                # Use a time window of last 24 hours to catch findings from this run
+                critical_findings = fetch_all(
+                    conn,
+                    "SELECT * FROM findings "
+                    "WHERE customer_id=? AND run_type='daily' AND severity='critical' "
+                    "AND datetime(created_at) >= datetime('now', '-24 hours') "
+                    "ORDER BY created_at DESC",
+                    (customer_id,)
+                )
+                
+                if not critical_findings:
+                    # No critical findings - skip email (low-noise principle)
+                    log_structured(
+                        run_id, customer_id=customer_id, stage="daily_email",
+                        status="skip", reason="no_critical_findings"
+                    )
+                    continue
+                
+                # Compose critical-only report
+                report = compose_daily_critical_report(customer_name, critical_findings)
+                
+                # Extract critical section text and HTML from the report
+                critical_text = _extract_critical_section_text(report)
+                critical_html = _extract_critical_section_html(report)
+                
+                # Render email
+                email = render_daily_critical_alert(customer_name, critical_text, critical_html)
+                
+                # Send and log delivery
+                success = send_and_log(
+                    conn=conn,
+                    client=mailgun_client,
+                    customer_id=customer_id,
+                    run_type="daily",
+                    recipient=customer_email,
+                    subject=email.subject,
+                    text_body=email.text,
+                    html_body=email.html,
+                )
+                
+                if success:
+                    log_structured(
+                        run_id, customer_id=customer_id, stage="daily_email",
+                        status="sent", recipient=customer_email, critical_count=len(critical_findings)
+                    )
+                else:
+                    log_structured(
+                        run_id, customer_id=customer_id, stage="daily_email",
+                        status="failed", recipient=customer_email
+                    )
+        
+        except Exception as e:  # noqa: BLE001
+            # Per-customer isolation: log error and continue to next customer
+            log_structured(
+                run_id, customer_id=customer_id, stage="daily_email",
+                status="error", error=str(e)
+            )
+
+
+def _extract_critical_section_text(report) -> str:
+    """Extract plain text critical findings section from a report."""
+    lines = []
+    lines.append(f"CRITICAL ISSUES ({report.critical_count})")
+    lines.append("-" * 60)
+    lines.append("")
+    
+    for idx, finding in enumerate(report.critical_findings, 1):
+        lines.append(f"{idx}) {finding.title}")
+        lines.append("")
+        if finding.url:
+            lines.append(f"   URL: {finding.url}")
+        lines.append(f"   Detected: {finding.created_at}")
+        lines.append("")
+        lines.append(f"   {finding.details_md}")
+        lines.append("")
+        lines.append(f"   → Recommended Action: {finding.recommendation}")
+        lines.append("")
+    
+    return "\n".join(lines)
+
+
+def _extract_critical_section_html(report) -> str:
+    """Extract HTML critical findings section from a report."""
+    lines = []
+    lines.append("<h2>Critical Issues</h2>")
+    
+    for idx, finding in enumerate(report.critical_findings, 1):
+        lines.append("<div style='background: #fff; border-left: 4px solid #d32f2f; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>")
+        lines.append(f"<h3 style='margin-top: 0; color: #1a1a1a;'>{idx}) {finding.title}</h3>")
+        lines.append("<div style='color: #666; font-size: 0.9em; margin: 10px 0;'>")
+        if finding.url:
+            lines.append(f"<div><strong>URL:</strong> <code>{finding.url}</code></div>")
+        lines.append(f"<div><strong>Detected:</strong> {finding.created_at}</div>")
+        lines.append("</div>")
+        lines.append(f"<div style='margin: 15px 0; line-height: 1.6;'>{finding.details_md}</div>")
+        lines.append(f"<div style='background: #e8f5e9; border-radius: 4px; padding: 12px; margin-top: 15px;'><strong style='color: #2e7d32;'>→ Recommended Action:</strong> {finding.recommendation}</div>")
+        lines.append("</div>")
+    
+    return "\n".join(lines)

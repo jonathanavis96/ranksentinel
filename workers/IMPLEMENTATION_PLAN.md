@@ -41,9 +41,10 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** `sha256sum PROMPT.md | cut -d' ' -f1 | diff -q - .verify/prompt.sha256` passes
   - **Note:** This is informational - PROMPT.md changes are allowed in projects
 
-- [ ] **0-W.5** Manual integration test - Core workflow end-to-end
+- [?] **0-W.5** Manual integration test - Core workflow end-to-end
   - **AC:** Run main workflow end-to-end and verify expected behavior
   - **Note:** Manual validation required per Manual.Integration.1
+  - **If Blocked:** Requires human operator to run end-to-end workflow test and validate behavior. Cannot be automated by Ralph. Human should test daily/weekly runs and mark [x] when satisfied.
 
 ## Phase 0: Bootstrap verification and local run path (atomic)
 
