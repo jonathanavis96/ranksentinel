@@ -162,3 +162,5 @@ Started: 2026-01-28
 | 0-R.5 | 2026-01-29 | Fixed sqlite test inserts in test_sitemap_fetch.py to include required NOT NULL timestamp columns (created_at, updated_at). Updated all three test functions to properly insert customers and targets with timestamps, and fixed cursor.lastrowid access. All tests now pass. | tests/test_sitemap_fetch.py |
 | 0-R.6 | 2026-01-29 | Fixed test_persist_fetch_results_placeholder to initialize schema by importing and calling init_db(conn) before using snapshots table. Test now passes without sqlite3.OperationalError. | tests/test_page_fetcher.py |
 | 2026-01-29T17:34:20Z | 0-R.7 | Aligned robots fetch tests with sitemap fetch order; added missing sitemap mock response | test_robots_fetch.py | All 5 tests passing |
+
+| 0-R.8 | 2026-01-29 | Fix customer status gating tests | Fixed missing `email` column in customers query, added `run_id` to daily snapshot INSERT, mocked HTTP responses in weekly test | tests/test_customer_status_gating.py | 002ad6c |

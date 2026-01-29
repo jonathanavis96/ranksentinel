@@ -159,7 +159,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
   - **AC:** `./.venv/bin/pytest -q tests/test_robots_fetch.py` passes.
 
-- [ ] **0-R.8** Ensure customer status gating tests create data consistent with schema + runner behavior
+- [x] **0-R.8** Ensure customer status gating tests create data consistent with schema + runner behavior
   - **Why:** `tests/test_customer_status_gating.py` is currently failing in full suite.
   - **Do:** Ensure test DB setup inserts required `created_at/updated_at` fields and any required settings rows so the runner can proceed without error.
   - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
