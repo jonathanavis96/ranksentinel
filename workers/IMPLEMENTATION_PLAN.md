@@ -276,7 +276,7 @@ Brain skills (open those relevant to the current item):
     - Honeypot present.
   - **If Blocked:** Remove key pages and keep only email+domain.
 
-- [ ] **6.3** Wire website forms to API (`/public/leads`, `/public/start-monitoring`)
+- [x] **6.3** Wire website forms to API (`/public/leads`, `/public/start-monitoring`)
   - **Goal:** End-to-end conversions.
   - **AC:**
     - Success state is clean.

@@ -159,32 +159,50 @@ export default function LeadCaptureForm({ className = '' }: LeadCaptureFormProps
     setErrors({});
 
     try {
-      // TODO: Wire to API endpoint (Task 6.3)
-      console.log('Form submission:', {
-        email: formData.email,
-        domain: formData.domain,
-        keyPages: formData.keyPages,
-        useSitemap: formData.useSitemap,
-      });
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Success - would redirect or show success message
-      alert('Thank you! We\'ll start monitoring your site shortly.');
+      // Get API base URL from environment or default to localhost
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       
-      // Reset form on success
-      setFormData({
-        email: '',
-        domain: '',
-        keyPages: '',
-        useSitemap: true,
-        honeypot: '',
+      // Call the public API endpoint
+      const response = await fetch(`${apiBaseUrl}/public/start-monitoring`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          domain: formData.domain.trim(),
+          key_pages: formData.keyPages.trim() || null,
+          use_sitemap: formData.useSitemap,
+        }),
       });
-      setTouched({});
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle API error
+        throw new Error(data.detail || 'Failed to start monitoring');
+      }
+
+      // Success state
+      if (data.success) {
+        alert(data.message || 'Thank you! We\'ll start monitoring your site shortly.');
+        
+        // Reset form on success
+        setFormData({
+          email: '',
+          domain: '',
+          keyPages: '',
+          useSitemap: true,
+          honeypot: '',
+        });
+        setTouched({});
+      } else {
+        throw new Error(data.message || 'Something went wrong');
+      }
     } catch (error) {
+      console.error('Form submission error:', error);
       setErrors({
-        submit: 'Something went wrong. Please try again.',
+        submit: error instanceof Error ? error.message : 'Something went wrong. Please try again.',
       });
     } finally {
       setIsSubmitting(false);

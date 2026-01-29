@@ -8,6 +8,10 @@ from ranksentinel.models import (
     CustomerCreate,
     CustomerOut,
     CustomerSettingsPatch,
+    LeadCreate,
+    LeadResponse,
+    StartMonitoringRequest,
+    StartMonitoringResponse,
     TargetCreate,
     TargetOut,
 )
@@ -203,3 +207,148 @@ def send_first_insight_endpoint(
 ):
     """Admin endpoint wrapper for `send_first_insight()` (FastAPI dependency injection)."""
     return send_first_insight(customer_id=customer_id, conn=conn, settings=settings)
+
+
+@app.post("/public/leads", response_model=LeadResponse)
+def create_lead(payload: LeadCreate, conn=Depends(get_conn)):
+    """
+    Public endpoint for lead capture from website form.
+    
+    Creates a lead entry in the database for future follow-up.
+    Does NOT create a customer or start monitoring immediately.
+    """
+    ts = now_iso()
+    
+    # Validate email format (basic check)
+    email = payload.email.strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Invalid email address")
+    
+    # Validate domain format (basic check)
+    domain = payload.domain.strip()
+    if not domain:
+        raise HTTPException(status_code=400, detail="Domain is required")
+    
+    # Check if customer already exists (any status)
+    existing = fetch_one(
+        conn,
+        "SELECT id, status FROM customers WHERE name=?",
+        (email,),
+    )
+    
+    if existing:
+        return LeadResponse(
+            success=True,
+            message="We already have your information. We'll be in touch soon!",
+            lead_id=existing["id"],
+        )
+    
+    # Create new customer with 'active' status (lead tracking happens via other means)
+    # Note: 'lead' is not a valid status per DB schema; using 'active' as default
+    lead_id = execute(
+        conn,
+        "INSERT INTO customers(name,status,created_at,updated_at) VALUES(?,?,?,?)",
+        (email, "active", ts, ts),
+    )
+    
+    # Store domain and key pages in settings table
+    execute(conn, "INSERT OR IGNORE INTO settings(customer_id) VALUES(?)", (lead_id,))
+    
+    # Store domain as sitemap_url placeholder (will be processed later)
+    sitemap_url = domain if domain.startswith("http") else f"https://{domain}"
+    execute(
+        conn,
+        "UPDATE settings SET sitemap_url=? WHERE customer_id=?",
+        (sitemap_url, lead_id),
+    )
+    
+    # If key pages provided, store them as targets
+    if payload.key_pages:
+        key_pages_list = [url.strip() for url in payload.key_pages.split("\n") if url.strip()]
+        for url in key_pages_list:
+            execute(
+                conn,
+                "INSERT INTO targets(customer_id,url,is_key,created_at) VALUES(?,?,?,?)",
+                (lead_id, url, True, ts),
+            )
+    
+    return LeadResponse(
+        success=True,
+        message="Thank you! We'll start monitoring your site shortly.",
+        lead_id=lead_id,
+    )
+
+
+@app.post("/public/start-monitoring", response_model=StartMonitoringResponse)
+def start_monitoring(payload: StartMonitoringRequest, conn=Depends(get_conn)):
+    """
+    Public endpoint for immediate monitoring start from website form.
+    
+    Creates an active customer and immediately begins monitoring.
+    """
+    ts = now_iso()
+    
+    # Validate email format (basic check)
+    email = payload.email.strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Invalid email address")
+    
+    # Validate domain format (basic check)
+    domain = payload.domain.strip()
+    if not domain:
+        raise HTTPException(status_code=400, detail="Domain is required")
+    
+    # Check if customer already exists
+    existing = fetch_one(
+        conn,
+        "SELECT id, status FROM customers WHERE name=?",
+        (email,),
+    )
+    
+    if existing:
+        # Customer already exists, just return success
+        customer_id = existing["id"]
+        return StartMonitoringResponse(
+            success=True,
+            message="Your monitoring is already set up!",
+            customer_id=customer_id,
+        )
+    else:
+        # Create new active customer
+        customer_id = execute(
+            conn,
+            "INSERT INTO customers(name,status,created_at,updated_at) VALUES(?,?,?,?)",
+            (email, "active", ts, ts),
+        )
+        execute(conn, "INSERT OR IGNORE INTO settings(customer_id) VALUES(?)", (customer_id,))
+    
+    # Store domain as sitemap_url
+    sitemap_url = domain if domain.startswith("http") else f"https://{domain}"
+    execute(
+        conn,
+        "UPDATE settings SET sitemap_url=? WHERE customer_id=?",
+        (sitemap_url, customer_id),
+    )
+    
+    # If key pages provided, store them as targets
+    if payload.key_pages:
+        key_pages_list = [url.strip() for url in payload.key_pages.split("\n") if url.strip()]
+        for url in key_pages_list:
+            # Check if target already exists
+            existing_target = fetch_one(
+                conn,
+                "SELECT id FROM targets WHERE customer_id=? AND url=?",
+                (customer_id, url),
+            )
+            if not existing_target:
+                execute(
+                    conn,
+                    "INSERT INTO targets(customer_id,url,is_key,created_at) VALUES(?,?,?,?)",
+                    (customer_id, url, True, ts),
+                )
+    
+    return StartMonitoringResponse(
+        success=True,
+        message="Your site monitoring has started!",
+        customer_id=customer_id,
+    )

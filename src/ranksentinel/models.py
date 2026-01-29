@@ -46,3 +46,37 @@ class RunCoverageOut(BaseModel):
     http_404_count: int | None
     broken_link_count: int | None
     created_at: str
+
+
+class LeadCreate(BaseModel):
+    """Model for lead capture from website form."""
+
+    email: str = Field(min_length=1, max_length=200)
+    domain: str = Field(min_length=1, max_length=500)
+    key_pages: str | None = Field(default=None, max_length=10000)
+    use_sitemap: bool = True
+
+
+class LeadResponse(BaseModel):
+    """Response for lead creation."""
+
+    success: bool
+    message: str
+    lead_id: int | None = None
+
+
+class StartMonitoringRequest(BaseModel):
+    """Model for start monitoring request from website form."""
+
+    email: str = Field(min_length=1, max_length=200)
+    domain: str = Field(min_length=1, max_length=500)
+    key_pages: str | None = Field(default=None, max_length=10000)
+    use_sitemap: bool = True
+
+
+class StartMonitoringResponse(BaseModel):
+    """Response for start monitoring request."""
+
+    success: bool
+    message: str
+    customer_id: int | None = None

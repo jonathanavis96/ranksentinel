@@ -384,7 +384,7 @@ For validation errors with multiple fields:
 
 To prevent trial abuse via email variants (e.g., `user@gmail.com`, `u.s.e.r@gmail.com`, `user+tag@gmail.com`):
 
-1. **Lowercase and trim:** `  User@Example.COM  ` → `user@example.com`
+1. **Lowercase and trim:** `User@Example.COM` → `user@example.com`
 2. **Gmail/Googlemail specific:**
    - Remove all dots from local part: `u.s.e.r@gmail.com` → `user@gmail.com`
    - Strip `+tag` suffix: `user+tag@gmail.com` → `user@gmail.com`

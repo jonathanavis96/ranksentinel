@@ -53,6 +53,7 @@ tests/test_logging.py
 tests/test_normalization.py
 tests/test_page_fetcher.py
 tests/test_payment_integration_hook.py
+tests/test_public_endpoints.py
 tests/test_recommendations.py
 tests/test_report_composer.py
 tests/test_robots_diff.py
