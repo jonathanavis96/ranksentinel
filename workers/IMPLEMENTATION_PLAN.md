@@ -34,6 +34,9 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 - [x] **0-W.2** Fix MD022/MD032/MD031 in workers/docs/MANUAL_VALIDATION_0.10.md
   - **AC:** `markdownlint workers/docs/MANUAL_VALIDATION_0.10.md` passes (no MD022, MD032, or MD031 errors)
 
+- [x] **0-W.3** Fix MD032 in workers/ralph/THUNK.md
+  - **AC:** `markdownlint workers/ralph/THUNK.md` passes (no MD032 errors)
+
 ## Phase 0: Bootstrap verification and local run path (atomic)
 
 > Phase 0 is about making the repo runnable end-to-end locally with minimal behavior.

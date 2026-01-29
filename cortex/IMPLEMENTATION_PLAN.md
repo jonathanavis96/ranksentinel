@@ -204,7 +204,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:**
     - run weekly or daily twice with changed sitemap content and confirm correct delta + severity
 
-- [ ] **1.8** Key-page HTML fetch + normalization snapshot
+- [x] **1.8** Key-page HTML fetch + normalization snapshot
   - **Goal:** fetch key targets and persist normalized text/HTML snapshot for tag extraction.
   - **AC:** for targets where `is_key=true`, runner fetches HTML with retries/backoff
   - **AC:** stores sha of normalized content (using existing `normalize_html_to_text` where appropriate)
@@ -216,7 +216,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** title change produces a finding with a before/after summary
   - **Validate:** run daily against a page you can safely control (or a local fixture) with a controlled title change and confirm a title-change finding is created
 
-- [ ] **1.10** Key-page tag extraction: meta robots + canonical
+- [x] **1.10** Key-page tag extraction: meta robots + canonical
   - **Goal:** detect indexability/canonicalization regressions.
   - **AC:** extract and persist:
     - meta robots (presence + content)
@@ -228,7 +228,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Phase 2: Weekly crawl sample and link integrity (atomic)
 
-- [ ] **2.0** Pytest harness + fixtures for parsing/diff/noise logic
+- [x] **2.0** Pytest harness + fixtures for parsing/diff/noise logic
   - **Goal:** prevent regressions in SEO signal extraction/normalization.
   - **AC:** `pytest -q` runs in CI/local and covers at least ~10 tests
   - **AC:** fixtures exist for:
@@ -238,14 +238,14 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - PSI JSON (minimal representative samples)
   - **Validate:** `pytest -q`
 
-- [ ] **2.1** Robots rules parser + crawl gate
+- [x] **2.1** Robots rules parser + crawl gate
   - **Goal:** weekly crawl sampling must not fetch disallowed URLs.
   - **AC:** robots is fetched once per customer per run and parsed into allow/deny rules
   - **AC:** sampled URLs are filtered through robots rules before fetch
   - **AC:** if robots fetch fails: default behavior is explicitly chosen and documented (skip crawl OR restrict crawl to explicitly-allowed key URLs)
   - **Validate:** fixture robots rules block `/private`; confirm those URLs are skipped by the sampler/fetcher
 
-- [ ] **2.2** Sitemap parsing utility: enumerate canonical URL list
+- [x] **2.2** Sitemap parsing utility: enumerate canonical URL list
   - **Goal:** share sitemap parsing for sampling + later signals.
   - **AC:** code exposes `list_sitemap_urls(sitemap_xml) -> list[str]` (or equivalent)
   - **AC:** supports sitemap index files

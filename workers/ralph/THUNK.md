@@ -80,6 +80,7 @@ Started: 2026-01-28
 **Completed:** ✅
 
 **What was done:**
+
 - Verified that `check_noindex_regression` and `check_canonical_drift` functions already exist in `src/ranksentinel/runner/daily_checks.py`
 - Confirmed these checks are already integrated into the daily runner workflow at lines 786 and 819
 - Added comprehensive test coverage in `tests/test_normalization.py`:
@@ -88,12 +89,14 @@ Started: 2026-01-28
 - All tests pass successfully
 
 **Acceptance Criteria Met:**
+
 - ✅ Extract and persist meta robots (presence + content) and canonical href
 - ✅ Severity rules: newly introduced `noindex` => critical (line 99 in daily_checks.py)
 - ✅ Canonical changes => warning/critical based on risk (lines 127-145 in daily_checks.py)
 - ✅ Validation: tests added and passing
 
 **Files Modified:**
+
 - `tests/test_normalization.py`: Added 8 new tests for meta robots and canonical extraction
 
 | 2.0 | Created central conftest.py with shared pytest fixtures: db_conn, test_db, robots (5 variants), sitemap (4 variants), HTML (5 variants), PSI (4 variants). Added test_fixtures.py to validate fixtures. 104 tests collected, 96 passed. | 2026-01-29 |
