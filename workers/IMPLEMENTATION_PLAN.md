@@ -297,7 +297,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:** run daily/weekly with a real key and confirm rows stored
   - **If Blocked:** create `docs/SKILL_REQUEST_PSI.md` with API quirks + parsing examples
 
-- [ ] **3.2** PSI metric extraction (LCP/CLS/INP/TTFB/perf score)
+- [x] **3.2** PSI metric extraction (LCP/CLS/INP/TTFB/perf score)
   - **Goal:** extract the handful of SEO-relevant metrics from PSI JSON.
   - **AC:** store extracted metrics in structured form (columns or JSON)
   - **AC:** missing metrics handled gracefully (no crash)
