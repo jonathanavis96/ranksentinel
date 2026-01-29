@@ -109,7 +109,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 2: Frontend scaffold (Next.js static export)
 
-- [ ] **2.1** Create Next.js App Router site under `website/` configured for static export
+- [x] **2.1** Create Next.js App Router site under `website/` configured for static export
   - **Goal:** Establish the marketing site codebase with reproducible builds.
   - **References:** `brain/skills/domains/frontend/react-patterns.md`.
   - **AC:**
