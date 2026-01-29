@@ -219,6 +219,13 @@ instructions="Run main workflow end-to-end and verify expected behavior"
 # [REPLACE: Add checks specific to your project's domain]
 # ============================================================
 
+[Project.Knowledge.BlockedTasks]
+mode=auto
+gate=block
+desc="Blocked tasks must have SKILL_REQUEST artifacts"
+cmd=bash -c 'BLOCKED=$(grep -c "^- \\[[?]\\]" workers/IMPLEMENTATION_PLAN.md 2>/dev/null || echo 0); SKILL_DOCS=$(ls docs/SKILL_REQUEST_*.md 2>/dev/null | wc -l); if [[ $BLOCKED -gt 0 && $SKILL_DOCS -eq 0 ]]; then echo "FAIL: Found $BLOCKED blocked task(s) but no docs/SKILL_REQUEST_*.md files"; exit 1; else echo "pass"; fi'
+expect_stdout=pass
+
 # Example for a web project:
 # [Project.Build.1]
 # mode=auto

@@ -35,6 +35,40 @@ if [[ -f "$ROOT/.env" ]]; then
   set +a
 fi
 
+# -----------------------------------------------------------------------------
+# One-time Brain skills sync (workspace portability)
+# -----------------------------------------------------------------------------
+# Why: brain/skills may be a symlink to a machine-local path; we vendor a snapshot
+# into the workspace so the agent can read skills reliably.
+# Runs only once per workspace (not per iteration).
+BRAIN_LOCAL_PATH="${BRAIN_LOCAL_PATH:-/home/grafe/code/brain}"
+BRAIN_SKILLS_SYNC_MARKER="$ROOT/.ralph_brain_skills_synced"
+
+sync_brain_skills_once() {
+  if [[ -f "$BRAIN_SKILLS_SYNC_MARKER" ]]; then
+    return 0
+  fi
+
+  # If skills already exist as real files, treat as synced.
+  if [[ -f "$ROOT/brain/skills/SUMMARY.md" && ! -L "$ROOT/brain/skills" ]]; then
+    touch "$BRAIN_SKILLS_SYNC_MARKER"
+    return 0
+  fi
+
+  # Prefer local Brain checkout if present; fallback to repo mode.
+  if [[ -d "$BRAIN_LOCAL_PATH/skills" ]]; then
+    echo "[ralph] Syncing Brain skills from local: $BRAIN_LOCAL_PATH/skills"
+    bash "$ROOT/workers/ralph/sync_brain_skills.sh" --from-local "$BRAIN_LOCAL_PATH"
+  else
+    echo "[ralph] Local Brain skills not found at $BRAIN_LOCAL_PATH/skills; syncing from repo"
+    bash "$ROOT/workers/ralph/sync_brain_skills.sh" --from-repo
+  fi
+
+  touch "$BRAIN_SKILLS_SYNC_MARKER"
+}
+
+sync_brain_skills_once
+
 # Source shared utilities (includes RollFlow tracking functions)
 # shellcheck source=../shared/common.sh
 source "$(dirname "$RALPH")/shared/common.sh"

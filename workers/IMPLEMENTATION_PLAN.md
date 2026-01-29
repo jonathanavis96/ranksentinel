@@ -79,7 +79,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** For any future task marked `[?]`, the task contains an "If Blocked:" line naming a `docs/SKILL_REQUEST_*.md` artifact.
   - **Note:** Currently no `[?]` tasks exist in plan. Convention is documented in AGENTS.md and will be enforced for future blocked tasks.
 
-- [ ] **0-K.4** Verifier enforcement: fail if blocked tasks exist without SKILL_REQUEST artifacts
+- [x] **0-K.4** Verifier enforcement: fail if blocked tasks exist without SKILL_REQUEST artifacts
   - **Goal:** Mechanical enforcement.
   - **Files (protected):** `workers/ralph/verifier.sh` and/or `rules/AC.rules` plus corresponding hash baselines (`workers/ralph/.verify/verifier.sha256`, `.verify/ac.sha256`).
   - **Implementation guidance (MVP):**

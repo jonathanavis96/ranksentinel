@@ -156,3 +156,4 @@ Started: 2026-01-28
 
 | 2026-01-29 | 0-K.2 | Updated PROMPT.md to require Brain skills consultation before implementation and SKILL_REQUEST doc creation when blocked. Added mandatory section with clear rules and example notation. |
 | 2026-01-29 | 0-K.3 | Documented plan convention: all future [?] blocked tasks must include "If Blocked: docs/SKILL_REQUEST_<topic>.md" line. No current blocked tasks exist. Convention enforced in AGENTS.md. |
+| 2026-01-29 | 0-K.4 | Added verifier enforcement rule Project.Knowledge.BlockedTasks in AC.rules to fail if blocked tasks exist without SKILL_REQUEST artifacts. Updated ac.sha256 hash baseline. | AC: Repo state with [?] task and no docs/SKILL_REQUEST_*.md causes verifier to fail |

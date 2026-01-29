@@ -1,9 +1,14 @@
 Ralph Verifier Report
-Time: 2026-01-29 16:46:17
-Git:  c8da4d7
+Time: 2026-01-29 16:48:54
+Git:  9c701c6
 AC:   /home/grafe/code/ranksentinel/workers/ralph/rules/AC.rules
 Approvals: /home/grafe/code/ranksentinel/workers/ralph/rules/MANUAL_APPROVALS.rules
 ------------------------------------------------------------
+[2026-01-29 16:48:54] FAIL: AC hash mismatch (rules/AC.rules modified).
+Expected: f83b4b46fb053e7b2db771d9e8a3079e0828ce107cbe6a6f0bf75926d1044375
+Actual:   24973bbc1440f1bb3549ed79177e356c2b52df5bdee24e0cb988ec2f339f936a
+Fix: If intentional, update:
+  sha256sum "/home/grafe/code/ranksentinel/workers/ralph/rules/AC.rules" > "/home/grafe/code/ranksentinel/workers/ralph/.verify/ac.sha256"
 [PASS] Structure.Dirs.1
   desc: src/ directory exists at project root (NOT ralph/src/)
   cmd:  test -d ../src && echo yes
@@ -102,6 +107,11 @@ Approvals: /home/grafe/code/ranksentinel/workers/ralph/rules/MANUAL_APPROVALS.ru
 [WARN] Manual.Integration.1 (manual review)
   desc: Core integration tested manually
   instructions: Run main workflow end-to-end and verify expected behavior
+[PASS] Project.Knowledge.BlockedTasks
+  desc: Blocked tasks must have SKILL_REQUEST artifacts
+  cmd:  bash -c 'BLOCKED=$(grep -c "^- \\[[?]\\]" workers/IMPLEMENTATION_PLAN.md 2>/dev/null || echo 0); SKILL_DOCS=$(ls docs/SKILL_REQUEST_*.md 2>/dev/null | wc -l); if [[ $BLOCKED -gt 0 && $SKILL_DOCS -eq 0 ]]; then echo "FAIL: Found $BLOCKED blocked task(s) but no docs/SKILL_REQUEST_*.md files"; exit 1; else echo "pass"; fi'
+  exit: 0
+  stdout: pass
 [PASS] Lint.Markdownlint.AGENTS
   desc: AGENTS.md passes markdownlint (if installed)
   cmd:  bash -c 'command -v markdownlint &>/dev/null && markdownlint AGENTS.md 2>&1 | head -10 || echo "ok (markdownlint not installed)"'
@@ -134,9 +144,9 @@ NEURONS.md:388:81 error MD013/line-length Line length [Expected: 80; Actual: 130
 THOUGHTS.md:65:81 error MD013/line-length Line length [Expected: 80; Actual: 95]
 ------------------------------------------------------------
 SUMMARY
-  PASS: 22
+  PASS: 23
   FAIL: 0
   WARN: 1 (manual_warn=1)
   SKIP: 0
   Manual gate=block failures: 0
-  Hash guard: OK
+  Hash guard: FAIL
