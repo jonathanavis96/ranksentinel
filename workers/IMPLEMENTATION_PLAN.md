@@ -153,7 +153,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
   - **AC:** `./.venv/bin/pytest -q tests/test_page_fetcher.py::test_persist_fetch_results_placeholder` passes.
 
-- [ ] **0-R.7** Align robots fetch tests with current artifact storage semantics
+- [x] **0-R.7** Align robots fetch tests with current artifact storage semantics
   - **Why:** `tests/test_robots_fetch.py` has failing assertions vs actual implementation (subject/raw_content expectations).
   - **Do:** Inspect current daily robots persistence (kind/subject normalization, newline normalization, etc.) and update tests to assert the real contract (ideally via `get_latest_artifact()` rather than raw SQL).
   - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
