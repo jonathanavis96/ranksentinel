@@ -264,7 +264,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:** run weekly twice in same week => same sample; next week => rotated portion changes
   - **Note:** Task was actually 2.2 (sitemap parser for sampling), which is complete. `list_sitemap_urls()` exists with full test coverage (11 tests pass), supports urlset and sitemap index formats.
 
-- [ ] **2.4** Weekly fetcher: polite crawl with retries + timeouts
+- [x] **2.4** Weekly fetcher: polite crawl with retries + timeouts
   - **Goal:** fetch sampled pages safely (no stealth, respect robots intent).
   - **AC:** requests have timeouts, retry/backoff (3 attempts), and a sane UA
   - **AC:** per-run max pages is enforced
