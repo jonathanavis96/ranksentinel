@@ -129,7 +129,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** daily/weekly scripts emit a single end-of-run `SUMMARY` line for cron readability
   - **Validate:** run daily and confirm logs contain `run_id=` and end with a `SUMMARY` line
 
-- [ ] **0.12** Customer status gating everywhere
+- [x] **0.12** Customer status gating everywhere
   - **Goal:** skip non-active customers in runners (e.g., `past_due`, `canceled`).
   - **AC:** daily/weekly only process customers with `status='active'`
   - **Validate:** flip a customer status and confirm it is skipped (no new findings for that customer)
