@@ -134,7 +134,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - Add index for lookup: `(customer_id, run_type, fetched_at DESC)` and optionally `(customer_id, run_id)`.
   - **AC:** Schema supports storing a row even when the fetch failed, and supports scoping a report to a specific run_id.
 
-- [ ] **0-R.2b** Implement DB migration-on-startup (no manual migrations)
+- [x] **0-R.2b** Implement DB migration-on-startup (no manual migrations)
   - **Goal:** Ensure existing DB files get new tables/columns automatically when the runner starts.
   - **Files:** `src/ranksentinel/db.py`
   - **Implementation guidance:**

@@ -166,6 +166,51 @@ def connect(settings: Settings) -> sqlite3.Connection:
 
 
 def init_db(conn: sqlite3.Connection) -> None:
+    """Initialize database schema and apply migrations.
+    
+    This function is idempotent and safe to run on both new and existing databases.
+    It will:
+    - Apply column-level migrations to existing tables first
+    - Create all tables if they don't exist (via SCHEMA_SQL)
+    
+    Args:
+        conn: Database connection
+    """
+    cursor = conn.cursor()
+    
+    # Check if tables exist before running SCHEMA_SQL
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='snapshots'")
+    snapshots_exists = cursor.fetchone() is not None
+    
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='findings'")
+    findings_exists = cursor.fetchone() is not None
+    
+    # Apply column-level migrations BEFORE running SCHEMA_SQL
+    # This allows existing tables to be updated before the schema tries to enforce constraints
+    
+    if snapshots_exists:
+        # Migration: Add run_id, error_type, error columns to snapshots if missing
+        cursor.execute("PRAGMA table_info(snapshots)")
+        snapshots_columns = {row[1] for row in cursor.fetchall()}
+        
+        if "run_id" not in snapshots_columns:
+            cursor.execute("ALTER TABLE snapshots ADD COLUMN run_id TEXT NOT NULL DEFAULT ''")
+        if "error_type" not in snapshots_columns:
+            cursor.execute("ALTER TABLE snapshots ADD COLUMN error_type TEXT")
+        if "error" not in snapshots_columns:
+            cursor.execute("ALTER TABLE snapshots ADD COLUMN error TEXT")
+    
+    if findings_exists:
+        # Migration: Add run_id column to findings if missing
+        cursor.execute("PRAGMA table_info(findings)")
+        findings_columns = {row[1] for row in cursor.fetchall()}
+        
+        if "run_id" not in findings_columns:
+            cursor.execute("ALTER TABLE findings ADD COLUMN run_id TEXT NOT NULL DEFAULT ''")
+    
+    conn.commit()
+    
+    # Now create tables that don't exist (CREATE TABLE IF NOT EXISTS handles this)
     conn.executescript(SCHEMA_SQL)
     conn.commit()
 
