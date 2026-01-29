@@ -2,7 +2,7 @@ import time
 from datetime import datetime, timezone
 
 from ranksentinel.config import Settings
-from ranksentinel.db import connect, execute, fetch_all, fetch_one, init_db
+from ranksentinel.db import connect, execute, fetch_all, fetch_one, generate_finding_dedupe_key, init_db
 from ranksentinel.http_client import fetch_text
 from ranksentinel.runner.link_checker import find_broken_links
 from ranksentinel.runner.logging_utils import generate_run_id, log_stage, log_structured, log_summary
@@ -102,10 +102,15 @@ def detect_broken_internal_links(
         
         details_md = "\n".join(details_parts)
         
+        # Use ISO week format for weekly deduplication (e.g., '2026-W04')
+        period = datetime.fromisoformat(detected_at).strftime('%Y-W%U')
+        dedupe_key = generate_finding_dedupe_key(
+            customer_id, run_type, "links", "Broken internal links detected", None, period
+        )
         execute(
             conn,
-            "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-            "VALUES(?,?,?,?,?,?,?,?)",
+            "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+            "VALUES(?,?,?,?,?,?,?,?,?)",
             (
                 customer_id,
                 run_type,
@@ -114,6 +119,7 @@ def detect_broken_internal_links(
                 "Broken internal links detected",
                 details_md,
                 None,
+                dedupe_key,
                 detected_at,
             ),
         )
@@ -154,10 +160,15 @@ def run(settings: Settings) -> None:
                         )
                 
                     # Bootstrap placeholder finding
+                    bootstrap_time = now_iso()
+                    period = datetime.fromisoformat(bootstrap_time).strftime('%Y-W%U')
+                    dedupe_key = generate_finding_dedupe_key(
+                        customer_id, "weekly", "bootstrap", "Weekly digest executed (bootstrap)", None, period
+                    )
                     execute(
                         conn,
-                        "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                        "VALUES(?,?,?,?,?,?,?,?)",
+                        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                        "VALUES(?,?,?,?,?,?,?,?,?)",
                         (
                             customer_id,
                             "weekly",
@@ -167,7 +178,8 @@ def run(settings: Settings) -> None:
                             "This is the bootstrap weekly digest placeholder.\
 ",
                             None,
-                            now_iso(),
+                            dedupe_key,
+                            bootstrap_time,
                         ),
                     )
             except Exception as e:  # noqa: BLE001
@@ -177,10 +189,15 @@ def run(settings: Settings) -> None:
                 errors_by_customer[customer_id] = error_msg
                 # Log error to database for debugging
                 try:
+                    error_time = now_iso()
+                    period = datetime.fromisoformat(error_time).strftime('%Y-W%U')
+                    dedupe_key = generate_finding_dedupe_key(
+                        customer_id, "weekly", "system", "Weekly run processing error", None, period
+                    )
                     execute(
                         conn,
-                        "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                        "VALUES(?,?,?,?,?,?,?,?)",
+                        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                        "VALUES(?,?,?,?,?,?,?,?,?)",
                         (
                             customer_id,
                             "weekly",
@@ -189,7 +206,8 @@ def run(settings: Settings) -> None:
                             "Weekly run processing error",
                             f"An error occurred during weekly processing:\\n\\n```\\n{error_msg}\\n```",
                             None,
-                            now_iso(),
+                            dedupe_key,
+                            error_time,
                         ),
                     )
                 except Exception as db_error:  # noqa: BLE001

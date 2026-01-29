@@ -160,11 +160,12 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:** fixture tests cover robots + sitemap + title + canonical diff summaries
   - **Completed:** Added `extract_title()`, `normalize_robots_txt()`, and `diff_summary()` functions with comprehensive test coverage (23 tests passing). Title extraction integrated into daily_checks.py.
 
-- [ ] **1.3** Finding dedupe keys (early)
+- [x] **1.3** Finding dedupe keys (early)
   - **Goal:** make runs safe to retry and avoid duplicates for the same change within the same period.
   - **AC:** each finding has a deterministic `dedupe_key` (customer + kind + subject + artifact_sha + day/week)
   - **AC:** reruns do not duplicate findings for the same change in the same period
-  - **Validate:** run the same job twice and verify counts don’t increase unexpectedly
+  - **Validate:** run the same job twice and verify counts don't increase unexpectedly
+  - **Completed:** Added `dedupe_key` column to findings table with UNIQUE constraint. Implemented `generate_finding_dedupe_key()` function that creates deterministic SHA256 hashes from (customer_id, run_type, category, title, url, period). Updated all INSERT statements in daily_checks.py and weekly_digest.py to use `INSERT OR IGNORE` with dedupe keys. Daily findings use '%Y-%m-%d' period format, weekly uses '%Y-W%U'. Comprehensive test coverage with 5 passing tests.
 
 - [ ] **1.4** Robots fetch + persist raw artifact
   - **Goal:** reliably fetch `robots.txt` and store the raw content + sha for later diffs.

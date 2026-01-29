@@ -5,7 +5,16 @@ from datetime import datetime, timezone
 from typing import Any
 
 from ranksentinel.config import Settings
-from ranksentinel.db import connect, execute, fetch_all, fetch_one, get_latest_artifact, init_db, store_artifact
+from ranksentinel.db import (
+    connect,
+    execute,
+    fetch_all,
+    fetch_one,
+    generate_finding_dedupe_key,
+    get_latest_artifact,
+    init_db,
+    store_artifact,
+)
 from ranksentinel.http_client import fetch_text
 from ranksentinel.runner.logging_utils import generate_run_id, log_stage, log_structured, log_summary
 from ranksentinel.runner.normalization import (
@@ -450,10 +459,14 @@ def run(settings: Settings) -> None:
                             )
                             if noindex_result:
                                 severity, details = noindex_result
+                                period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                dedupe_key = generate_finding_dedupe_key(
+                                    customer_id, "daily", "indexability", "Key page noindex detected", url, period
+                                )
                                 execute(
                                     conn,
-                                    "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                                    "VALUES(?,?,?,?,?,?,?,?)",
+                                    "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                    "VALUES(?,?,?,?,?,?,?,?,?)",
                                     (
                                         customer_id,
                                         "daily",
@@ -462,6 +475,7 @@ def run(settings: Settings) -> None:
                                         "Key page noindex detected",
                                         details,
                                         url,
+                                        dedupe_key,
                                         fetched_at,
                                     ),
                                 )
@@ -476,10 +490,14 @@ def run(settings: Settings) -> None:
                             canonical_result = check_canonical_drift(conn, customer_id, url, data["canonical"])
                             if canonical_result:
                                 severity, details = canonical_result
+                                period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                dedupe_key = generate_finding_dedupe_key(
+                                    customer_id, "daily", "indexability", "Canonical URL changed", url, period
+                                )
                                 execute(
                                     conn,
-                                    "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                                    "VALUES(?,?,?,?,?,?,?,?)",
+                                    "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                    "VALUES(?,?,?,?,?,?,?,?,?)",
                                     (
                                         customer_id,
                                         "daily",
@@ -488,6 +506,7 @@ def run(settings: Settings) -> None:
                                         "Canonical URL changed",
                                         details,
                                         url,
+                                        dedupe_key,
                                         fetched_at,
                                     ),
                                 )
@@ -502,10 +521,14 @@ def run(settings: Settings) -> None:
                             title_result = check_title_change(conn, customer_id, url, data["title"])
                             if title_result:
                                 severity, details = title_result
+                                period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                dedupe_key = generate_finding_dedupe_key(
+                                    customer_id, "daily", "content", "Page title changed", url, period
+                                )
                                 execute(
                                     conn,
-                                    "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                                    "VALUES(?,?,?,?,?,?,?,?)",
+                                    "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                    "VALUES(?,?,?,?,?,?,?,?,?)",
                                     (
                                         customer_id,
                                         "daily",
@@ -514,6 +537,7 @@ def run(settings: Settings) -> None:
                                         "Page title changed",
                                         details,
                                         url,
+                                        dedupe_key,
                                         fetched_at,
                                     ),
                                 )
@@ -543,10 +567,14 @@ def run(settings: Settings) -> None:
                                     )
 
                                     # Create finding
+                                    period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                    dedupe_key = generate_finding_dedupe_key(
+                                        customer_id, "daily", "performance", title, url, period
+                                    )
                                     execute(
                                         conn,
-                                        "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                                        "VALUES(?,?,?,?,?,?,?,?)",
+                                        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                        "VALUES(?,?,?,?,?,?,?,?,?)",
                                         (
                                             customer_id,
                                             "daily",
@@ -555,6 +583,7 @@ def run(settings: Settings) -> None:
                                             title,
                                             details,
                                             url,
+                                            dedupe_key,
                                             fetched_at,
                                         ),
                                     )
@@ -626,10 +655,15 @@ def run(settings: Settings) -> None:
                 errors_by_customer[customer_id] = error_msg
                 # Log error to database for debugging
                 try:
+                    error_time = now_iso()
+                    period = datetime.fromisoformat(error_time).strftime('%Y-%m-%d')
+                    dedupe_key = generate_finding_dedupe_key(
+                        customer_id, "daily", "system", "Daily run processing error", None, period
+                    )
                     execute(
                         conn,
-                        "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                        "VALUES(?,?,?,?,?,?,?,?)",
+                        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                        "VALUES(?,?,?,?,?,?,?,?,?)",
                         (
                             customer_id,
                             "daily",
@@ -638,7 +672,8 @@ def run(settings: Settings) -> None:
                             "Daily run processing error",
                             f"An error occurred during daily processing:\n\n```\n{error_msg}\n```",
                             None,
-                            now_iso(),
+                            dedupe_key,
+                            error_time,
                         ),
                     )
                 except Exception as db_error:  # noqa: BLE001

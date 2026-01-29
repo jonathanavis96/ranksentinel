@@ -62,8 +62,10 @@ CREATE TABLE IF NOT EXISTS findings (
   title TEXT NOT NULL,
   details_md TEXT NOT NULL,
   url TEXT,
+  dedupe_key TEXT NOT NULL,
   created_at TEXT NOT NULL,
-  FOREIGN KEY(customer_id) REFERENCES customers(id)
+  FOREIGN KEY(customer_id) REFERENCES customers(id),
+  UNIQUE(dedupe_key)
 );
 
 CREATE TABLE IF NOT EXISTS deliveries (
@@ -210,3 +212,30 @@ def store_artifact(
         "VALUES(?,?,?,?,?,?)",
         (customer_id, kind, subject, artifact_sha, raw_content, fetched_at),
     )
+
+
+def generate_finding_dedupe_key(
+    customer_id: int,
+    run_type: str,
+    category: str,
+    title: str,
+    url: str | None,
+    period: str,
+) -> str:
+    """Generate a deterministic dedupe key for a finding.
+    
+    Args:
+        customer_id: Customer ID
+        run_type: 'daily' or 'weekly'
+        category: Finding category (e.g., 'indexability', 'performance')
+        title: Finding title
+        url: URL associated with the finding (optional)
+        period: Period identifier (e.g., '2026-01-29' for daily, '2026-W05' for weekly)
+    
+    Returns:
+        SHA256 hash of the dedupe components
+    """
+    import hashlib
+    
+    components = f"{customer_id}|{run_type}|{category}|{title}|{url or ''}|{period}"
+    return hashlib.sha256(components.encode("utf-8")).hexdigest()
