@@ -141,7 +141,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ### Test-fix followups (post 0K/0S/0R/0E)
 
-- [ ] **0-R.5** Fix sqlite test inserts to satisfy NOT NULL columns (`customers.created_at`, `customers.updated_at`, `targets.created_at`)
+- [x] **0-R.5** Fix sqlite test inserts to satisfy NOT NULL columns (`customers.created_at`, `customers.updated_at`, `targets.created_at`)
   - **Why:** `pytest` currently fails with `NOT NULL constraint failed: customers.created_at` in sitemap tests.
   - **Do:** Update tests (at least `tests/test_sitemap_fetch.py`) to insert required timestamp columns, or change schema to provide safe defaults.
   - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`

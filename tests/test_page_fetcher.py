@@ -153,9 +153,13 @@ def test_fetch_pages_returns_empty_for_empty_urls(mock_fetch_text):
 def test_persist_fetch_results_placeholder(tmp_path):
     """Test persist_fetch_results placeholder (logs only for now)."""
     import sqlite3
+    from ranksentinel.db import init_db
     
     db_path = tmp_path / "test.db"
     conn = sqlite3.connect(str(db_path))
+    
+    # Initialize schema before using snapshots table
+    init_db(conn)
     
     results = [
         PageFetchResult(
