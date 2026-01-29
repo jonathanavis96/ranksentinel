@@ -145,11 +145,12 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:** run the same job twice and confirm the second run can load a baseline without crashing
   - **Completed:** Added `artifacts` table with (customer_id, kind, subject, artifact_sha, raw_content, fetched_at) and index. Created `get_latest_artifact()` and `store_artifact()` functions in db.py. Comprehensive test coverage (7 tests) validates baseline loading, customer/kind/subject isolation, and idempotent run scenarios.
 
-- [ ] **1.1** Idempotent only-on-change rule
+- [x] **1.1** Idempotent only-on-change rule
   - **Goal:** prevent finding spam by only writing findings when something meaningful changes.
   - **AC:** unchanged robots/sitemap/title/canonical/meta robots creates **0** new findings
   - **AC:** cosmetic-only changes are ignored (whitespace, comment-only, ordering-only where applicable)
   - **Validate:** run daily twice against an unchanged site and confirm findings count remains stable
+  - **Completed:** Integrated artifact baseline comparison into daily_checks.py. Added only-on-change logic for meta_robots, canonical, and title fields. Each field is now hashed and compared against the latest artifact before creating findings. Validated idempotent behavior: two consecutive runs against unchanged site produced 3 artifacts (1 per field) and 0 findings on both runs.
 
 - [x] **1.2** Diff summary engine (human readable)
   - **Goal:** produce short diffs for SEO-relevant fields, with normalization to avoid cosmetic diffs.

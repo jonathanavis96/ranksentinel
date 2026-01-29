@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from ranksentinel.config import Settings
-from ranksentinel.db import connect, execute, fetch_all, fetch_one, init_db
+from ranksentinel.db import connect, execute, fetch_all, fetch_one, get_latest_artifact, init_db, store_artifact
 from ranksentinel.http_client import fetch_text
 from ranksentinel.runner.logging_utils import generate_run_id, log_stage, log_structured, log_summary
 from ranksentinel.runner.normalization import (
@@ -436,67 +436,87 @@ def run(settings: Settings) -> None:
                             ),
                         )
 
-                        # Check for noindex regression
-                        noindex_result = check_noindex_regression(
-                            conn, customer_id, url, data["meta_robots"]
-                        )
-                        if noindex_result:
-                            severity, details = noindex_result
-                            execute(
-                                conn,
-                                "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                                "VALUES(?,?,?,?,?,?,?,?)",
-                                (
-                                    customer_id,
-                                    "daily",
-                                    severity,
-                                    "indexability",
-                                    "Key page noindex detected",
-                                    details,
-                                    url,
-                                    fetched_at,
-                                ),
+                        # Check for noindex regression (only-on-change)
+                        meta_robots_changed = False
+                        prev_meta_artifact = get_latest_artifact(conn, customer_id, "meta_robots", url)
+                        curr_meta_sha = sha256_text(data["meta_robots"])
+                        
+                        if not prev_meta_artifact or prev_meta_artifact["artifact_sha"] != curr_meta_sha:
+                            meta_robots_changed = True
+                            store_artifact(conn, customer_id, "meta_robots", url, curr_meta_sha, data["meta_robots"], fetched_at)
+                            
+                            noindex_result = check_noindex_regression(
+                                conn, customer_id, url, data["meta_robots"]
                             )
+                            if noindex_result:
+                                severity, details = noindex_result
+                                execute(
+                                    conn,
+                                    "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                                    "VALUES(?,?,?,?,?,?,?,?)",
+                                    (
+                                        customer_id,
+                                        "daily",
+                                        severity,
+                                        "indexability",
+                                        "Key page noindex detected",
+                                        details,
+                                        url,
+                                        fetched_at,
+                                    ),
+                                )
 
-                        # Check for canonical drift
-                        canonical_result = check_canonical_drift(conn, customer_id, url, data["canonical"])
-                        if canonical_result:
-                            severity, details = canonical_result
-                            execute(
-                                conn,
-                                "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                                "VALUES(?,?,?,?,?,?,?,?)",
-                                (
-                                    customer_id,
-                                    "daily",
-                                    severity,
-                                    "indexability",
-                                    "Canonical URL changed",
-                                    details,
-                                    url,
-                                    fetched_at,
-                                ),
-                            )
+                        # Check for canonical drift (only-on-change)
+                        prev_canonical_artifact = get_latest_artifact(conn, customer_id, "canonical", url)
+                        curr_canonical_sha = sha256_text(data["canonical"])
+                        
+                        if not prev_canonical_artifact or prev_canonical_artifact["artifact_sha"] != curr_canonical_sha:
+                            store_artifact(conn, customer_id, "canonical", url, curr_canonical_sha, data["canonical"], fetched_at)
+                            
+                            canonical_result = check_canonical_drift(conn, customer_id, url, data["canonical"])
+                            if canonical_result:
+                                severity, details = canonical_result
+                                execute(
+                                    conn,
+                                    "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                                    "VALUES(?,?,?,?,?,?,?,?)",
+                                    (
+                                        customer_id,
+                                        "daily",
+                                        severity,
+                                        "indexability",
+                                        "Canonical URL changed",
+                                        details,
+                                        url,
+                                        fetched_at,
+                                    ),
+                                )
 
-                        # Check for title change
-                        title_result = check_title_change(conn, customer_id, url, data["title"])
-                        if title_result:
-                            severity, details = title_result
-                            execute(
-                                conn,
-                                "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                                "VALUES(?,?,?,?,?,?,?,?)",
-                                (
-                                    customer_id,
-                                    "daily",
-                                    severity,
-                                    "content",
-                                    "Page title changed",
-                                    details,
-                                    url,
-                                    fetched_at,
-                                ),
-                            )
+                        # Check for title change (only-on-change)
+                        prev_title_artifact = get_latest_artifact(conn, customer_id, "title", url)
+                        curr_title_sha = sha256_text(data["title"])
+                        
+                        if not prev_title_artifact or prev_title_artifact["artifact_sha"] != curr_title_sha:
+                            store_artifact(conn, customer_id, "title", url, curr_title_sha, data["title"], fetched_at)
+                            
+                            title_result = check_title_change(conn, customer_id, url, data["title"])
+                            if title_result:
+                                severity, details = title_result
+                                execute(
+                                    conn,
+                                    "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                                    "VALUES(?,?,?,?,?,?,?,?)",
+                                    (
+                                        customer_id,
+                                        "daily",
+                                        severity,
+                                        "content",
+                                        "Page title changed",
+                                        details,
+                                        url,
+                                        fetched_at,
+                                    ),
+                                )
 
                         # PSI checks (only for first N key URLs if enabled)
                         if psi_enabled and psi_count < psi_limit and settings.PSI_API_KEY:
