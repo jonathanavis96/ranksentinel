@@ -179,13 +179,14 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - confirm DB rows exist for robots findings (example): `sqlite3 ranksentinel.sqlite3 "select kind, count(*) from findings group by kind;"`
   - **Completed:** Implemented robots.txt fetch in daily_checks.py. Derives base URL from sitemap_url (or falls back to first target URL). Fetches `/robots.txt` using http_client.fetch_text with 10s timeout and 2 retry attempts. Stores artifact with kind='robots_txt', subject=base_url, artifact_sha, and raw_content. Includes comprehensive error handling for 404s and fetch failures. Added 5 test cases covering: artifact storage, no-duplicate reruns, changed content detection, error handling, and fallback URL logic. Validated with live run against python.org showing successful fetch and storage.
 
-- [ ] **1.5** Robots diff + severity (Disallow risk)
+- [x] **1.5** Robots diff + severity (Disallow risk)
   - **Goal:** detect meaningful robots changes and assign severity without noise.
   - **AC:** when robots content changes, a new finding is created containing a diff summary
   - **AC:** severity rules exist for high-risk changes (e.g., new `Disallow: /` or expanded disallow patterns)
   - **AC:** normalization prevents cosmetic diffs (whitespace/comment-only) from triggering alerts
   - **Validate:**
     - run daily twice with a controlled fixture (or temporary override) and confirm: no change => no new finding; change => finding with severity
+  - **Completed:** Implemented check_robots_txt_change() with normalize_robots_txt() to ignore cosmetic changes. Severity logic: critical for new site-wide Disallow: /, warning for new/changed disallow rules, info for other changes. Uses only-on-change pattern (stores artifacts only when SHA changes). Generates diff_summary() showing additions/removals. Added 7 comprehensive tests covering: no baseline, cosmetic changes ignored, critical site-wide disallow, warning for new rules, warning for changed rules, info for non-disallow changes, and diff content verification. Updated test_robots_fetch.py to match only-on-change behavior. All 20 robots-related tests pass.
 
 - [ ] **1.6** Sitemap fetch + persist raw artifact
   - **Goal:** fetch sitemap (configured per customer) and store raw content + sha.
