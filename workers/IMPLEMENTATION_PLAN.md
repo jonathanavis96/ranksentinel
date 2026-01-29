@@ -52,7 +52,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `bash scripts/run_local.sh &`
     - `curl -s http://127.0.0.1:8000/health | cat`
 
-- [ ] **0.4** Admin onboarding persists to SQLite
+- [x] **0.4** Admin onboarding persists to SQLite
   - **Goal:** creating a customer and targets writes to the DB.
   - **AC:** using Swagger UI (or curl), you can:
     - create customer (`POST /admin/customers`)
