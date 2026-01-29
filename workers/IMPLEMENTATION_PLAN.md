@@ -417,7 +417,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 - [ ] **6.10** Fix MD013 in docs/RUNBOOK_VPS.md
   - **AC:** `markdownlint docs/RUNBOOK_VPS.md` passes (no MD013 errors)
 
-- [ ] **6.11** Fix MD034 in docs/SAMPLE_REPORT.md
+- [x] **6.11** Fix MD034 in docs/SAMPLE_REPORT.md
   - **AC:** `markdownlint docs/SAMPLE_REPORT.md` passes (no MD034 errors)
 
 - [ ] **6.12** Fix MD013 in NEURONS.md
@@ -429,7 +429,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 - [ ] **6.14** Fix MD013 in workers/docs/RUNBOOK_VPS.md
   - **AC:** `markdownlint workers/docs/RUNBOOK_VPS.md` passes (no MD013 errors)
 
-- [ ] **6.15** Fix MD034 in workers/docs/SAMPLE_REPORT.md
+- [x] **6.15** Fix MD034 in workers/docs/SAMPLE_REPORT.md
   - **AC:** `markdownlint workers/docs/SAMPLE_REPORT.md` passes (no MD034 errors)
 
 - [ ] **6.16** Fix MD013 in workers/IMPLEMENTATION_PLAN.md
