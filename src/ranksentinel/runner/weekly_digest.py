@@ -127,34 +127,70 @@ def run(settings: Settings) -> None:
         init_db(conn)
         customers = fetch_all(conn, "SELECT id FROM customers WHERE status='active'")
 
+        errors_by_customer = {}
+        
         for c in customers:
             customer_id = int(c["id"])
             
-            # Detect broken internal links
-            detect_broken_internal_links(
-                conn,
-                customer_id,
-                "weekly",
-                max_pages_to_check=20,
-                max_links_per_page=50,
-            )
-            
-            # Bootstrap placeholder finding
-            execute(
-                conn,
-                "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                "VALUES(?,?,?,?,?,?,?,?)",
-                (
+            try:
+                # Detect broken internal links
+                detect_broken_internal_links(
+                    conn,
                     customer_id,
                     "weekly",
-                    "info",
-                    "bootstrap",
-                    "Weekly digest executed (bootstrap)",
-                    "This is the bootstrap weekly digest placeholder.\
+                    max_pages_to_check=20,
+                    max_links_per_page=50,
+                )
+                
+                # Bootstrap placeholder finding
+                execute(
+                    conn,
+                    "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                    "VALUES(?,?,?,?,?,?,?,?)",
+                    (
+                        customer_id,
+                        "weekly",
+                        "info",
+                        "bootstrap",
+                        "Weekly digest executed (bootstrap)",
+                        "This is the bootstrap weekly digest placeholder.\
 ",
-                    None,
-                    now_iso(),
-                ),
-            )
+                        None,
+                        now_iso(),
+                    ),
+                )
+            except Exception as e:  # noqa: BLE001
+                # Catch per-customer errors and record them, then continue to next customer
+                error_msg = f"Customer {customer_id} processing failed: {type(e).__name__}: {e}"
+                print(f"ERROR: {error_msg}")
+                errors_by_customer[customer_id] = error_msg
+                # Log error to database for debugging
+                try:
+                    execute(
+                        conn,
+                        "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                        "VALUES(?,?,?,?,?,?,?,?)",
+                        (
+                            customer_id,
+                            "weekly",
+                            "critical",
+                            "system",
+                            "Weekly run processing error",
+                            f"An error occurred during weekly processing:\n\n```\n{error_msg}\n```",
+                            None,
+                            now_iso(),
+                        ),
+                    )
+                except Exception as db_error:  # noqa: BLE001
+                    print(f"ERROR: Failed to log error to database: {db_error}")
+        
+        # Print summary at end
+        total_customers = len(customers)
+        failed_customers = len(errors_by_customer)
+        successful_customers = total_customers - failed_customers
+        
+        print(f"SUMMARY: Processed {total_customers} customer(s) - {successful_customers} succeeded, {failed_customers} failed")
+        if errors_by_customer:
+            print("Failed customers:", ", ".join(str(cid) for cid in errors_by_customer.keys()))
     finally:
         conn.close()

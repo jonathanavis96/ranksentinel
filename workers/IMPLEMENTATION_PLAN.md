@@ -110,7 +110,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - findings subjects (key pages, broken links)
   - **Validate:** `pytest -q` includes a URL normalization test module with 15–20 cases
 
-- [ ] **0.10** Per-customer isolation (job loop safety)
+- [x] **0.10** Per-customer isolation (job loop safety)
   - **Goal:** one customer failing does not abort the whole daily/weekly run.
   - **AC:** errors are caught per customer and recorded (DB + logs), then the runner continues
   - **AC:** job exit code reflects overall success/failure policy (decide in Phase 5.4)

@@ -352,236 +352,273 @@ def run(settings: Settings) -> None:
         init_db(conn)
         customers = fetch_all(conn, "SELECT id FROM customers WHERE status='active'")
 
+        errors_by_customer = {}
+        
         for c in customers:
             customer_id = int(c["id"])
-
-            # Get customer settings
-            settings_row = fetch_one(
-                conn,
-                "SELECT psi_enabled, psi_urls_limit, psi_confirm_runs, "
-                "psi_perf_drop_threshold, psi_lcp_increase_threshold_ms "
-                "FROM settings WHERE customer_id=?",
-                (customer_id,),
-            )
-
-            # Convert to dict with defaults
-            if settings_row:
-                customer_settings = dict(settings_row)
-            else:
-                customer_settings = {
-                    "psi_enabled": 1,
-                    "psi_urls_limit": 5,
-                    "psi_confirm_runs": 2,
-                    "psi_perf_drop_threshold": 10,
-                    "psi_lcp_increase_threshold_ms": 500,
-                }
-
-            targets = fetch_all(
-                conn,
-                "SELECT url FROM targets WHERE customer_id=? AND is_key=1",
-                (customer_id,),
-            )
-
-            # Track PSI-checked URLs (limit to psi_urls_limit)
-            psi_count = 0
-            psi_limit = int(customer_settings.get("psi_urls_limit", 5))
-            psi_enabled = bool(customer_settings.get("psi_enabled", 1))
-
-            for t in targets:
-                raw_url = str(t["url"])
-                # Normalize URL for consistency
-                url = normalize_url(raw_url, raw_url)
-                if not url:
-                    print(f"Skipping invalid URL for customer {customer_id}: {raw_url}")
-                    continue
-                try:
-                    data = fetch_url(url)
-                except Exception as e:  # noqa: BLE001
-                    print(f"Failed to fetch {url} for customer {customer_id}: {e}")
-                    continue
-                fetched_at = now_iso()
-
-                # Store snapshot
-                execute(
+            
+            try:
+                # Get customer settings
+                settings_row = fetch_one(
                     conn,
-                    "INSERT INTO snapshots(customer_id,url,run_type,fetched_at,status_code,"
-                    "final_url,redirect_chain,title,canonical,meta_robots,content_hash) "
-                    "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
-                    (
-                        customer_id,
-                        url,
-                        "daily",
-                        fetched_at,
-                        data["status_code"],
-                        data["final_url"],
-                        json.dumps(data["redirect_chain"]),
-                        data["title"],
-                        data["canonical"],
-                        data["meta_robots"],
-                        data["content_hash"],
-                    ),
+                    "SELECT psi_enabled, psi_urls_limit, psi_confirm_runs, "
+                    "psi_perf_drop_threshold, psi_lcp_increase_threshold_ms "
+                    "FROM settings WHERE customer_id=?",
+                    (customer_id,),
                 )
 
-                # Check for noindex regression
-                noindex_result = check_noindex_regression(
-                    conn, customer_id, url, data["meta_robots"]
+                # Convert to dict with defaults
+                if settings_row:
+                    customer_settings = dict(settings_row)
+                else:
+                    customer_settings = {
+                        "psi_enabled": 1,
+                        "psi_urls_limit": 5,
+                        "psi_confirm_runs": 2,
+                        "psi_perf_drop_threshold": 10,
+                        "psi_lcp_increase_threshold_ms": 500,
+                    }
+
+                targets = fetch_all(
+                    conn,
+                    "SELECT url FROM targets WHERE customer_id=? AND is_key=1",
+                    (customer_id,),
                 )
-                if noindex_result:
-                    severity, details = noindex_result
+
+                # Track PSI-checked URLs (limit to psi_urls_limit)
+                psi_count = 0
+                psi_limit = int(customer_settings.get("psi_urls_limit", 5))
+                psi_enabled = bool(customer_settings.get("psi_enabled", 1))
+
+                for t in targets:
+                    raw_url = str(t["url"])
+                    # Normalize URL for consistency
+                    url = normalize_url(raw_url, raw_url)
+                    if not url:
+                        print(f"Skipping invalid URL for customer {customer_id}: {raw_url}")
+                        continue
+                    try:
+                        data = fetch_url(url)
+                    except Exception as e:  # noqa: BLE001
+                        print(f"Failed to fetch {url} for customer {customer_id}: {e}")
+                        continue
+                    fetched_at = now_iso()
+
+                    # Store snapshot
                     execute(
                         conn,
-                        "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                        "VALUES(?,?,?,?,?,?,?,?)",
+                        "INSERT INTO snapshots(customer_id,url,run_type,fetched_at,status_code,"
+                        "final_url,redirect_chain,title,canonical,meta_robots,content_hash) "
+                        "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                         (
                             customer_id,
-                            "daily",
-                            severity,
-                            "indexability",
-                            "Key page noindex detected",
-                            details,
                             url,
+                            "daily",
                             fetched_at,
+                            data["status_code"],
+                            data["final_url"],
+                            json.dumps(data["redirect_chain"]),
+                            data["title"],
+                            data["canonical"],
+                            data["meta_robots"],
+                            data["content_hash"],
                         ),
                     )
 
-                # Check for canonical drift
-                canonical_result = check_canonical_drift(conn, customer_id, url, data["canonical"])
-                if canonical_result:
-                    severity, details = canonical_result
-                    execute(
-                        conn,
-                        "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                        "VALUES(?,?,?,?,?,?,?,?)",
-                        (
-                            customer_id,
-                            "daily",
-                            severity,
-                            "indexability",
-                            "Canonical URL changed",
-                            details,
-                            url,
-                            fetched_at,
-                        ),
+                    # Check for noindex regression
+                    noindex_result = check_noindex_regression(
+                        conn, customer_id, url, data["meta_robots"]
                     )
-
-                # Check for title change
-                title_result = check_title_change(conn, customer_id, url, data["title"])
-                if title_result:
-                    severity, details = title_result
-                    execute(
-                        conn,
-                        "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                        "VALUES(?,?,?,?,?,?,?,?)",
-                        (
-                            customer_id,
-                            "daily",
-                            severity,
-                            "content",
-                            "Page title changed",
-                            details,
-                            url,
-                            fetched_at,
-                        ),
-                    )
-
-                # PSI checks (only for first N key URLs if enabled)
-                if psi_enabled and psi_count < psi_limit and settings.PSI_API_KEY:
-                    psi_metrics = fetch_psi_metrics(url, settings.PSI_API_KEY)
-
-                    if psi_metrics:
-                        # Determine regression state
-                        regression_result = check_psi_regression(
-                            conn, customer_id, url, psi_metrics, customer_settings
-                        )
-
-                        is_regression = 0
-                        is_confirmed = 0
-                        regression_type = None
-
-                        if regression_result:
-                            # Confirmed regression
-                            is_regression = 1
-                            is_confirmed = 1
-                            severity, title, details = regression_result
-                            regression_type = (
-                                "perf_score" if "Performance score" in title else "lcp"
-                            )
-
-                            # Create finding
-                            execute(
-                                conn,
-                                "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                                "VALUES(?,?,?,?,?,?,?,?)",
-                                (
-                                    customer_id,
-                                    "daily",
-                                    severity,
-                                    "performance",
-                                    title,
-                                    details,
-                                    url,
-                                    fetched_at,
-                                ),
-                            )
-                        else:
-                            # Check if this is first regression (unconfirmed)
-                            baseline = fetch_one(
-                                conn,
-                                "SELECT perf_score, lcp_ms FROM psi_results "
-                                "WHERE customer_id=? AND url=? AND is_regression=0 "
-                                "ORDER BY fetched_at DESC LIMIT 1",
-                                (customer_id, url),
-                            )
-
-                            if baseline:
-                                baseline_perf = baseline["perf_score"]
-                                baseline_lcp = baseline["lcp_ms"]
-                                curr_perf = psi_metrics.get("perf_score")
-                                curr_lcp = psi_metrics.get("lcp_ms")
-                                perf_threshold = int(
-                                    customer_settings.get("psi_perf_drop_threshold", 10)
-                                )
-                                lcp_threshold_ms = int(
-                                    customer_settings.get("psi_lcp_increase_threshold_ms", 500)
-                                )
-
-                                if (
-                                    baseline_perf
-                                    and curr_perf
-                                    and (baseline_perf - curr_perf) >= perf_threshold
-                                ):
-                                    is_regression = 1
-                                    regression_type = "perf_score"
-                                elif (
-                                    baseline_lcp
-                                    and curr_lcp
-                                    and (curr_lcp - baseline_lcp) >= lcp_threshold_ms
-                                ):
-                                    is_regression = 1
-                                    regression_type = "lcp"
-
-                        # Store PSI result
+                    if noindex_result:
+                        severity, details = noindex_result
                         execute(
                             conn,
-                            "INSERT INTO psi_results(customer_id,url,run_type,fetched_at,perf_score,"
-                            "lcp_ms,cls_score,inp_ms,is_regression,is_confirmed,regression_type,raw_json) "
-                            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+                            "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                            "VALUES(?,?,?,?,?,?,?,?)",
                             (
                                 customer_id,
-                                url,
                                 "daily",
+                                severity,
+                                "indexability",
+                                "Key page noindex detected",
+                                details,
+                                url,
                                 fetched_at,
-                                psi_metrics.get("perf_score"),
-                                psi_metrics.get("lcp_ms"),
-                                psi_metrics.get("cls_score"),
-                                psi_metrics.get("inp_ms"),
-                                is_regression,
-                                is_confirmed,
-                                regression_type,
-                                psi_metrics.get("raw_json"),
                             ),
                         )
 
-                        psi_count += 1
+                    # Check for canonical drift
+                    canonical_result = check_canonical_drift(conn, customer_id, url, data["canonical"])
+                    if canonical_result:
+                        severity, details = canonical_result
+                        execute(
+                            conn,
+                            "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                            "VALUES(?,?,?,?,?,?,?,?)",
+                            (
+                                customer_id,
+                                "daily",
+                                severity,
+                                "indexability",
+                                "Canonical URL changed",
+                                details,
+                                url,
+                                fetched_at,
+                            ),
+                        )
+
+                    # Check for title change
+                    title_result = check_title_change(conn, customer_id, url, data["title"])
+                    if title_result:
+                        severity, details = title_result
+                        execute(
+                            conn,
+                            "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                            "VALUES(?,?,?,?,?,?,?,?)",
+                            (
+                                customer_id,
+                                "daily",
+                                severity,
+                                "content",
+                                "Page title changed",
+                                details,
+                                url,
+                                fetched_at,
+                            ),
+                        )
+
+                    # PSI checks (only for first N key URLs if enabled)
+                    if psi_enabled and psi_count < psi_limit and settings.PSI_API_KEY:
+                        psi_metrics = fetch_psi_metrics(url, settings.PSI_API_KEY)
+
+                        if psi_metrics:
+                            # Determine regression state
+                            regression_result = check_psi_regression(
+                                conn, customer_id, url, psi_metrics, customer_settings
+                            )
+
+                            is_regression = 0
+                            is_confirmed = 0
+                            regression_type = None
+
+                            if regression_result:
+                                # Confirmed regression
+                                is_regression = 1
+                                is_confirmed = 1
+                                severity, title, details = regression_result
+                                regression_type = (
+                                    "perf_score" if "Performance score" in title else "lcp"
+                                )
+
+                                # Create finding
+                                execute(
+                                    conn,
+                                    "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                                    "VALUES(?,?,?,?,?,?,?,?)",
+                                    (
+                                        customer_id,
+                                        "daily",
+                                        severity,
+                                        "performance",
+                                        title,
+                                        details,
+                                        url,
+                                        fetched_at,
+                                    ),
+                                )
+                            else:
+                                # Check if this is first regression (unconfirmed)
+                                baseline = fetch_one(
+                                    conn,
+                                    "SELECT perf_score, lcp_ms FROM psi_results "
+                                    "WHERE customer_id=? AND url=? AND is_regression=0 "
+                                    "ORDER BY fetched_at DESC LIMIT 1",
+                                    (customer_id, url),
+                                )
+
+                                if baseline:
+                                    baseline_perf = baseline["perf_score"]
+                                    baseline_lcp = baseline["lcp_ms"]
+                                    curr_perf = psi_metrics.get("perf_score")
+                                    curr_lcp = psi_metrics.get("lcp_ms")
+                                    perf_threshold = int(
+                                        customer_settings.get("psi_perf_drop_threshold", 10)
+                                    )
+                                    lcp_threshold_ms = int(
+                                        customer_settings.get("psi_lcp_increase_threshold_ms", 500)
+                                    )
+
+                                    if (
+                                        baseline_perf
+                                        and curr_perf
+                                        and (baseline_perf - curr_perf) >= perf_threshold
+                                    ):
+                                        is_regression = 1
+                                        regression_type = "perf_score"
+                                    elif (
+                                        baseline_lcp
+                                        and curr_lcp
+                                        and (curr_lcp - baseline_lcp) >= lcp_threshold_ms
+                                    ):
+                                        is_regression = 1
+                                        regression_type = "lcp"
+
+                            # Store PSI result
+                            execute(
+                                conn,
+                                "INSERT INTO psi_results(customer_id,url,run_type,fetched_at,perf_score,"
+                                "lcp_ms,cls_score,inp_ms,is_regression,is_confirmed,regression_type,raw_json) "
+                                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+                                (
+                                    customer_id,
+                                    url,
+                                    "daily",
+                                    fetched_at,
+                                    psi_metrics.get("perf_score"),
+                                    psi_metrics.get("lcp_ms"),
+                                    psi_metrics.get("cls_score"),
+                                    psi_metrics.get("inp_ms"),
+                                    is_regression,
+                                    is_confirmed,
+                                    regression_type,
+                                    psi_metrics.get("raw_json"),
+                                ),
+                            )
+
+                            psi_count += 1
+                            
+            except Exception as e:  # noqa: BLE001
+                # Catch per-customer errors and record them, then continue to next customer
+                error_msg = f"Customer {customer_id} processing failed: {type(e).__name__}: {e}"
+                print(f"ERROR: {error_msg}")
+                errors_by_customer[customer_id] = error_msg
+                # Log error to database for debugging
+                try:
+                    execute(
+                        conn,
+                        "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                        "VALUES(?,?,?,?,?,?,?,?)",
+                        (
+                            customer_id,
+                            "daily",
+                            "critical",
+                            "system",
+                            "Daily run processing error",
+                            f"An error occurred during daily processing:\n\n```\n{error_msg}\n```",
+                            None,
+                            now_iso(),
+                        ),
+                    )
+                except Exception as db_error:  # noqa: BLE001
+                    print(f"ERROR: Failed to log error to database: {db_error}")
+        
+        # Print summary at end
+        total_customers = len(customers)
+        failed_customers = len(errors_by_customer)
+        successful_customers = total_customers - failed_customers
+        
+        print(f"SUMMARY: Processed {total_customers} customer(s) - {successful_customers} succeeded, {failed_customers} failed")
+        if errors_by_customer:
+            print("Failed customers:", ", ".join(str(cid) for cid in errors_by_customer.keys()))
     finally:
         conn.close()
