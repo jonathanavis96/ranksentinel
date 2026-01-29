@@ -53,3 +53,4 @@ Started: 2026-01-28
 - Display can be cleared with `[r]` hotkey, but log persists
 - Each project gets independent THUNK numbering (starts at 1)
 - When starting a new plan phase, use `[e]` to create a new Era section
+| 2026-01-29T00:34:01Z | Verified MD034 fixes already completed | Tasks 6.11 & 6.15: both SAMPLE_REPORT.md files pass markdownlint (email wrapped in angle brackets) | 8a80a90 |
