@@ -1,9 +1,11 @@
 # Manual Validation: Task 0.10 - Per-Customer Isolation
 
 ## Goal
+
 Verify that one customer failing does not abort the whole daily/weekly run.
 
 ## Acceptance Criteria
+
 1. Errors are caught per customer and recorded (DB + logs)
 2. The runner continues to process remaining customers
 3. Job exit code reflects overall success/failure policy (decided in Phase 5.4)
@@ -50,7 +52,9 @@ PYTHONPATH=src python3 -m ranksentinel.runner.__main__daily 2>&1 | tee daily_tes
 ### 3. Verify Results
 
 #### Check Console Output
+
 The output should contain:
+
 - `ERROR: Customer 100 processing failed:` (or similar error message)
 - `SUMMARY: Processed 2 customer(s) - 1 succeeded, 1 failed`
 - `Failed customers: 100`
@@ -60,6 +64,7 @@ grep -E "ERROR.*Customer 100|SUMMARY.*Processed|Failed customers" daily_test_out
 ```
 
 #### Check Database for Customer 99 (should succeed)
+
 ```bash
 sqlite3 ranksentinel_test.sqlite3 <<EOF
 -- Should have a snapshot for customer 99
@@ -71,10 +76,12 @@ EOF
 ```
 
 Expected output:
+
 - snapshot_count: 1 (or more)
 - error_count: 0
 
 #### Check Database for Customer 100 (should have error recorded)
+
 ```bash
 sqlite3 ranksentinel_test.sqlite3 <<EOF
 -- Should have an error finding for customer 100
@@ -85,6 +92,7 @@ EOF
 ```
 
 Expected output:
+
 - title: "Daily run processing error"
 - category: "system"
 - severity: "critical"
@@ -98,6 +106,7 @@ PYTHONPATH=src python3 -m ranksentinel.runner.__main__weekly 2>&1 | tee weekly_t
 ### 5. Verify Weekly Results
 
 Similar to daily, check:
+
 - Console output has SUMMARY line
 - Customer 99 has findings
 - Customer 100 has error finding with category='system'

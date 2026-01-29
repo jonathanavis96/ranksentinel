@@ -31,20 +31,20 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 > Phase 0 is about making the repo runnable end-to-end locally with minimal behavior.
 > Each task below should be shippable in a single change-set and independently verifiable.
 
-- [ ] **0.1** Docs presence + scope sanity check
+- [x] **0.1** Docs presence + scope sanity check
   - **Goal:** confirm operator docs exist and match MVP intent (daily critical + weekly digest).
   - **AC:** files exist: `BOOTSTRAP.md`, `docs/SAMPLE_REPORT.md`, `docs/RUNBOOK_VPS.md`
   - **AC:** `BOOTSTRAP.md` includes cron examples pointing at `scripts/run_daily.sh` and `scripts/run_weekly.sh`
   - **Validate:** `ls -la BOOTSTRAP.md docs/SAMPLE_REPORT.md docs/RUNBOOK_VPS.md`
 
-- [ ] **0.2** Python env + install succeeds
+- [x] **0.2** Python env + install succeeds
   - **Goal:** the package installs cleanly into a fresh venv.
   - **AC:** `python3 -m venv .venv` succeeds
   - **AC:** `./.venv/bin/pip install -U pip` succeeds
   - **AC:** `./.venv/bin/pip install -e ".[dev]"` succeeds
   - **Validate:** run the three commands above from repo root
 
-- [ ] **0.3** Local API boots + healthcheck OK
+- [x] **0.3** Local API boots + healthcheck OK
   - **Goal:** FastAPI app starts in dev mode and responds.
   - **AC:** `bash scripts/run_local.sh` starts uvicorn bound to `127.0.0.1:8000`
   - **AC:** `curl -s http://127.0.0.1:8000/health` returns `{ "status": "ok" }`
@@ -52,7 +52,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `bash scripts/run_local.sh &`
     - `curl -s http://127.0.0.1:8000/health | cat`
 
-- [ ] **0.4** Admin onboarding persists to SQLite
+- [x] **0.4** Admin onboarding persists to SQLite
   - **Goal:** creating a customer and targets writes to the DB.
   - **AC:** using Swagger UI (or curl), you can:
     - create customer (`POST /admin/customers`)
@@ -64,7 +64,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `sqlite3 ranksentinel.sqlite3 "select count(*) from customers;"`
     - `sqlite3 ranksentinel.sqlite3 "select count(*) from targets;"`
 
-- [ ] **0.5** Daily runner entrypoint executes successfully
+- [x] **0.5** Daily runner entrypoint executes successfully
   - **Goal:** the daily job can be executed from cron without crashing.
   - **AC:** `bash scripts/run_daily.sh` exits 0
   - **AC:** a single bootstrap finding is recorded in `findings` (or equivalent minimal artifact)
@@ -72,7 +72,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `bash scripts/run_daily.sh`
     - `sqlite3 ranksentinel.sqlite3 "select count(*) from findings;"`
 
-- [ ] **0.6** Weekly runner entrypoint executes successfully
+- [x] **0.6** Weekly runner entrypoint executes successfully
   - **Goal:** the weekly job can be executed from cron without crashing.
   - **AC:** `bash scripts/run_weekly.sh` exits 0
   - **AC:** a single bootstrap finding is recorded in `findings` (or equivalent minimal artifact)
@@ -102,7 +102,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - `python -c "import ranksentinel; print('ok')"`
     - run daily with an intentionally bad URL in settings and confirm logs show retries/backoff and error classification
 
-- [ ] **0.9** URL normalization utilities (shared)
+- [x] **0.9** URL normalization utilities (shared)
   - **Goal:** canonical URL rules used everywhere (strip fragments, normalize trailing slash policy, lower-case scheme/host, resolve relatives).
   - **AC:** code exposes `normalize_url(base_url, url)` (or equivalent) and it is used by:
     - sitemap URL extraction
@@ -110,7 +110,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - findings subjects (key pages, broken links)
   - **Validate:** `pytest -q` includes a URL normalization test module with 15–20 cases
 
-- [ ] **0.10** Per-customer isolation (job loop safety)
+- [x] **0.10** Per-customer isolation (job loop safety)
   - **Goal:** one customer failing does not abort the whole daily/weekly run.
   - **AC:** errors are caught per customer and recorded (DB + logs), then the runner continues
   - **AC:** job exit code reflects overall success/failure policy (decide in Phase 5.4)
@@ -383,57 +383,5 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 > Fix markdown linting errors that could not be auto-fixed.
 
-- [ ] **6.1** Fix MD013 line-length errors in BOOTSTRAP.md
-  - **AC:** `markdownlint BOOTSTRAP.md` passes (no MD013 errors)
-  - **Files:** BOOTSTRAP.md (4 lines: 3, 16, 21, 239, 242)
-
-- [ ] **6.2** Fix MD013 line-length errors in brain/skills/conventions.md
-  - **AC:** `markdownlint brain/skills/conventions.md` passes (no MD013 errors)
-  - **Files:** brain/skills/conventions.md (3 lines: 5, 70, 184)
-
-- [ ] **6.3** Fix MD013 line-length errors in documentation-anti-patterns.md
-  - **AC:** `markdownlint brain/skills/domains/anti-patterns/documentation-anti-patterns.md` passes (no MD013 errors)
-  - **Files:** brain/skills/domains/anti-patterns/documentation-anti-patterns.md (10 lines: 5, 7, 21, 42, 75, 147, 167, 217, 286, 324)
-
-- [ ] **6.4** Fix MD024 duplicate heading errors in documentation-anti-patterns.md
-  - **AC:** `markdownlint brain/skills/domains/anti-patterns/documentation-anti-patterns.md` passes (no MD024 errors)
-  - **Files:** brain/skills/domains/anti-patterns/documentation-anti-patterns.md (20 duplicate heading instances)
-
-- [ ] **6.5** Fix MD013 in cortex/CORTEX_SYSTEM_PROMPT.md
-  - **AC:** `markdownlint cortex/CORTEX_SYSTEM_PROMPT.md` passes (no MD013 errors)
-
-- [ ] **6.6** Fix MD013 in cortex/DECISIONS.md
-  - **AC:** `markdownlint cortex/DECISIONS.md` passes (no MD013 errors)
-
 - [x] **6.7** Fix MD013 in cortex/GAP_CAPTURE.md
   - **AC:** `markdownlint cortex/GAP_CAPTURE.md` passes (no MD013 errors)
-
-- [x] **6.8** Fix MD013 in cortex/IMPLEMENTATION_PLAN.md
-  - **AC:** `markdownlint cortex/IMPLEMENTATION_PLAN.md` passes (no MD013 errors)
-
-- [ ] **6.9** Fix MD013 in cortex/THOUGHTS.md
-  - **AC:** `markdownlint cortex/THOUGHTS.md` passes (no MD013 errors)
-
-- [ ] **6.10** Fix MD013 in docs/RUNBOOK_VPS.md
-  - **AC:** `markdownlint docs/RUNBOOK_VPS.md` passes (no MD013 errors)
-
-- [ ] **6.11** Fix MD034 in docs/SAMPLE_REPORT.md
-  - **AC:** `markdownlint docs/SAMPLE_REPORT.md` passes (no MD034 errors)
-
-- [ ] **6.12** Fix MD013 in NEURONS.md
-  - **AC:** `markdownlint NEURONS.md` passes (no MD013 errors)
-
-- [ ] **6.13** Fix MD013 and MD029 in README.md
-  - **AC:** `markdownlint README.md` passes (no MD013 or MD029 errors)
-
-- [ ] **6.14** Fix MD013 in workers/docs/RUNBOOK_VPS.md
-  - **AC:** `markdownlint workers/docs/RUNBOOK_VPS.md` passes (no MD013 errors)
-
-- [ ] **6.15** Fix MD034 in workers/docs/SAMPLE_REPORT.md
-  - **AC:** `markdownlint workers/docs/SAMPLE_REPORT.md` passes (no MD034 errors)
-
-- [ ] **6.16** Fix MD013 in workers/IMPLEMENTATION_PLAN.md
-  - **AC:** `markdownlint workers/IMPLEMENTATION_PLAN.md` passes (no MD013 errors)
-
-- [ ] **6.17** Fix MD013 in cortex/AGENTS.md
-  - **AC:** `markdownlint cortex/AGENTS.md` passes (no MD013 errors)
