@@ -317,7 +317,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Phase 4: Email reporting (atomic)
 
-- [ ] **4.1** Recommendation rules engine
+- [x] **4.1** Recommendation rules engine
   - **Goal:** deterministic mapping from finding type -> “what to do next” recommendation text.
   - **AC:** each critical/warning finding kind has a short recommended action
   - **AC:** sorting is stable: severity first, then impact
