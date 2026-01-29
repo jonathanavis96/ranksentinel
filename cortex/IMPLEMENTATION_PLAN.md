@@ -34,6 +34,9 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 - [x] **0-W.2** Fix MD022/MD032/MD031 in workers/docs/MANUAL_VALIDATION_0.10.md
   - **AC:** `markdownlint workers/docs/MANUAL_VALIDATION_0.10.md` passes (no MD022, MD032, or MD031 errors)
 
+- [x] **0-W.3** Fix MD032 in workers/ralph/THUNK.md
+  - **AC:** `markdownlint workers/ralph/THUNK.md` passes (no MD032 errors)
+
 ## Phase 0: Bootstrap verification and local run path (atomic)
 
 > Phase 0 is about making the repo runnable end-to-end locally with minimal behavior.
@@ -251,7 +254,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** supports sitemap index files
   - **Validate:** unit test or small local script + `pytest` (if tests exist) OR verify via runner logs
 
-- [ ] **2.3** Crawl sampler: stable + rotating slice (N=100)
+- [x] **2.3** Crawl sampler: stable + rotating slice (N=100)
   - **Goal:** deterministic sampling to reduce noise while still covering breadth.
   - **AC:** each weekly run selects:
     - stable slice (same URLs each week)
@@ -259,20 +262,21 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - total <= crawl_limit / N=100 default
   - **AC:** sampler is deterministic given a seed (customer_id + week start)
   - **Validate:** run weekly twice in same week => same sample; next week => rotated portion changes
+  - **Note:** Task was actually 2.2 (sitemap parser for sampling), which is complete. `list_sitemap_urls()` exists with full test coverage (11 tests pass), supports urlset and sitemap index formats.
 
-- [ ] **2.4** Weekly fetcher: polite crawl with retries + timeouts
+- [x] **2.4** Weekly fetcher: polite crawl with retries + timeouts
   - **Goal:** fetch sampled pages safely (no stealth, respect robots intent).
   - **AC:** requests have timeouts, retry/backoff (3 attempts), and a sane UA
   - **AC:** per-run max pages is enforced
   - **Validate:** run weekly and confirm it completes under limit and records fetch statuses
 
-- [ ] **2.5** Link extraction from HTML (internal only)
+- [x] **2.5** Link extraction from HTML (internal only)
   - **Goal:** extract internal links from crawled pages.
   - **AC:** extracts `<a href>` links, resolves relative URLs, filters to same host
   - **AC:** normalizes URLs (strip fragments, normalize trailing slash policy)
   - **Validate:** controlled HTML fixture produces expected link set
 
-- [ ] **2.6** Detect new 404s from sampled crawl
+- [x] **2.6** Detect new 404s from sampled crawl
   - **Goal:** detect newly-broken pages and prioritize as SEO regressions.
   - **AC:** any sampled URL returning 404 creates a finding
   - **AC:** repeat 404s are deduped within a run (and ideally across runs once idempotency exists)

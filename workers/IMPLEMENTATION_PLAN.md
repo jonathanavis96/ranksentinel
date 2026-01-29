@@ -290,7 +290,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Phase 3: PSI regressions (atomic)
 
-- [ ] **3.1** PSI client + response persistence
+- [x] **3.1** PSI client + response persistence
   - **Goal:** integrate PageSpeed Insights safely and store raw responses.
   - **AC:** configurable via `PSI_API_KEY` and enabled/disabled via settings
   - **AC:** fetch PSI for key pages only and store raw JSON + sha
