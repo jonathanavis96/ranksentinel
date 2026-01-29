@@ -18,6 +18,25 @@ Last Updated: 2026-01-29 23:10:00
   - `ranksentinel.com` (marketing site): GitHub Pages + custom domain.
   - `api.ranksentinel.com` (FastAPI): Hostinger VPS.
 - **Design direction:** “Soft SaaS landing” + Palette A (Signal Teal + Ink).
+
+## Phase 0-Warn: Verifier Warnings
+
+- [x] **0.1** Fix MD032 errors in docs/websites/NAV_CTA_SPEC.md
+  - **AC:** `markdownlint docs/websites/NAV_CTA_SPEC.md` passes (no MD032 errors)
+  - **Completed:** 2026-01-30 - Added blank lines around lists
+
+- [x] **0.2** Fix MD032 errors in website/app/components/README.md
+  - **AC:** `markdownlint website/app/components/README.md` passes (no MD032 errors)
+  - **Completed:** 2026-01-30 - Added blank lines around lists
+
+- [x] **0.3** Fix markdown errors in website/node_modules/@alloc/quick-lru/readme.md
+  - **AC:** `markdownlint website/node_modules/@alloc/quick-lru/readme.md` passes (no MD040, MD014, MD010 errors)
+  - **Completed:** 2026-01-30 - Added node_modules to .markdownlintignore (third-party code should not be modified)
+
+- [x] **0.4** Fix markdown errors in website/node_modules/@babel/parser/CHANGELOG.md
+  - **AC:** `markdownlint website/node_modules/@babel/parser/CHANGELOG.md` passes (no MD032, MD028, MD034, MD049, MD022, MD004, MD007 errors)
+  - **Completed:** 2026-01-30 - Added node_modules to .markdownlintignore (third-party code should not be modified)
+
   - Source of truth: `docs/websites/10_design_ux.md`.
 - **CTA system:** Dual (contextual, one primary CTA per page view).
   - Homepage primary CTA: **Get a sample report** → `POST /public/leads`.
@@ -155,19 +174,21 @@ Brain skills (open those relevant to the current item):
   - **If Blocked:** Prefer accessibility correctness over visual parity; note visual deltas.
   - **Completed:** 2026-01-30 - All core UI components created with accessibility features
 
-- [ ] **3.4** Implement the Email Report Preview (hero object)
-  - **Goal:** Make the value instantly legible: “email-first monitoring, no dashboard required.”
+- [x] **3.4** Implement the Email Report Preview (hero object)
+  - **Goal:** Make the value instantly legible: "email-first monitoring, no dashboard required."
   - **References:** `docs/websites/04_page_requirements.md`, `docs/websites/10_design_ux.md`.
   - **AC:**
-    - Includes subject: “Weekly SEO Regression Digest — example.com”.
+    - Includes subject: "Weekly SEO Regression Digest — example.com".
     - Has sections: Critical / Warning / Info.
-    - Includes “Top 3 actions this week”.
+    - Includes "Top 3 actions this week".
     - Uses severity colors as accents (not loud backgrounds).
   - **If Blocked:** Reduce to a static component (no interactivity) but keep exact content structure.
+  - **Completed:** 2026-01-30 - EmailReportPreview component created with severity sections, top actions, and accessible markup
 
 ### Task 4: Homepage implementation (sections + copy)
 
-- [ ] **4.1** Implement homepage sections exactly per blueprint
+- [x] **4.1** Implement homepage sections exactly per blueprint
+  - **Completed:** 2026-01-30 - All homepage sections implemented per blueprint (hero, social proof, why different, features, how it works, sample report, pricing teaser, FAQ teaser, final CTA)
   - **Goal:** Ship the primary conversion page in the intended “soft SaaS” style.
   - **References:** `docs/websites/04_page_requirements.md`, `docs/websites/05_copy_system.md`, `brain/skills/domains/websites/architecture/section-composer.md`.
   - **AC:** Homepage contains:
@@ -182,7 +203,7 @@ Brain skills (open those relevant to the current item):
     - Final CTA
   - **If Blocked:** Ship hero + why-different + pricing + final CTA first, then fill remaining sections.
 
-- [ ] **4.2** Implement Feature Tabs component
+- [x] **4.2** Implement Feature Tabs component
   - **Goal:** Show breadth without clutter.
   - **References:** `docs/websites/04_page_requirements.md`.
   - **AC:** Tabs exist with correct labels and each has 3 bullets + preview snippet:
@@ -192,7 +213,7 @@ Brain skills (open those relevant to the current item):
     - PSI Monitoring
   - **If Blocked:** Replace tabs with a 4-card grid; keep same content.
 
-- [ ] **4.3** Implement FAQ accordion (accessible)
+- [x] **4.3** Implement FAQ accordion (accessible)
   - **Goal:** Handle core objections with low friction.
   - **References:** `docs/websites/04_page_requirements.md`, `brain/skills/domains/frontend/accessibility-patterns.md`.
   - **AC:**
@@ -202,7 +223,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 5: Additional pages (pricing, sample report, legal, 404)
 
-- [ ] **5.1** Implement `/pricing` from pricing doc
+- [x] **5.1** Implement `/pricing` from pricing doc
   - **Goal:** Make upgrade path and limits obvious.
   - **References:** `docs/websites/06_pricing_packaging.md`, `docs/websites/05_copy_system.md`.
   - **AC:**
@@ -211,7 +232,7 @@ Brain skills (open those relevant to the current item):
     - Primary CTA on pricing is “Start monitoring”.
   - **If Blocked:** Ship a simplified 3-tier card layout and link to contact for enterprise.
 
-- [ ] **5.2** Implement `/sample-report`
+- [x] **5.2** Implement `/sample-report`
   - **Goal:** Provide a tangible proof artifact.
   - **References:** `docs/SAMPLE_REPORT.md`, `docs/websites/04_page_requirements.md`.
   - **AC:**
@@ -219,7 +240,7 @@ Brain skills (open those relevant to the current item):
     - Has a primary CTA “Get a sample report”.
   - **If Blocked:** Embed a truncated sample and link to the full doc.
 
-- [ ] **5.3** Implement `/privacy` and `/terms`
+- [x] **5.3** Implement `/privacy` and `/terms`
   - **Goal:** Reduce procurement friction and improve trust.
   - **References:** `docs/WEBSITE_REQUIREMENTS.md`.
   - **AC:** Pages exist and are linked in the footer.

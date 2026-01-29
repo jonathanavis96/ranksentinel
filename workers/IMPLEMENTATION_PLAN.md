@@ -25,6 +25,10 @@ Last Updated: 2026-01-29 23:10:00
   - **AC:** `markdownlint docs/websites/NAV_CTA_SPEC.md` passes (no MD032 errors)
   - **Completed:** 2026-01-30 - Added blank lines around lists
 
+- [x] **0.2** Fix MD009/no-trailing-spaces in workers/ralph/THUNK.md
+  - **AC:** `markdownlint workers/ralph/THUNK.md` passes (no MD009 errors)
+  - **Completed:** 2026-01-30 - Removed trailing space from line 199
+
 - [x] **0.2** Fix MD032 errors in website/app/components/README.md
   - **AC:** `markdownlint website/app/components/README.md` passes (no MD032 errors)
   - **Completed:** 2026-01-30 - Added blank lines around lists
@@ -246,7 +250,7 @@ Brain skills (open those relevant to the current item):
   - **AC:** Pages exist and are linked in the footer.
   - **If Blocked:** Ship minimal placeholders labeled “Draft” and create follow-up tasks.
 
-- [ ] **5.4** Implement `/404`
+- [x] **5.4** Implement `/404`
   - **Goal:** Avoid dead ends.
   - **AC:** Has navigation back to `/` and `/pricing`.
   - **If Blocked:** Use a basic 404 page without custom styling.
