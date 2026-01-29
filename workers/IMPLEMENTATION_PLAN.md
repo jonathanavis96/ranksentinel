@@ -56,7 +56,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 > Motivation: we want consistent, low-risk execution. Agents must consult Brain skills first, and if blocked, produce a `docs/SKILL_REQUEST_<topic>.md` artifact. This must be enforced mechanically.
 
-- [ ] **0-K.1** Fix `./brain/skills` availability inside the workspace (no external symlink)
+- [x] **0-K.1** Fix `./brain/skills` availability inside the workspace (no external symlink)
   - **Problem:** `brain/skills` is currently a symlink to `/home/grafe/code/brain/skills` which is outside the workspace. Rovo/CI cannot read that path, so skills are effectively unavailable to the agent.
   - **Goal:** Ensure `./brain/skills/` is a real directory committed in-repo (or vendored during setup), not a symlink to outside paths.
   - **Implementation guidance (choose one):**
