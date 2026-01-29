@@ -1,10 +1,10 @@
 Ralph Verifier Report
-Time: 2026-01-29 02:30:01
-Git:  9d01c7b
+Time: 2026-01-29 02:34:14
+Git:  dfec417
 AC:   /home/grafe/code/ranksentinel/workers/ralph/rules/AC.rules
 Approvals: /home/grafe/code/ranksentinel/workers/ralph/rules/MANUAL_APPROVALS.rules
 ------------------------------------------------------------
-[2026-01-29 02:30:01] FAIL: AC hash mismatch (rules/AC.rules modified).
+[2026-01-29 02:34:14] FAIL: AC hash mismatch (rules/AC.rules modified).
 Expected: 49435fe35e7b29e6b22ff6d153980121abf80f41c63250d32d9aaaf1fcb50e8d
 Actual:   f83b4b46fb053e7b2db771d9e8a3079e0828ce107cbe6a6f0bf75926d1044375
 Fix: If intentional, update:
@@ -74,3 +74,76 @@ Fix: If intentional, update:
   cmd:  test -f ../README.md && echo yes
   exit: 0
   stdout: yes
+[PASS] Docs.NEURONS.1
+  desc: ralph/NEURONS.md exists
+  cmd:  test -f NEURONS.md && echo yes
+  exit: 0
+  stdout: yes
+[PASS] Docs.THOUGHTS.1
+  desc: ralph/THOUGHTS.md exists
+  cmd:  test -f THOUGHTS.md && echo yes
+  exit: 0
+  stdout: yes
+[PASS] Protected.1
+  desc: loop.sh differs from baseline (allowed in projects)
+  cmd:  sha256sum loop.sh | cut -d' ' -f1 | diff -q - .verify/loop.sha256 >/dev/null 2>&1 && echo match || echo mismatch
+  exit: 0
+  stdout: match
+[PASS] Protected.2
+  desc: verifier.sh differs from baseline (allowed in projects)
+  cmd:  sha256sum verifier.sh | cut -d' ' -f1 | diff -q - .verify/verifier.sha256 >/dev/null 2>&1 && echo match || echo mismatch
+  exit: 0
+  stdout: match
+[WARN] Protected.3 (auto check failed but warn gate)
+  desc: PROMPT.md differs from baseline (allowed in projects)
+  cmd:  sha256sum PROMPT.md | cut -d' ' -f1 | diff -q - .verify/prompt.sha256 >/dev/null 2>&1 && echo match || echo mismatch
+  exit: 0
+  stdout: mismatch
+  reasons:
+    - stdout mismatch expected='match' got='mismatch'
+[PASS] VerifyMeta.1
+  desc: Verifier run_id.txt exists and is non-empty
+  cmd:  test -s .verify/run_id.txt && echo OK || echo FAIL
+  exit: 0
+  stdout: OK
+[WARN] Manual.Integration.1 (manual review)
+  desc: Core integration tested manually
+  instructions: Run main workflow end-to-end and verify expected behavior
+[PASS] Lint.Markdownlint.AGENTS
+  desc: AGENTS.md passes markdownlint (if installed)
+  cmd:  bash -c 'command -v markdownlint &>/dev/null && markdownlint AGENTS.md 2>&1 | head -10 || echo "ok (markdownlint not installed)"'
+  exit: 0
+  stdout: AGENTS.md:7:81 error MD013/line-length Line length [Expected: 80; Actual: 93]
+AGENTS.md:15:81 error MD013/line-length Line length [Expected: 80; Actual: 95]
+AGENTS.md:16:81 error MD013/line-length Line length [Expected: 80; Actual: 88]
+AGENTS.md:17:81 error MD013/line-length Line length [Expected: 80; Actual: 103]
+AGENTS.md:37:81 error MD013/line-length Line length [Expected: 80; Actual: 106]
+AGENTS.md:45:81 error MD013/line-length Line length [Expected: 80; Actual: 97]
+[PASS] Lint.Markdownlint.NEURONS
+  desc: NEURONS.md passes markdownlint (if installed)
+  cmd:  bash -c 'command -v markdownlint &>/dev/null && markdownlint NEURONS.md 2>&1 | head -10 || echo "ok (markdownlint not installed)"'
+  exit: 0
+  stdout: NEURONS.md:3:81 error MD013/line-length Line length [Expected: 80; Actual: 88]
+NEURONS.md:7:81 error MD013/line-length Line length [Expected: 80; Actual: 200]
+NEURONS.md:20:81 error MD013/line-length Line length [Expected: 80; Actual: 100]
+NEURONS.md:77:81 error MD013/line-length Line length [Expected: 80; Actual: 100]
+NEURONS.md:150:81 error MD013/line-length Line length [Expected: 80; Actual: 165]
+NEURONS.md:151:81 error MD013/line-length Line length [Expected: 80; Actual: 107]
+NEURONS.md:166:81 error MD013/line-length Line length [Expected: 80; Actual: 212]
+NEURONS.md:193:81 error MD013/line-length Line length [Expected: 80; Actual: 87]
+NEURONS.md:386:81 error MD013/line-length Line length [Expected: 80; Actual: 100]
+NEURONS.md:388:81 error MD013/line-length Line length [Expected: 80; Actual: 130]
+[PASS] Lint.Markdownlint.THOUGHTS
+  desc: THOUGHTS.md passes markdownlint (if installed)
+  cmd:  bash -c 'command -v markdownlint &>/dev/null && markdownlint THOUGHTS.md 2>&1 | head -10 || echo "ok (markdownlint not installed)"'
+  exit: 0
+  stdout: THOUGHTS.md:7:81 error MD013/line-length Line length [Expected: 80; Actual: 103]
+THOUGHTS.md:65:81 error MD013/line-length Line length [Expected: 80; Actual: 95]
+------------------------------------------------------------
+SUMMARY
+  PASS: 21
+  FAIL: 0
+  WARN: 2 (manual_warn=1)
+  SKIP: 0
+  Manual gate=block failures: 0
+  Hash guard: FAIL
