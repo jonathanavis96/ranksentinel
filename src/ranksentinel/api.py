@@ -174,17 +174,32 @@ def trigger_first_insight_for_customer(
     return result
 
 
+def send_first_insight(customer_id: int, conn, settings: Settings | None = None) -> dict:
+    """Trigger a First Insight report for a customer.
+
+    Notes:
+    - This is intentionally callable as a plain function (tests call it directly).
+    - The FastAPI endpoint wrapper is defined below and uses dependency injection.
+    """
+    if settings is None:
+        settings = get_settings()
+
+    # Keep endpoint behavior stable: 404 uses a consistent message.
+    cust = fetch_one(conn, "SELECT id FROM customers WHERE id=?", (customer_id,))
+    if not cust:
+        raise HTTPException(status_code=404, detail="customer not found")
+
+    result = trigger_first_insight_for_customer(customer_id, conn, settings)
+    return {
+        "status": "ok",
+        "message": f"First Insight report triggered for customer {customer_id}",
+        "result": result,
+    }
+
+
 @app.post("/admin/customers/{customer_id}/send_first_insight")
-def send_first_insight(
+def send_first_insight_endpoint(
     customer_id: int, conn=Depends(get_conn), settings: Settings = Depends(get_settings)
 ):
-    """Trigger a First Insight report for a customer (admin-only endpoint).
-
-    This endpoint sends an immediate onboarding report to help new customers
-    see value quickly without waiting for the weekly schedule.
-    """
-    try:
-        result = trigger_first_insight_for_customer(customer_id, conn, settings)
-        return result
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e)) from e
+    """Admin endpoint wrapper for `send_first_insight()` (FastAPI dependency injection)."""
+    return send_first_insight(customer_id=customer_id, conn=conn, settings=settings)

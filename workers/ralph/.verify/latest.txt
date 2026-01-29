@@ -1,14 +1,9 @@
 Ralph Verifier Report
-Time: 2026-01-30 00:21:14
-Git:  b28d62e
+Time: 2026-01-30 00:27:31
+Git:  7f92252
 AC:   /home/grafe/code/ranksentinel/workers/ralph/rules/AC.rules
 Approvals: /home/grafe/code/ranksentinel/workers/ralph/rules/MANUAL_APPROVALS.rules
 ------------------------------------------------------------
-[2026-01-30 00:21:14] FAIL: AC hash mismatch (rules/AC.rules modified).
-Expected: 24973bbc1440f1bb3549ed79177e356c2b52df5bdee24e0cb988ec2f339f936a
-Actual:   057ec1bb2ae94289aab73f69be51a971b85ab0facb317571d55ca2ebaa83c9ce
-Fix: If intentional, update:
-  sha256sum "/home/grafe/code/ranksentinel/workers/ralph/rules/AC.rules" > "/home/grafe/code/ranksentinel/workers/ralph/.verify/ac.sha256"
 [PASS] Structure.Dirs.1
   desc: src/ directory exists at project root (NOT ralph/src/)
   cmd:  test -d ../src && echo yes
@@ -149,4 +144,4 @@ SUMMARY
   WARN: 1 (manual_warn=1)
   SKIP: 0
   Manual gate=block failures: 0
-  Hash guard: FAIL
+  Hash guard: OK
