@@ -209,7 +209,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - Unit test exists for scheduler ordering under cooldown (A deferred, B/C proceed, A retried later).
     - Weekly integration test for interleaving remains green.
 
-- [ ] **0-R.10** Restore green test suite after above fixes
+- [x] **0-R.10** Restore green test suite after above fixes
   - **Why:** Currently `pytest -q` reports `9 failed`.
   - **Do:** Run full suite and fix any remaining failures introduced by changes.
   - **Skills:** `brain/skills/playbooks/investigate-test-failures.md`, `brain/skills/domains/code-quality/testing-patterns.md`
