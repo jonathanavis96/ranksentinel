@@ -204,7 +204,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:**
     - run weekly or daily twice with changed sitemap content and confirm correct delta + severity
 
-- [ ] **1.8** Key-page HTML fetch + normalization snapshot
+- [x] **1.8** Key-page HTML fetch + normalization snapshot
   - **Goal:** fetch key targets and persist normalized text/HTML snapshot for tag extraction.
   - **AC:** for targets where `is_key=true`, runner fetches HTML with retries/backoff
   - **AC:** stores sha of normalized content (using existing `normalize_html_to_text` where appropriate)
