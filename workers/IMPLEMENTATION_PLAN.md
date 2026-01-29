@@ -96,15 +96,16 @@ Brain skills (open those relevant to the current item):
     - Any contradictions with `04_page_requirements.md` are resolved and documented.
   - **If Blocked:** Add a short “Open Questions” list to `03_ia_sitemap.md` and proceed with homepage/pricing/sample-report as MVP.
 
-- [ ] **1.2** Lock nav labels + destinations + CTA placement rules
+- [x] **1.2** Lock nav labels + destinations + CTA placement rules
   - **Goal:** Make the site consistent and avoid conversion-killing copy drift.
   - **References:** `docs/websites/05_copy_system.md`, `brain/skills/domains/websites/copywriting/cta-optimizer.md`.
   - **AC:**
     - Nav labels and URLs are explicitly listed (header + footer).
-    - “One primary CTA per page view” is documented with examples.
+    - "One primary CTA per page view" is documented with examples.
   - **If Blocked:** Default to:
     - Links: Product, Pricing, Sample report, FAQ.
-    - Buttons: homepage “Get a sample report”; pricing “Start monitoring”.
+    - Buttons: homepage "Get a sample report"; pricing "Start monitoring".
+  - **Completed:** Created `docs/websites/NAV_CTA_SPEC.md` with comprehensive navigation and CTA rules.
 
 ### Task 2: Frontend scaffold (Next.js static export)
 
