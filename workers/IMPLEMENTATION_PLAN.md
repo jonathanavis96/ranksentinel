@@ -223,7 +223,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 5: Additional pages (pricing, sample report, legal, 404)
 
-- [ ] **5.1** Implement `/pricing` from pricing doc
+- [x] **5.1** Implement `/pricing` from pricing doc
   - **Goal:** Make upgrade path and limits obvious.
   - **References:** `docs/websites/06_pricing_packaging.md`, `docs/websites/05_copy_system.md`.
   - **AC:**
