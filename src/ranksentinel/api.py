@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+from ranksentinel.email_utils import canonicalize_email
+
 from fastapi import Depends, FastAPI, HTTPException
 
 from ranksentinel.config import Settings, get_settings
@@ -220,20 +222,23 @@ def create_lead(payload: LeadCreate, conn=Depends(get_conn)):
     ts = now_iso()
     
     # Validate email format (basic check)
-    email = payload.email.strip().lower()
-    if not email or "@" not in email:
+    email_raw = payload.email.strip().lower()
+    if not email_raw or "@" not in email_raw:
         raise HTTPException(status_code=400, detail="Invalid email address")
+    
+    # Canonicalize email to prevent abuse via Gmail dot/plus tricks
+    email_canonical = canonicalize_email(email_raw)
     
     # Validate domain format (basic check)
     domain = payload.domain.strip()
     if not domain:
         raise HTTPException(status_code=400, detail="Domain is required")
     
-    # Check if customer already exists (any status)
+    # Check if customer already exists (any status) using canonical email
     existing = fetch_one(
         conn,
-        "SELECT id, status FROM customers WHERE name=?",
-        (email,),
+        "SELECT id, status FROM customers WHERE email_canonical=?",
+        (email_canonical,),
     )
     
     if existing:
@@ -289,20 +294,23 @@ def start_monitoring(payload: StartMonitoringRequest, conn=Depends(get_conn)):
     ts = now_iso()
     
     # Validate email format (basic check)
-    email = payload.email.strip().lower()
-    if not email or "@" not in email:
+    email_raw = payload.email.strip().lower()
+    if not email_raw or "@" not in email_raw:
         raise HTTPException(status_code=400, detail="Invalid email address")
+    
+    # Canonicalize email to prevent abuse via Gmail dot/plus tricks
+    email_canonical = canonicalize_email(email_raw)
     
     # Validate domain format (basic check)
     domain = payload.domain.strip()
     if not domain:
         raise HTTPException(status_code=400, detail="Domain is required")
     
-    # Check if customer already exists
+    # Check if customer already exists using canonical email
     existing = fetch_one(
         conn,
-        "SELECT id, status FROM customers WHERE name=?",
-        (email,),
+        "SELECT id, status FROM customers WHERE email_canonical=?",
+        (email_canonical,),
     )
     
     if existing:
@@ -314,11 +322,11 @@ def start_monitoring(payload: StartMonitoringRequest, conn=Depends(get_conn)):
             customer_id=customer_id,
         )
     else:
-        # Create new active customer
+        # Create new active customer with both raw and canonical email
         customer_id = execute(
             conn,
-            "INSERT INTO customers(name,status,created_at,updated_at) VALUES(?,?,?,?)",
-            (email, "active", ts, ts),
+            "INSERT INTO customers(name,email_raw,email_canonical,status,created_at,updated_at) VALUES(?,?,?,?,?,?)",
+            (email_raw, email_raw, email_canonical, "active", ts, ts),
         )
         execute(conn, "INSERT OR IGNORE INTO settings(customer_id) VALUES(?)", (customer_id,))
     
