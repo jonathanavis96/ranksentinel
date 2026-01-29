@@ -112,6 +112,19 @@ CREATE TABLE IF NOT EXISTS broken_links (
 );
 
 CREATE INDEX IF NOT EXISTS idx_broken_links_lookup ON broken_links(customer_id, run_type, detected_at DESC);
+
+CREATE TABLE IF NOT EXISTS artifacts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER NOT NULL,
+  kind TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  artifact_sha TEXT NOT NULL,
+  raw_content TEXT NOT NULL,
+  fetched_at TEXT NOT NULL,
+  FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_artifacts_lookup ON artifacts(customer_id, kind, subject, fetched_at DESC);
 """
 
 
@@ -142,3 +155,58 @@ def execute(conn: sqlite3.Connection, sql: str, params: Iterable[Any] = ()) -> i
     cur = conn.execute(sql, tuple(params))
     conn.commit()
     return int(cur.lastrowid)
+
+
+def get_latest_artifact(
+    conn: sqlite3.Connection, customer_id: int, kind: str, subject: str
+) -> sqlite3.Row | None:
+    """Get the most recent artifact for a given (customer_id, kind, subject).
+    
+    Args:
+        conn: Database connection
+        customer_id: Customer ID
+        kind: Artifact kind (e.g., 'robots_txt', 'sitemap')
+        subject: Artifact subject (e.g., URL or identifier)
+    
+    Returns:
+        Row with artifact data or None if no baseline exists
+    """
+    return fetch_one(
+        conn,
+        "SELECT id, artifact_sha, raw_content, fetched_at "
+        "FROM artifacts "
+        "WHERE customer_id=? AND kind=? AND subject=? "
+        "ORDER BY fetched_at DESC LIMIT 1",
+        (customer_id, kind, subject),
+    )
+
+
+def store_artifact(
+    conn: sqlite3.Connection,
+    customer_id: int,
+    kind: str,
+    subject: str,
+    artifact_sha: str,
+    raw_content: str,
+    fetched_at: str,
+) -> int:
+    """Store a new artifact snapshot.
+    
+    Args:
+        conn: Database connection
+        customer_id: Customer ID
+        kind: Artifact kind (e.g., 'robots_txt', 'sitemap')
+        subject: Artifact subject (e.g., URL or identifier)
+        artifact_sha: SHA256 hash of the raw_content
+        raw_content: The actual artifact content
+        fetched_at: ISO timestamp of when artifact was fetched
+    
+    Returns:
+        ID of the inserted artifact row
+    """
+    return execute(
+        conn,
+        "INSERT INTO artifacts(customer_id, kind, subject, artifact_sha, raw_content, fetched_at) "
+        "VALUES(?,?,?,?,?,?)",
+        (customer_id, kind, subject, artifact_sha, raw_content, fetched_at),
+    )

@@ -138,11 +138,12 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 > Phase 1 adds the first real SEO signals with normalization + severity, but keeps scope tight.
 
-- [ ] **1.0** Observation/artifact baseline model
-  - **Goal:** define where “latest known value” lives per (customer, kind, subject) so diffs are deterministic.
+- [x] **1.0** Observation/artifact baseline model
+  - **Goal:** define where "latest known value" lives per (customer, kind, subject) so diffs are deterministic.
   - **AC:** DB has a mechanism/table to store the latest snapshot per (customer, kind, subject)
-  - **AC:** runner code can load “previous snapshot” and compare to “current snapshot” for each kind
+  - **AC:** runner code can load "previous snapshot" and compare to "current snapshot" for each kind
   - **Validate:** run the same job twice and confirm the second run can load a baseline without crashing
+  - **Completed:** Added `artifacts` table with (customer_id, kind, subject, artifact_sha, raw_content, fetched_at) and index. Created `get_latest_artifact()` and `store_artifact()` functions in db.py. Comprehensive test coverage (7 tests) validates baseline loading, customer/kind/subject isolation, and idempotent run scenarios.
 
 - [ ] **1.1** Idempotent only-on-change rule
   - **Goal:** prevent finding spam by only writing findings when something meaningful changes.
