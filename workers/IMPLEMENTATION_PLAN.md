@@ -117,7 +117,7 @@ Brain skills (open those relevant to the current item):
     - Static output is compatible with GitHub Pages.
   - **If Blocked:** If static export limitations block routing/metadata, document constraints and switch to a compatible static approach (still Next.js-based) with user approval.
 
-- [ ] **2.2** Add basic tooling for the website (lint/format/typecheck)
+- [x] **2.2** Add basic tooling for the website (lint/format/typecheck)
   - **Goal:** Prevent formatting drift and obvious bugs.
   - **AC:**
     - `website/` has scripts: `lint`, `format` (or `fmt`), `typecheck` (if TS).
