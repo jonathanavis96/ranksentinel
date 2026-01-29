@@ -24,6 +24,7 @@ from ranksentinel.runner.normalization import (
     normalize_html_to_text,
     normalize_url,
 )
+from ranksentinel.runner.sitemap_parser import extract_url_count
 
 
 def now_iso() -> str:
@@ -524,6 +525,11 @@ def run(settings: Settings) -> None:
                                 sitemap_sha = sha256_text(sitemap_content)
                                 fetched_at = now_iso()
                                 
+                                # Extract URL count from sitemap
+                                url_count_data = extract_url_count(sitemap_content)
+                                url_count = url_count_data.get("url_count", 0)
+                                sitemap_type = url_count_data.get("sitemap_type", "unknown")
+                                
                                 # Check if sitemap changed before storing
                                 prev_sitemap_artifact = get_latest_artifact(conn, customer_id, "sitemap", str(sitemap_url))
                                 
@@ -536,8 +542,84 @@ def run(settings: Settings) -> None:
                                     
                                     log_structured(
                                         run_id, customer_id=customer_id, stage="fetch_sitemap",
-                                        status="success", url=sitemap_url, sha=sitemap_sha[:12]
+                                        status="success", url=sitemap_url, sha=sitemap_sha[:12],
+                                        url_count=url_count, sitemap_type=sitemap_type
                                     )
+                                    
+                                    # Check for URL count changes (if we have a baseline)
+                                    if prev_sitemap_artifact:
+                                        prev_content = str(prev_sitemap_artifact["raw_content"] or "")
+                                        prev_count_data = extract_url_count(prev_content)
+                                        prev_url_count = prev_count_data.get("url_count", 0)
+                                        
+                                        # Detect significant changes
+                                        if prev_url_count > 0:
+                                            count_delta = url_count - prev_url_count
+                                            pct_change = (count_delta / prev_url_count) * 100 if prev_url_count > 0 else 0
+                                            
+                                            severity = None
+                                            title = None
+                                            details = None
+                                            
+                                            # URL count disappeared (complete loss)
+                                            if url_count == 0:
+                                                severity = "critical"
+                                                title = "Sitemap URL count dropped to zero"
+                                                details = f"""All URLs disappeared from sitemap.
+
+- **Previous count:** {prev_url_count}
+- **Current count:** 0
+- **Sitemap URL:** `{sitemap_url}`
+- **Type:** {sitemap_type}
+
+This may prevent search engines from discovering your pages."""
+                                            # Large drop (>30% loss)
+                                            elif pct_change <= -30:
+                                                severity = "critical"
+                                                title = "Sitemap URL count dropped significantly"
+                                                details = f"""Sitemap URL count decreased by {abs(pct_change):.1f}%.
+
+- **Previous count:** {prev_url_count}
+- **Current count:** {url_count}
+- **Change:** {count_delta} URLs ({pct_change:+.1f}%)
+- **Sitemap URL:** `{sitemap_url}`
+- **Type:** {sitemap_type}
+
+Review your sitemap generation to ensure pages are not being accidentally excluded."""
+                                            # Moderate drop (10-30% loss)
+                                            elif pct_change <= -10:
+                                                severity = "warning"
+                                                title = "Sitemap URL count decreased"
+                                                details = f"""Sitemap URL count decreased by {abs(pct_change):.1f}%.
+
+- **Previous count:** {prev_url_count}
+- **Current count:** {url_count}
+- **Change:** {count_delta} URLs ({pct_change:+.1f}%)
+- **Sitemap URL:** `{sitemap_url}`
+- **Type:** {sitemap_type}"""
+                                            
+                                            # Create finding if severity determined
+                                            if severity and title and details:
+                                                period = datetime.fromisoformat(fetched_at).strftime('%Y-%m-%d')
+                                                dedupe_key = generate_finding_dedupe_key(
+                                                    customer_id, "daily", "indexability", title, None, period
+                                                )
+                                                execute(
+                                                    conn,
+                                                    "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                                    "VALUES(?,?,?,?,?,?,?,?,?)",
+                                                    (
+                                                        customer_id,
+                                                        "daily",
+                                                        severity,
+                                                        "indexability",
+                                                        title,
+                                                        details,
+                                                        None,
+                                                        dedupe_key,
+                                                        fetched_at,
+                                                    ),
+                                                )
                             else:
                                 # Missing or unreachable sitemap - create critical finding
                                 fetched_at = now_iso()
