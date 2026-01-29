@@ -1,9 +1,11 @@
+import time
 from datetime import datetime, timezone
 
 from ranksentinel.config import Settings
 from ranksentinel.db import connect, execute, fetch_all, fetch_one, init_db
 from ranksentinel.http_client import fetch_text
 from ranksentinel.runner.link_checker import find_broken_links
+from ranksentinel.runner.logging_utils import generate_run_id, log_stage, log_structured, log_summary
 from ranksentinel.runner.normalization import normalize_url
 
 
@@ -122,10 +124,17 @@ def run(settings: Settings) -> None:
     
     Full weekly digest logic is implemented in later phases.
     """
+    run_id = generate_run_id()
+    start_time = time.time()
+    
+    log_structured(run_id, run_type="weekly", stage="init", status="start")
+    
     conn = connect(settings)
     try:
         init_db(conn)
         customers = fetch_all(conn, "SELECT id FROM customers WHERE status='active'")
+        
+        log_structured(run_id, stage="init", status="complete", customer_count=len(customers))
 
         errors_by_customer = {}
         
@@ -133,36 +142,38 @@ def run(settings: Settings) -> None:
             customer_id = int(c["id"])
             
             try:
-                # Detect broken internal links
-                detect_broken_internal_links(
-                    conn,
-                    customer_id,
-                    "weekly",
-                    max_pages_to_check=20,
-                    max_links_per_page=50,
-                )
+                with log_stage(run_id, "process_customer", customer_id=customer_id):
+                    # Detect broken internal links
+                    with log_stage(run_id, "detect_broken_links", customer_id=customer_id):
+                        detect_broken_internal_links(
+                            conn,
+                            customer_id,
+                            "weekly",
+                            max_pages_to_check=20,
+                            max_links_per_page=50,
+                        )
                 
-                # Bootstrap placeholder finding
-                execute(
-                    conn,
-                    "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
-                    "VALUES(?,?,?,?,?,?,?,?)",
-                    (
-                        customer_id,
-                        "weekly",
-                        "info",
-                        "bootstrap",
-                        "Weekly digest executed (bootstrap)",
-                        "This is the bootstrap weekly digest placeholder.\
+                    # Bootstrap placeholder finding
+                    execute(
+                        conn,
+                        "INSERT INTO findings(customer_id,run_type,severity,category,title,details_md,url,created_at) "
+                        "VALUES(?,?,?,?,?,?,?,?)",
+                        (
+                            customer_id,
+                            "weekly",
+                            "info",
+                            "bootstrap",
+                            "Weekly digest executed (bootstrap)",
+                            "This is the bootstrap weekly digest placeholder.\
 ",
-                        None,
-                        now_iso(),
-                    ),
-                )
+                            None,
+                            now_iso(),
+                        ),
+                    )
             except Exception as e:  # noqa: BLE001
                 # Catch per-customer errors and record them, then continue to next customer
                 error_msg = f"Customer {customer_id} processing failed: {type(e).__name__}: {e}"
-                print(f"ERROR: {error_msg}")
+                log_structured(run_id, customer_id=customer_id, stage="process_customer", status="error", error=error_msg)
                 errors_by_customer[customer_id] = error_msg
                 # Log error to database for debugging
                 try:
@@ -176,21 +187,23 @@ def run(settings: Settings) -> None:
                             "critical",
                             "system",
                             "Weekly run processing error",
-                            f"An error occurred during weekly processing:\n\n```\n{error_msg}\n```",
+                            f"An error occurred during weekly processing:\\n\\n```\\n{error_msg}\\n```",
                             None,
                             now_iso(),
                         ),
                     )
                 except Exception as db_error:  # noqa: BLE001
-                    print(f"ERROR: Failed to log error to database: {db_error}")
+                    log_structured(run_id, customer_id=customer_id, stage="log_error_to_db", status="error", error=str(db_error))
         
-        # Print summary at end
+        # Calculate elapsed time and print summary
+        total_elapsed_ms = int((time.time() - start_time) * 1000)
         total_customers = len(customers)
         failed_customers = len(errors_by_customer)
         successful_customers = total_customers - failed_customers
         
-        print(f"SUMMARY: Processed {total_customers} customer(s) - {successful_customers} succeeded, {failed_customers} failed")
+        log_summary(run_id, "weekly", total_customers, successful_customers, failed_customers, total_elapsed_ms)
+        
         if errors_by_customer:
-            print("Failed customers:", ", ".join(str(cid) for cid in errors_by_customer.keys()))
+            log_structured(run_id, stage="summary", failed_customer_ids=",".join(str(cid) for cid in errors_by_customer.keys()))
     finally:
         conn.close()

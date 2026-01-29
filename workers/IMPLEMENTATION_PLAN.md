@@ -124,7 +124,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** job exit code reflects overall success/failure policy (decide in Phase 5.4)
   - **Validate:** configure two customers where one fails (bad URL) and confirm the other still produces findings
 
-- [ ] **0.11** Structured logging + run_id
+- [x] **0.11** Structured logging + run_id
   - **Goal:** every run has `run_id` and logs include `run_id`, `customer_id`, `stage`, `elapsed_ms`.
   - **AC:** daily/weekly scripts emit a single end-of-run `SUMMARY` line for cron readability
   - **Validate:** run daily and confirm logs contain `run_id=` and end with a `SUMMARY` line
