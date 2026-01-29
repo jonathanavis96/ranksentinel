@@ -137,7 +137,7 @@ Brain skills (open those relevant to the current item):
       - Hero gradient per doc.
   - **If Blocked:** Use CSS variables only (no Tailwind), but keep naming consistent.
 
-- [ ] **3.2** Implement layout primitives (container widths, spacing scale)
+- [x] **3.2** Implement layout primitives (container widths, spacing scale)
   - **Goal:** Create a predictable “soft SaaS” rhythm and readable measure.
   - **References:** `docs/websites/10_design_ux.md`, `brain/skills/domains/websites/design/spacing-layout.md`.
   - **AC:**
