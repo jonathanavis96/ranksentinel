@@ -41,7 +41,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** `sha256sum PROMPT.md | cut -d' ' -f1 | diff -q - .verify/prompt.sha256` passes
   - **Note:** This is informational - PROMPT.md changes are allowed in projects
 
-- [?] **0-W.5** Manual integration test - Core workflow end-to-end
+- [x] **0-W.5** Manual integration test - Core workflow end-to-end
   - **AC:** Run main workflow end-to-end and verify expected behavior
   - **Note:** Manual validation required per Manual.Integration.1
   - **If Blocked:** Requires human operator to run end-to-end workflow test and validate behavior. Cannot be automated by Ralph. Human should test daily/weekly runs and mark [x] when satisfied.
@@ -89,6 +89,17 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** The fixture includes the Google 0.84 namespace and at least 2 `<url><loc>...` entries.
   - **Validate:** `pytest -q`
 
+- [ ] **0-S.5** Shopify sitemap index expansion (crawl actual page URLs, not child sitemap XML)
+  - **Goal:** Handle common Shopify pattern where `sitemap.xml` is a `sitemapindex` of child sitemaps (`sitemap_pages_*.xml`, `sitemap_products_*.xml`, etc.). Weekly should crawl URLs inside those child sitemaps.
+  - **Files (likely):** `src/ranksentinel/runner/weekly_digest.py`, `src/ranksentinel/runner/sitemap_parser.py`, `tests/test_weekly_fetcher_integration.py`
+  - **Implementation guidance (MVP):**
+    - If the configured sitemap parses as a `sitemapindex`, treat each `<loc>` as a *child sitemap URL*.
+    - Fetch child sitemap XML(s) (polite: timeout+retries) and extract their `<url><loc>` page URLs.
+    - Enforce a hard cap to avoid blowups (e.g., expand at most first 10 child sitemaps and stop once you have `crawl_limit` page URLs).
+    - Emit structured logs that make it obvious whether we crawled pages vs sitemaps (e.g., `stage=sitemap_expand`, `child_sitemaps_fetched`, `page_urls_extracted`).
+  - **AC:** With a Shopify-style sitemapindex, weekly fetches *page URLs* (not `.xml` sitemap URLs) and can detect 404s on pages.
+  - **Validate:** Add an integration test using mocked HTTP responses: root sitemapindex -> child urlset -> page URLs; assert fetched URLs are pages and not `.xml`.
+
 ## Phase 0-R: Real-world crawl resilience (rate limiting + auditability)
 
 > Motivation: real sites frequently rate-limit bots (HTTP 429), and weekly runs must persist snapshots for auditability/diffing.
@@ -110,18 +121,51 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** A simulated 429 response is retried and can succeed on a later attempt.
   - **Validate:** Add/extend unit tests (e.g., `tests/test_http_client.py`) using a mocked transport.
 
-- [x] **0-R.2** Ensure weekly page fetch persists `snapshots` (and relevant artifacts) for all attempted URLs
+- [ ] **0-R.2a** Define weekly snapshot persistence schema (run_id-linked, supports errors)
+  - **Goal:** Make weekly crawl auditability possible and enable "New vs Resolved" later.
+  - **Files:** `src/ranksentinel/db.py`, `BOOTSTRAP.md` (if spec update needed)
+  - **Proposed schema (MVP):**
+    - Extend `snapshots` table to include:
+      - `run_id TEXT` (links snapshot rows to a specific run)
+      - `error_type TEXT` and `error TEXT` (optional, for fetch failures)
+    - Keep existing fields; on failure persist:
+      - `status_code = 0` (or other explicit sentinel) and `content_hash = ''` (empty)
+      - `final_url = url`, `redirect_chain = '[]'`
+    - Add index for lookup: `(customer_id, run_type, fetched_at DESC)` and optionally `(customer_id, run_id)`.
+  - **AC:** Schema supports storing a row even when the fetch failed, and supports scoping a report to a specific run_id.
+
+- [ ] **0-R.2b** Implement DB migration-on-startup (no manual migrations)
+  - **Goal:** Ensure existing DB files get new tables/columns automatically when the runner starts.
+  - **Files:** `src/ranksentinel/db.py`
+  - **Implementation guidance:**
+    - Enhance `init_db(conn)` to be idempotent but also apply lightweight migrations:
+      - create missing tables (`run_coverage`)
+      - `ALTER TABLE` add missing columns (e.g., `snapshots.run_id`, `snapshots.error_type`, `snapshots.error`)
+      - (Also ensure `findings.run_id` exists if code expects it)
+    - Use `PRAGMA table_info(<table>)` checks before ALTER.
+  - **AC:** Running `init_db()` against an older DB creates `run_coverage` and adds missing columns without data loss.
+  - **Validate:** Add a unit test that creates an "old" schema (without these columns) and then calls `init_db()` and asserts columns exist.
+
+- [ ] **0-R.2c** Persist weekly page fetch results into `snapshots` for all attempted URLs
   - **Goal:** Weekly runs must leave an audit trail in SQLite for reporting/diffing and customer support.
   - **Files (likely):** `src/ranksentinel/runner/weekly_digest.py`, `src/ranksentinel/runner/page_fetcher.py`, `src/ranksentinel/db.py`
   - **Implementation guidance:**
-    - Confirm intended contract:
-      - On each attempted fetch (success or error), persist a `snapshots` row with:
-        - `customer_id`, `url`, `run_type='weekly'`, `fetched_at`, `status_code`, `final_url`, `redirect_chain`, `content_hash` (use empty hash on error if needed)
-      - For successes, persist parsed fields (`title`, `canonical`, `meta_robots`) and/or artifacts as currently designed.
-    - If persistence is intentionally only on success today, change it to persist at least the status/redirect metadata for failures too.
-  - **AC:** After a weekly run with `crawl_limit=N`, there are `N` new `snapshots` rows for that customer/run_type (or fewer only if sitemap has < N URLs).
-  - **Validate:**
-    - Add/extend an integration test (e.g., `tests/test_weekly_fetcher_integration.py`) that runs weekly against a controlled local fixture/mocked HTTP client and asserts snapshot rows inserted.
+    - Implement `persist_fetch_results()` in `page_fetcher.py` (remove "schema TBD" stub).
+    - Call it from `weekly_digest.run()` immediately after `fetch_pages()`.
+    - Persist one row per attempted URL with `run_type='weekly'` and the current `run_id`.
+  - **AC:** After a weekly run with `crawl_limit=N`, there are `N` new `snapshots` rows with `run_type='weekly'` and `run_id=<current run_id>` (or fewer only if sitemap has < N URLs).
+  - **Validate:** Extend `tests/test_weekly_fetcher_integration.py` to assert snapshot rows inserted and include run_id.
+
+- [ ] **0-R.4** Verify weekly snapshots + run_coverage tables are created in the *real* SQLite DB
+  - **Goal:** Catch schema drift where code expects new tables but the live DB never got `init_db()` applied.
+  - **Files (likely):** `src/ranksentinel/db.py`, `src/ranksentinel/runner/weekly_digest.py`, `scripts/run_weekly.sh`, docs as needed
+  - **Implementation guidance:**
+    - Ensure weekly calls `init_db(conn)` against the configured `RANKSENTINEL_DB_PATH`.
+    - Add a smoke/integration test that runs a weekly pass against a temp DB and asserts:
+      - `run_coverage` table exists + row inserted
+      - `snapshots` includes `run_type='weekly'` rows
+    - (Optional) Consider adding a small startup log line printing DB path for easier debugging.
+  - **AC:** After a weekly run in this workspace, `sqlite3 ranksentinel.sqlite3 "select count(*) from run_coverage;"` is > 0 and `select run_type,count(*) from snapshots group by run_type;` includes weekly.
 
 - [x] **0-R.3** Add regression coverage for rate-limited site behavior
   - **Goal:** Prevent future regressions where 429 causes large error_count and zero snapshots.

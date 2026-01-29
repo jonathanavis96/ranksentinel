@@ -46,9 +46,9 @@ def insert_finding(
     try:
         finding_id = execute(
             conn,
-            "INSERT INTO findings(customer_id, run_type, severity, category, title, details_md, url, dedupe_key, created_at) "
-            "VALUES(?,?,?,?,?,?,?,?,?)",
-            (customer_id, run_type, severity.key, category, title, details_md, url, dedupe_key, created_at),
+            "INSERT INTO findings(customer_id, run_id, run_type, severity, category, title, details_md, url, dedupe_key, created_at) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?)",
+            (customer_id, run_id, run_type, severity.key, category, title, details_md, url, dedupe_key, created_at),
         )
         
         log_structured(

@@ -606,10 +606,11 @@ Review your sitemap generation to ensure pages are not being accidentally exclud
                                                 )
                                                 execute(
                                                     conn,
-                                                    "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-                                                    "VALUES(?,?,?,?,?,?,?,?,?)",
+                                                    "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                                    "VALUES(?,?,?,?,?,?,?,?,?,?)",
                                                     (
                                                         customer_id,
+                                                        run_id,
                                                         "daily",
                                                         severity,
                                                         "indexability",
@@ -638,10 +639,11 @@ This may prevent search engines from discovering your pages."""
                                 
                                 execute(
                                     conn,
-                                    "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-                                    "VALUES(?,?,?,?,?,?,?,?,?)",
+                                    "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                    "VALUES(?,?,?,?,?,?,?,?,?,?)",
                                     (
                                         customer_id,
+                                        run_id,
                                         "daily",
                                         "critical",
                                         "indexability",
@@ -702,10 +704,11 @@ This may prevent search engines from discovering your pages."""
                                         )
                                         execute(
                                             conn,
-                                            "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-                                            "VALUES(?,?,?,?,?,?,?,?,?)",
+                                            "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                            "VALUES(?,?,?,?,?,?,?,?,?,?)",
                                             (
                                                 customer_id,
+                                                run_id,
                                                 "daily",
                                                 severity,
                                                 "indexability",
@@ -794,10 +797,11 @@ This may prevent search engines from discovering your pages."""
                                 )
                                 execute(
                                     conn,
-                                    "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-                                    "VALUES(?,?,?,?,?,?,?,?,?)",
+                                    "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                    "VALUES(?,?,?,?,?,?,?,?,?,?)",
                                     (
                                         customer_id,
+                                        run_id,
                                         "daily",
                                         severity,
                                         "indexability",
@@ -825,10 +829,11 @@ This may prevent search engines from discovering your pages."""
                                 )
                                 execute(
                                     conn,
-                                    "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-                                    "VALUES(?,?,?,?,?,?,?,?,?)",
+                                    "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                    "VALUES(?,?,?,?,?,?,?,?,?,?)",
                                     (
                                         customer_id,
+                                        run_id,
                                         "daily",
                                         severity,
                                         "indexability",
@@ -856,10 +861,11 @@ This may prevent search engines from discovering your pages."""
                                 )
                                 execute(
                                     conn,
-                                    "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-                                    "VALUES(?,?,?,?,?,?,?,?,?)",
+                                    "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                    "VALUES(?,?,?,?,?,?,?,?,?,?)",
                                     (
                                         customer_id,
+                                        run_id,
                                         "daily",
                                         severity,
                                         "content",
@@ -902,11 +908,12 @@ This may prevent search engines from discovering your pages."""
                                     )
                                     execute(
                                         conn,
-                                        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-                                        "VALUES(?,?,?,?,?,?,?,?,?)",
+                                        "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                                        "VALUES(?,?,?,?,?,?,?,?,?,?)",
                                         (
                                             customer_id,
-                                            "daily",
+                            run_id,
+                            "daily",
                                             severity,
                                             "performance",
                                             title,
@@ -991,10 +998,11 @@ This may prevent search engines from discovering your pages."""
                     )
                     execute(
                         conn,
-                        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-                        "VALUES(?,?,?,?,?,?,?,?,?)",
+                        "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                        "VALUES(?,?,?,?,?,?,?,?,?,?)",
                         (
                             customer_id,
+                            run_id,
                             "daily",
                             "critical",
                             "system",

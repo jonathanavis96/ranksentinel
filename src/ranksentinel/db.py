@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS snapshots (
 CREATE TABLE IF NOT EXISTS findings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   customer_id INTEGER NOT NULL,
+  run_id TEXT NOT NULL,
   run_type TEXT NOT NULL CHECK(run_type IN ('daily','weekly')),
   severity TEXT NOT NULL CHECK(severity IN ('critical','warning','info')),
   category TEXT NOT NULL,

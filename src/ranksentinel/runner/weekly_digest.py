@@ -100,6 +100,7 @@ def detect_new_404s(
 
 def detect_broken_internal_links(
     conn,
+    run_id: str,
     customer_id: int,
     run_type: str,
     max_pages_to_check: int = 20,
@@ -194,10 +195,11 @@ def detect_broken_internal_links(
         )
         execute(
             conn,
-            "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-            "VALUES(?,?,?,?,?,?,?,?,?)",
+            "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?)",
             (
                 customer_id,
+                run_id,
                 run_type,
                 "warning",
                 "links",
@@ -350,6 +352,7 @@ def run(settings: Settings) -> None:
                     with log_stage(run_id, "detect_broken_links", customer_id=customer_id):
                         detect_broken_internal_links(
                             conn,
+                            run_id,
                             customer_id,
                             "weekly",
                             max_pages_to_check=20,
@@ -364,10 +367,11 @@ def run(settings: Settings) -> None:
                     )
                     execute(
                         conn,
-                        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-                        "VALUES(?,?,?,?,?,?,?,?,?)",
+                        "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                        "VALUES(?,?,?,?,?,?,?,?,?,?)",
                         (
                             customer_id,
+                            run_id,
                             "weekly",
                             "info",
                             "bootstrap",
@@ -383,14 +387,12 @@ def run(settings: Settings) -> None:
                     # Send weekly email (isolated from processing errors)
                     if mailgun_client and settings.MAILGUN_TO:
                         try:
-                            # Fetch all findings for this customer from this week (exclude bootstrap)
-                            current_period = datetime.now(timezone.utc).strftime('%Y-W%U')
+                            # Fetch all findings for this customer from this run (exclude bootstrap)
                             findings_rows = fetch_all(
                                 conn,
-                                "SELECT * FROM findings WHERE customer_id=? AND run_type='weekly' "
-                                "AND category != 'bootstrap' "
-                                "AND created_at >= date('now', '-7 days') ORDER BY severity DESC, created_at DESC",
-                                (customer_id,)
+                                "SELECT * FROM findings WHERE customer_id=? AND run_id=? AND run_type='weekly' "
+                                "AND category != 'bootstrap' ORDER BY severity DESC, created_at DESC",
+                                (customer_id, run_id)
                             )
                             
                             # Fetch coverage stats for this run
@@ -470,10 +472,11 @@ def run(settings: Settings) -> None:
                     )
                     execute(
                         conn,
-                        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-                        "VALUES(?,?,?,?,?,?,?,?,?)",
+                        "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+                        "VALUES(?,?,?,?,?,?,?,?,?,?)",
                         (
                             customer_id,
+                            run_id,
                             "weekly",
                             "critical",
                             "system",

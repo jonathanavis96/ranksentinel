@@ -52,6 +52,7 @@ def test_detect_broken_links_with_fixtures():
         try:
             detect_broken_internal_links(
                 conn,
+                "test-run-id",
                 customer_id,
                 "weekly",
                 max_pages_to_check=1,

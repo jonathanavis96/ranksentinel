@@ -30,23 +30,23 @@ def _setup_test_db(db_path, monkeypatch):
     now = datetime.now(timezone.utc).isoformat()
     
     # Create customers with different statuses
-    conn.execute(
+    cursor = conn.execute(
         "INSERT INTO customers(name, status, created_at, updated_at) VALUES (?, ?, ?, ?)",
         ("Active Customer", "active", now, now)
     )
-    active_id = conn.lastrowid
+    active_id = cursor.lastrowid
     
-    conn.execute(
+    cursor = conn.execute(
         "INSERT INTO customers(name, status, created_at, updated_at) VALUES (?, ?, ?, ?)",
         ("Past Due Customer", "past_due", now, now)
     )
-    past_due_id = conn.lastrowid
+    past_due_id = cursor.lastrowid
     
-    conn.execute(
+    cursor = conn.execute(
         "INSERT INTO customers(name, status, created_at, updated_at) VALUES (?, ?, ?, ?)",
         ("Canceled Customer", "canceled", now, now)
     )
-    canceled_id = conn.lastrowid
+    canceled_id = cursor.lastrowid
     
     return settings, conn, (active_id, past_due_id, canceled_id)
 

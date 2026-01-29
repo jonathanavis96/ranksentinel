@@ -78,17 +78,17 @@ def test_finding_dedupe_prevents_duplicates(test_db):
     # Insert first finding
     execute(
         test_db,
-        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-        "VALUES(?,?,?,?,?,?,?,?,?)",
-        (customer_id, "daily", "critical", "indexability", "Test finding", "Details", "https://example.com", dedupe_key, created_at),
+        "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?)",
+        (customer_id, "run1", "daily", "critical", "indexability", "Test finding", "Details", "https://example.com", dedupe_key, created_at),
     )
     
     # Try to insert duplicate (same dedupe_key)
     execute(
         test_db,
-        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-        "VALUES(?,?,?,?,?,?,?,?,?)",
-        (customer_id, "daily", "critical", "indexability", "Test finding", "Different details", "https://example.com", dedupe_key, created_at),
+        "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?)",
+        (customer_id, "run1", "daily", "critical", "indexability", "Test finding", "Different details", "https://example.com", dedupe_key, created_at),
     )
     
     # Should only have one finding
@@ -112,9 +112,9 @@ def test_finding_dedupe_allows_different_periods(test_db):
     )
     execute(
         test_db,
-        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-        "VALUES(?,?,?,?,?,?,?,?,?)",
-        (customer_id, "daily", "critical", "indexability", "Test finding", "Details", "https://example.com", dedupe_key_1, created_at_1),
+        "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?)",
+        (customer_id, "run1", "daily", "critical", "indexability", "Test finding", "Details", "https://example.com", dedupe_key_1, created_at_1),
     )
     
     # Day 2 (different period, should be allowed)
@@ -125,9 +125,9 @@ def test_finding_dedupe_allows_different_periods(test_db):
     )
     execute(
         test_db,
-        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-        "VALUES(?,?,?,?,?,?,?,?,?)",
-        (customer_id, "daily", "critical", "indexability", "Test finding", "Details", "https://example.com", dedupe_key_2, created_at_2),
+        "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?)",
+        (customer_id, "run2", "daily", "critical", "indexability", "Test finding", "Details", "https://example.com", dedupe_key_2, created_at_2),
     )
     
     # Should have two findings (one per period)
@@ -151,9 +151,9 @@ def test_finding_dedupe_allows_different_urls(test_db):
     )
     execute(
         test_db,
-        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-        "VALUES(?,?,?,?,?,?,?,?,?)",
-        (customer_id, "daily", "critical", "indexability", "Test finding", "Details", "https://example.com", dedupe_key_1, created_at),
+        "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?)",
+        (customer_id, "run1", "daily", "critical", "indexability", "Test finding", "Details", "https://example.com", dedupe_key_1, created_at),
     )
     
     # URL 2 (different URL, should be allowed)
@@ -162,9 +162,9 @@ def test_finding_dedupe_allows_different_urls(test_db):
     )
     execute(
         test_db,
-        "INSERT OR IGNORE INTO findings(customer_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
-        "VALUES(?,?,?,?,?,?,?,?,?)",
-        (customer_id, "daily", "critical", "indexability", "Test finding", "Details", "https://other.com", dedupe_key_2, created_at),
+        "INSERT OR IGNORE INTO findings(customer_id,run_id,run_type,severity,category,title,details_md,url,dedupe_key,created_at) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?)",
+        (customer_id, "run1", "daily", "critical", "indexability", "Test finding", "Details", "https://other.com", dedupe_key_2, created_at),
     )
     
     # Should have two findings (one per URL)
