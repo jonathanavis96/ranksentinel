@@ -128,7 +128,7 @@ def test_weekly_fetcher_records_fetch_status(tmp_path):
         findings = fetch_all(conn, "SELECT * FROM findings WHERE customer_id=?", (customer_id,))
         conn.close()
         
-        # Should have at least the bootstrap finding
+        # Should have at least the bootstrap finding (still in DB, just not in email)
         assert len(findings) >= 1
 
 

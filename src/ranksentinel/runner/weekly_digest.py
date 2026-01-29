@@ -352,11 +352,12 @@ def run(settings: Settings) -> None:
                     # Send weekly email (isolated from processing errors)
                     if mailgun_client and settings.MAILGUN_TO:
                         try:
-                            # Fetch all findings for this customer from this week
+                            # Fetch all findings for this customer from this week (exclude bootstrap)
                             current_period = datetime.now(timezone.utc).strftime('%Y-W%U')
                             findings_rows = fetch_all(
                                 conn,
                                 "SELECT * FROM findings WHERE customer_id=? AND run_type='weekly' "
+                                "AND category != 'bootstrap' "
                                 "AND created_at >= date('now', '-7 days') ORDER BY severity DESC, created_at DESC",
                                 (customer_id,)
                             )

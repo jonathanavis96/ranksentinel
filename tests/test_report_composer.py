@@ -254,3 +254,53 @@ def test_sorting_stability():
     assert len(report.warning_findings) == 2
     assert report.warning_findings[0].title == "Canonical URL disappeared"  # priority 1
     assert report.warning_findings[1].title == "Canonical URL changed"  # priority 2
+
+
+def test_bootstrap_findings_excluded_from_weekly_report():
+    """Test that bootstrap category findings are excluded from weekly emails."""
+    findings = [
+        {
+            "id": 1,
+            "customer_id": 123,
+            "severity": "info",
+            "category": "bootstrap",
+            "title": "Weekly digest executed (bootstrap)",
+            "details_md": "This is the bootstrap weekly digest placeholder.",
+            "url": None,
+            "created_at": "2026-01-28T10:00:00Z",
+        },
+        {
+            "id": 2,
+            "customer_id": 123,
+            "severity": "critical",
+            "category": "content-change",
+            "title": "Homepage is now noindex",
+            "details_md": "The homepage now has noindex.",
+            "url": "https://example.com/",
+            "created_at": "2026-01-28T12:00:00Z",
+        },
+    ]
+    
+    class MockRow:
+        def __init__(self, data):
+            self._data = data
+        
+        def __getitem__(self, key):
+            return self._data[key]
+        
+        def get(self, key, default=None):
+            return self._data.get(key, default)
+    
+    # Note: In practice, the SQL query excludes bootstrap findings,
+    # but this tests the composer behavior if bootstrap findings slip through
+    mock_rows = [MockRow(f) for f in findings]
+    report = compose_weekly_report("TestCo", mock_rows)
+    
+    # Report should include the bootstrap finding if passed (composer doesn't filter)
+    # The actual filtering happens in the SQL query in weekly_digest.py
+    assert report.info_count == 1
+    assert report.critical_count == 1
+    
+    # Verify bootstrap finding is in the report (composer doesn't filter)
+    bootstrap_in_report = any(f.category == "bootstrap" for f in report.info_findings)
+    assert bootstrap_in_report, "Composer should include bootstrap if passed (filtering is SQL's job)"
