@@ -164,7 +164,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** After a weekly run, coverage stats exist in DB for that customer and run_id.
   - **Validate:** Add integration test to assert row exists and counts are non-null.
 
-- [ ] **0-E.4** Include coverage stats in the weekly email (text + HTML)
+- [x] **0-E.4** Include coverage stats in the weekly email (text + HTML)
   - **Goal:** Even when there are no findings, the email shows what RankSentinel monitored.
   - **Files (likely):** `src/ranksentinel/runner/weekly_digest.py`, `src/ranksentinel/reporting/report_composer.py`
   - **Implementation guidance:**
