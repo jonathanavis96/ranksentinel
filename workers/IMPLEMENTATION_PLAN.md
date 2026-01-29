@@ -21,17 +21,21 @@ Last Updated: 2026-01-29 23:10:00
 
 ## Phase 0-Warn: Verifier Warnings
 
-- [ ] **0.1** Fix MD032 errors in docs/websites/NAV_CTA_SPEC.md
+- [x] **0.1** Fix MD032 errors in docs/websites/NAV_CTA_SPEC.md
   - **AC:** `markdownlint docs/websites/NAV_CTA_SPEC.md` passes (no MD032 errors)
+  - **Completed:** 2026-01-30 - Added blank lines around lists
 
-- [ ] **0.2** Fix MD032 errors in website/app/components/README.md
+- [x] **0.2** Fix MD032 errors in website/app/components/README.md
   - **AC:** `markdownlint website/app/components/README.md` passes (no MD032 errors)
+  - **Completed:** 2026-01-30 - Added blank lines around lists
 
-- [ ] **0.3** Fix markdown errors in website/node_modules/@alloc/quick-lru/readme.md
+- [x] **0.3** Fix markdown errors in website/node_modules/@alloc/quick-lru/readme.md
   - **AC:** `markdownlint website/node_modules/@alloc/quick-lru/readme.md` passes (no MD040, MD014, MD010 errors)
+  - **Completed:** 2026-01-30 - Added node_modules to .markdownlintignore (third-party code should not be modified)
 
-- [ ] **0.4** Fix markdown errors in website/node_modules/@babel/parser/CHANGELOG.md
+- [x] **0.4** Fix markdown errors in website/node_modules/@babel/parser/CHANGELOG.md
   - **AC:** `markdownlint website/node_modules/@babel/parser/CHANGELOG.md` passes (no MD032, MD028, MD034, MD049, MD022, MD004, MD007 errors)
+  - **Completed:** 2026-01-30 - Added node_modules to .markdownlintignore (third-party code should not be modified)
 
   - Source of truth: `docs/websites/10_design_ux.md`.
 - **CTA system:** Dual (contextual, one primary CTA per page view).
