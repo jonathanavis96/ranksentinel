@@ -42,7 +42,7 @@ fi
 # into the workspace so the agent can read skills reliably.
 # Runs only once per workspace (not per iteration).
 BRAIN_LOCAL_PATH="${BRAIN_LOCAL_PATH:-/home/grafe/code/brain}"
-BRAIN_SKILLS_SYNC_MARKER="$ROOT/.ralph_brain_skills_synced"
+BRAIN_SKILLS_SYNC_MARKER="$RALPH/.verify/.brain_skills_synced"
 
 sync_brain_skills_once() {
   if [[ -f "$BRAIN_SKILLS_SYNC_MARKER" ]]; then
