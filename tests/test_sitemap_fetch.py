@@ -26,15 +26,18 @@ def test_sitemap_fetch_and_store(test_db):
     conn, settings = test_db
 
     # Create test customer with sitemap_url
-    conn.execute("INSERT INTO customers(name, status) VALUES (?, ?)", ("Test Co", "active"))
-    customer_id = conn.lastrowid
+    cursor = conn.execute(
+        "INSERT INTO customers(name, status, created_at, updated_at) VALUES (?, ?, ?, ?)",
+        ("Test Co", "active", "2026-01-29T00:00:00Z", "2026-01-29T00:00:00Z"),
+    )
+    customer_id = cursor.lastrowid
     conn.execute(
         "INSERT INTO settings(customer_id, sitemap_url) VALUES (?, ?)",
         (customer_id, "https://example.com/sitemap.xml"),
     )
     conn.execute(
-        "INSERT INTO targets(customer_id, url, is_key) VALUES (?, ?, ?)",
-        (customer_id, "https://example.com/page1", 1),
+        "INSERT INTO targets(customer_id, url, is_key, created_at) VALUES (?, ?, ?, ?)",
+        (customer_id, "https://example.com/page1", 1, "2026-01-29T00:00:00Z"),
     )
     conn.commit()
 
@@ -87,15 +90,18 @@ def test_sitemap_missing_creates_finding(test_db):
     conn, settings = test_db
 
     # Create test customer with sitemap_url
-    conn.execute("INSERT INTO customers(name, status) VALUES (?, ?)", ("Test Co", "active"))
-    customer_id = conn.lastrowid
+    cursor = conn.execute(
+        "INSERT INTO customers(name, status, created_at, updated_at) VALUES (?, ?, ?, ?)",
+        ("Test Co", "active", "2026-01-29T00:00:00Z", "2026-01-29T00:00:00Z"),
+    )
+    customer_id = cursor.lastrowid
     conn.execute(
         "INSERT INTO settings(customer_id, sitemap_url) VALUES (?, ?)",
         (customer_id, "https://example.com/sitemap.xml"),
     )
     conn.execute(
-        "INSERT INTO targets(customer_id, url, is_key) VALUES (?, ?, ?)",
-        (customer_id, "https://example.com/page1", 1),
+        "INSERT INTO targets(customer_id, url, is_key, created_at) VALUES (?, ?, ?, ?)",
+        (customer_id, "https://example.com/page1", 1, "2026-01-29T00:00:00Z"),
     )
     conn.commit()
 
@@ -146,15 +152,18 @@ def test_sitemap_no_change_no_store(test_db):
     conn, settings = test_db
 
     # Create test customer with sitemap_url
-    conn.execute("INSERT INTO customers(name, status) VALUES (?, ?)", ("Test Co", "active"))
-    customer_id = conn.lastrowid
+    cursor = conn.execute(
+        "INSERT INTO customers(name, status, created_at, updated_at) VALUES (?, ?, ?, ?)",
+        ("Test Co", "active", "2026-01-29T00:00:00Z", "2026-01-29T00:00:00Z"),
+    )
+    customer_id = cursor.lastrowid
     conn.execute(
         "INSERT INTO settings(customer_id, sitemap_url) VALUES (?, ?)",
         (customer_id, "https://example.com/sitemap.xml"),
     )
     conn.execute(
-        "INSERT INTO targets(customer_id, url, is_key) VALUES (?, ?, ?)",
-        (customer_id, "https://example.com/page1", 1),
+        "INSERT INTO targets(customer_id, url, is_key, created_at) VALUES (?, ?, ?, ?)",
+        (customer_id, "https://example.com/page1", 1, "2026-01-29T00:00:00Z"),
     )
     conn.commit()
 

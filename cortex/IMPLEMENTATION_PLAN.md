@@ -139,6 +139,80 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 ## Phase 0-R: Real-world crawl resilience (rate limiting + auditability)
 
+### Test-fix followups (post 0K/0S/0R/0E)
+
+- [ ] **0-R.5** Fix sqlite test inserts to satisfy NOT NULL columns (`customers.created_at`, `customers.updated_at`, `targets.created_at`)
+  - **Why:** `pytest` currently fails with `NOT NULL constraint failed: customers.created_at` in sitemap tests.
+  - **Do:** Update tests (at least `tests/test_sitemap_fetch.py`) to insert required timestamp columns, or change schema to provide safe defaults.
+  - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
+  - **AC:** `./.venv/bin/pytest -q tests/test_sitemap_fetch.py` passes.
+
+- [ ] **0-R.6** Fix `tests/test_page_fetcher.py::test_persist_fetch_results_placeholder` to initialize schema (call `init_db()` before using snapshots)
+  - **Why:** Fails with `sqlite3.OperationalError: no such table: snapshots` because test creates a bare SQLite DB.
+  - **Do:** In the test, call `init_db(conn)` (or use shared fixture) before invoking `persist_fetch_results()`.
+  - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
+  - **AC:** `./.venv/bin/pytest -q tests/test_page_fetcher.py::test_persist_fetch_results_placeholder` passes.
+
+- [ ] **0-R.7** Align robots fetch tests with current artifact storage semantics
+  - **Why:** `tests/test_robots_fetch.py` has failing assertions vs actual implementation (subject/raw_content expectations).
+  - **Do:** Inspect current daily robots persistence (kind/subject normalization, newline normalization, etc.) and update tests to assert the real contract (ideally via `get_latest_artifact()` rather than raw SQL).
+  - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
+  - **AC:** `./.venv/bin/pytest -q tests/test_robots_fetch.py` passes.
+
+- [ ] **0-R.8** Ensure customer status gating tests create data consistent with schema + runner behavior
+  - **Why:** `tests/test_customer_status_gating.py` is currently failing in full suite.
+  - **Do:** Ensure test DB setup inserts required `created_at/updated_at` fields and any required settings rows so the runner can proceed without error.
+  - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
+  - **AC:** `./.venv/bin/pytest -q tests/test_customer_status_gating.py` passes.
+
+- [ ] **0-R.9** Weekly crawl resilience: handle HTTP 429 without hanging the whole run
+  - **Why:** weekly entrypoint can stall/timeout due to rate limits (429) when fetching many URLs.
+  - **Do (MVP scheduler):** Implement a **fair round-robin fetch scheduler** with **per-domain cooldown** so rate-limited customers are **interleaved** with other customers (not deferred until the end).
+    - Model work as tasks: `(customer_id, url)`.
+    - Maintain `domain_next_allowed_at[domain]`.
+    - Maintain a queue (or per-customer queues) and iterate **round-robin**:
+      - Pop next task.
+      - If `now < domain_next_allowed_at[domain]`, push it to the end and continue (this naturally interleaves).
+      - Fetch URL.
+      - On **HTTP 429**:
+        - increment `run_coverage.http_429_count`
+        - set `domain_next_allowed_at[domain] = now + backoff` (exponential + jitter; cap max cooldown)
+        - requeue the same task (so it gets retried later)
+      - On success/non-429 error: persist snapshot/run_coverage as appropriate, move on.
+    - Add **boundedness**:
+      - max attempts per `(customer_id,url)` (e.g., 3)
+      - max total 429s per domain per run (after which remaining URLs are marked `error_type="http_429"` and skipped)
+      - no unbounded sleep (scheduler keeps working on other tasks while cooling down)
+    - Persist auditability:
+      - when skipping due to threshold, create snapshots/run_coverage entries that make it obvious we were rate-limited.
+  - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/infrastructure/observability-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **AC:**
+    - Weekly run completes even when a customer domain responds with repeated 429s.
+    - Rate-limited customer URLs are retried throughout the run (interleaved), not only at the end.
+    - `run_coverage.http_429_count > 0` is recorded.
+    - No unbounded sleep; runtime remains bounded by caps.
+    - Add/extend a test using mocked HTTP responses to simulate: A(429), B(200), C(200), A(429), B(200), ... and assert interleaving behavior.
+
+- [ ] **0-R.9a** Round-robin + cooldown scheduler implementation skeleton (helper + wiring)
+  - **Goal:** Make 0-R.9 easy to implement in one pass by providing a concrete code structure.
+  - **Do:**
+    - Add a small scheduler helper (new module or local helper) that:
+      - accepts per-customer URL queues
+      - yields the next `(customer_id, url)` to fetch based on cooldown + round-robin fairness
+      - tracks attempts per task and enforces caps
+    - Wire weekly fetch loop to use this helper (likely in `src/ranksentinel/runner/weekly_digest.py` / `page_fetcher.py`).
+    - Add structured logs for scheduling decisions: `event=schedule_defer`, `domain`, `cooldown_ms`, `queue_len`, `customer_id`.
+  - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/infrastructure/observability-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **AC:**
+    - Unit test exists for scheduler ordering under cooldown (A deferred, B/C proceed, A retried later).
+    - Weekly integration test for interleaving remains green.
+
+- [ ] **0-R.10** Restore green test suite after above fixes
+  - **Why:** Currently `pytest -q` reports `9 failed`.
+  - **Do:** Run full suite and fix any remaining failures introduced by changes.
+  - **Skills:** `brain/skills/playbooks/investigate-test-failures.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **AC:** `./.venv/bin/pytest -q` passes.
+
 > Motivation: real sites frequently rate-limit bots (HTTP 429), and weekly runs must persist snapshots for auditability/diffing.
 > Evidence observed in manual tests:
 >
@@ -193,7 +267,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **AC:** After a weekly run with `crawl_limit=N`, there are `N` new `snapshots` rows with `run_type='weekly'` and `run_id=<current run_id>` (or fewer only if sitemap has < N URLs).
   - **Validate:** Extend `tests/test_weekly_fetcher_integration.py` to assert snapshot rows inserted and include run_id.
 
-- [ ] **0-R.4** Verify weekly snapshots + run_coverage tables are created in the *real* SQLite DB
+- [x] **0-R.4** Verify weekly snapshots + run_coverage tables are created in the *real* SQLite DB
   - **Goal:** Catch schema drift where code expects new tables but the live DB never got `init_db()` applied.
   - **Files (likely):** `src/ranksentinel/db.py`, `src/ranksentinel/runner/weekly_digest.py`, `scripts/run_weekly.sh`, docs as needed
   - **Implementation guidance:**
@@ -544,6 +618,46 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Validate:** first regression => unconfirmed; second regression => confirmed finding
 
 ## Phase 4: Email reporting (atomic)
+
+- [ ] **4.6a** First Insight: add admin trigger endpoint (no payment integration)
+  - **Goal:** Provide an internal/admin-only way to send a one-off “First Insight” report immediately.
+  - **Files (likely):** `src/ranksentinel/api.py`
+  - **Implementation guidance:**
+    - Add `POST /admin/customers/{customer_id}/send_first_insight`.
+    - Endpoint calls an internal function (no duplicated business logic in API layer).
+  - **Skills:** `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/backend/auth-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **AC:** Hitting the endpoint returns 200 and enqueues/executes the first-insight flow for that customer.
+  - **Validate:** Unit test for endpoint routing + mocked service call.
+
+- [ ] **4.6b** First Insight: implement runner/service to generate report input data
+  - **Goal:** Reuse weekly/daily signal collection to generate a “first run” snapshot set without waiting for Monday.
+  - **Files (likely):** `src/ranksentinel/runner/first_insight.py`, `src/ranksentinel/runner/daily_checks.py`, `src/ranksentinel/runner/weekly_digest.py`
+  - **Implementation guidance (MVP):**
+    - Collect the highest-signal checks:
+      - key pages: status/redirect/title/canonical/noindex + normalized content hash
+      - robots.txt + sitemap hash
+      - optional PSI on key pages (respect caps)
+    - Write findings scoped to a new run type (e.g., `run_type='first_insight'`) or reuse weekly composer but with a distinct header.
+  - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **AC:** Running the first insight runner produces a report payload with Critical/Warning/Info sections.
+  - **Validate:** Unit test for “first insight” report composition given fixture inputs.
+
+- [ ] **4.6c** First Insight: email send + delivery logging
+  - **Goal:** Send the first-insight email via Mailgun and record exactly one delivery.
+  - **Files (likely):** `src/ranksentinel/mailgun.py`, `src/ranksentinel/reporting/email_templates.py`, `src/ranksentinel/db.py`
+  - **Implementation guidance:**
+    - Reuse existing weekly email template/layout if possible, but label as “First Insight”.
+    - Ensure idempotency: repeated trigger within same day should not send duplicates (dedupe key).
+  - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/infrastructure/observability-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **AC:** Exactly one email is sent per trigger window; a delivery row is recorded with `run_type='first_insight'`.
+  - **Validate:** Integration test with mocked Mailgun client asserts exactly one delivery recorded.
+
+- [ ] **4.6d** First Insight: payment integration hook (deferred wiring)
+  - **Goal:** When payments exist, automatically trigger First Insight on successful payment.
+  - **Scope:** Do not implement Stripe/payment processor in this task unless already in scope.
+  - **Skills:** `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/backend/error-handling-patterns.md`
+  - **AC:** A single internal function exists that the future webhook handler can call.
+  - **Validate:** Code structure supports calling `trigger_first_insight(customer_id)` from webhook code.
 
 - [x] **4.1** Recommendation rules engine
   - **Goal:** deterministic mapping from finding type -> “what to do next” recommendation text.
