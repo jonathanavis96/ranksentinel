@@ -759,13 +759,14 @@ This may prevent search engines from discovering your pages."""
                         # Store snapshot
                         execute(
                             conn,
-                            "INSERT INTO snapshots(customer_id,url,run_type,fetched_at,status_code,"
+                            "INSERT INTO snapshots(customer_id,url,run_type,run_id,fetched_at,status_code,"
                             "final_url,redirect_chain,title,canonical,meta_robots,content_hash) "
-                            "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                             (
                                 customer_id,
                                 url,
                                 "daily",
+                                run_id,
                                 fetched_at,
                                 data["status_code"],
                                 data["final_url"],
@@ -1053,12 +1054,15 @@ def _send_daily_critical_alerts(conn, settings: Settings, run_id: str) -> None:
         return
     
     # Get all active customers
-    customers = fetch_all(conn, "SELECT id, name, email FROM customers WHERE status='active'")
+    customers = fetch_all(conn, "SELECT id, name FROM customers WHERE status='active'")
     
     for customer_row in customers:
         customer_id = int(customer_row["id"])
         customer_name = str(customer_row["name"])
-        customer_email = str(customer_row["email"])
+        
+        # TODO: Get customer email from settings or separate contact table
+        # For now, skip email if not available
+        customer_email = None  # Placeholder until we have a proper email field
         
         try:
             with log_stage(run_id, "daily_email", customer_id=customer_id):
@@ -1078,6 +1082,14 @@ def _send_daily_critical_alerts(conn, settings: Settings, run_id: str) -> None:
                     log_structured(
                         run_id, customer_id=customer_id, stage="daily_email",
                         status="skip", reason="no_critical_findings"
+                    )
+                    continue
+                
+                # Skip email if no recipient configured
+                if not customer_email:
+                    log_structured(
+                        run_id, customer_id=customer_id, stage="daily_email",
+                        status="skip", reason="no_email_configured"
                     )
                     continue
                 

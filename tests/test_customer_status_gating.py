@@ -106,6 +106,7 @@ def test_weekly_skips_non_active_customers(tmp_path, monkeypatch):
     """Test that weekly runner only processes active customers."""
     pytest.importorskip("ranksentinel.runner.weekly_digest")
     
+    from unittest.mock import Mock, patch
     from ranksentinel.runner.weekly_digest import run as run_weekly
     
     db_path = tmp_path / "test.db"
@@ -127,8 +128,28 @@ def test_weekly_skips_non_active_customers(tmp_path, monkeypatch):
     conn.commit()
     conn.close()
     
-    # Run weekly digest
-    run_weekly(settings)
+    # Mock HTTP responses for sitemap and pages
+    def mock_fetch_text(url, timeout=20, attempts=3, base_delay=1.0):
+        mock_result = Mock()
+        if "sitemap.xml" in url:
+            # Return a simple sitemap with one URL
+            mock_result.is_error = False
+            mock_result.body = '<?xml version="1.0"?><urlset><url><loc>https://example.com/page1</loc></url></urlset>'
+            mock_result.status_code = 200
+        else:
+            # Return successful page response
+            mock_result.is_error = False
+            mock_result.body = "<html><body>Test</body></html>"
+            mock_result.status_code = 200
+            mock_result.final_url = url
+            mock_result.error = None
+            mock_result.error_type = None
+        return mock_result
+    
+    # Run weekly digest with mocked HTTP
+    with patch("ranksentinel.runner.weekly_digest.fetch_text", side_effect=mock_fetch_text), \
+         patch("ranksentinel.runner.page_fetcher.fetch_text", side_effect=mock_fetch_text):
+        run_weekly(settings)
     
     # Verify only active customer has snapshots
     conn = sqlite3.connect(str(db_path))
