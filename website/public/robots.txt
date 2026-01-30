@@ -1,0 +1,8 @@
+# RankSentinel - SEO monitoring and alerts
+# Allow all crawlers to index all public pages
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://ranksentinel.com/sitemap.xml

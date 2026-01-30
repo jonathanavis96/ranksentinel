@@ -452,7 +452,7 @@ Brain skills (open those relevant to the current item):
   - **AC:** Titles/descriptions, OG/Twitter, canonical correct.
   - **If Blocked:** Implement site-wide defaults and add follow-up for per-page overrides.
 
-- [ ] **12.2** Add `robots.txt` and `sitemap.xml`
+- [x] **12.2** Add `robots.txt` and `sitemap.xml`
   - **Goal:** Enable indexing.
   - **AC:** robots allows indexing; sitemap lists all public routes.
   - **If Blocked:** Ship robots.txt only.
