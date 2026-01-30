@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Button, Container, EmailReportPreview, FAQAccordion, FeatureTabs, Footer, Header } from './components';
+import { withBasePath } from './lib/asset';
 
 export default function Home() {
   return (
@@ -22,7 +23,7 @@ export default function Home() {
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-[var(--color-headline)] max-w-5xl mx-auto leading-tight flex flex-wrap items-center justify-center gap-3">
                 <span>Catch SEO Issues</span>
                 <Image
-                  src="/ranksentinel-logo-icon.webp"
+                  src={withBasePath('/ranksentinel-logo-icon.webp')}
                   alt=""
                   width={32}
                   height={32}
@@ -81,7 +82,7 @@ export default function Home() {
                   <div className="px-2">
                     <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden">
                       <Image
-                        src="/critical-alerts-only.png"
+                        src={withBasePath('/critical-alerts-only.webp')}
                         alt=""
                         fill
                         sizes="(min-width: 768px) 33vw, 100vw"
@@ -116,7 +117,7 @@ export default function Home() {
                   <div className="px-2">
                     <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden">
                       <Image
-                        src="/seo-specific-checks.png"
+                        src={withBasePath('/seo-specific-checks.webp')}
                         alt=""
                         fill
                         sizes="(min-width: 768px) 33vw, 100vw"
@@ -151,7 +152,7 @@ export default function Home() {
                   <div className="px-2">
                     <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden">
                       <Image
-                        src="/prioritized-action-list.png"
+                        src={withBasePath('/prioritized-action-list.webp')}
                         alt=""
                         fill
                         sizes="(min-width: 768px) 33vw, 100vw"
