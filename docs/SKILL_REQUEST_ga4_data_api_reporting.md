@@ -47,7 +47,7 @@ A clear pattern for:
 
 ## Links & Examples
 
-- GA4 Data API docs: https://developers.google.com/analytics/devguides/reporting/data/v1
+- GA4 Data API docs: <https://developers.google.com/analytics/devguides/reporting/data/v1>
 - Existing Mailgun integration: `src/ranksentinel/mailgun.py`
 - Existing email templates: `src/ranksentinel/reporting/email_templates.py`
 - Cron scripts: `scripts/run_weekly.sh`

@@ -463,7 +463,7 @@ Brain skills (open those relevant to the current item):
   - **AC:** No obvious keyboard traps; headings/landmarks are correct.
   - **If Blocked:** Fix the most severe issues and file follow-ups.
 
-- [ ] **12.4** Performance pass
+- [x] **12.4** Performance pass
   - **Goal:** Fast, calm marketing site.
   - **AC:** Images optimized; minimal JS.
   - **If Blocked:** Defer non-critical animations.
