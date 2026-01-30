@@ -38,6 +38,7 @@ jobs:
         env:
           NODE_ENV: production
           NEXT_PUBLIC_BASE_PATH: /ranksentinel
+          NEXT_PUBLIC_SITE_URL: https://jonathanavis96.github.io
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
