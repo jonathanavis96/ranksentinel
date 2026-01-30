@@ -446,54 +446,54 @@ Brain skills (open those relevant to the current item):
 
 ### Task 12: SEO + accessibility + performance
 
-- [ ] **12.1** Implement SEO metadata defaults and per-page metadata
+- [x] **12.1** Implement SEO metadata defaults and per-page metadata
   - **Goal:** Avoid shipping an SEO tool with weak SEO.
   - **References:** `brain/skills/domains/marketing/seo/seo-audit.md`.
   - **AC:** Titles/descriptions, OG/Twitter, canonical correct.
   - **If Blocked:** Implement site-wide defaults and add follow-up for per-page overrides.
 
-- [ ] **12.2** Add `robots.txt` and `sitemap.xml`
+- [x] **12.2** Add `robots.txt` and `sitemap.xml`
   - **Goal:** Enable indexing.
   - **AC:** robots allows indexing; sitemap lists all public routes.
   - **If Blocked:** Ship robots.txt only.
 
-- [ ] **12.3** Accessibility pass
+- [x] **12.3** Accessibility pass
   - **Goal:** Keyboard + semantics work.
   - **References:** `brain/skills/domains/frontend/accessibility-patterns.md`.
   - **AC:** No obvious keyboard traps; headings/landmarks are correct.
   - **If Blocked:** Fix the most severe issues and file follow-ups.
 
-- [ ] **12.4** Performance pass
+- [x] **12.4** Performance pass
   - **Goal:** Fast, calm marketing site.
   - **AC:** Images optimized; minimal JS.
   - **If Blocked:** Defer non-critical animations.
 
 ### Task 13: Deployment (GitHub Pages + custom domain)
 
-- [ ] **13.1** GitHub Actions deploy workflow for GitHub Pages
+- [x] **13.1** GitHub Actions deploy workflow for GitHub Pages
   - **Goal:** Reproducible deployment.
   - **AC:** Workflow builds and deploys `website/` output.
   - **If Blocked:** Document manual deploy steps.
 
-- [ ] **13.2** Custom domain (CNAME) + launch docs
+- [x] **13.2** Custom domain (CNAME) + launch docs
   - **Goal:** Make launch repeatable.
   - **AC:** CNAME is configured and `docs/websites/12_launch.md` includes steps.
   - **If Blocked:** Deploy to default GitHub Pages domain first.
 
-- [ ] **13.3** Environment configuration strategy
+- [x] **13.3** Environment configuration strategy
   - **Goal:** Safe config for prod.
   - **AC:** API base URL and GTM IDs are configurable; safe local defaults exist.
   - **If Blocked:** Hardcode local dev URLs only; keep prod config pending.
 
 ### Task 14: QA + release
 
-- [ ] **14.1** QA checklist run
+- [x] **14.1** QA checklist run
   - **Goal:** Prevent obvious regressions.
   - **References:** `docs/websites/11_qa_acceptance.md`.
   - **AC:** Checklist is completed with pass/fail notes.
   - **If Blocked:** Run a minimal smoke checklist and file follow-ups.
 
-- [ ] **14.2** End-to-end verification: lead + trial provisioning + first email
+- [x] **14.2** End-to-end verification: lead + trial provisioning + first email
   - **Goal:** Ensure the core funnel works.
   - **AC:**
     - lead submission works
@@ -501,7 +501,7 @@ Brain skills (open those relevant to the current item):
     - at least one expected email is sent
   - **If Blocked:** Validate via logs and local email sink.
 
-- [ ] **14.3** Final content consistency sweep
+- [x] **14.3** Final content consistency sweep
   - **Goal:** Remove placeholders and enforce CTA consistency.
   - **AC:**
     - No placeholder copy.
