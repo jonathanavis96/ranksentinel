@@ -25,6 +25,11 @@ export default function RootLayout({
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href={`${basePath}/favicon.ico`} sizes="any" />
+        <link
+          rel="apple-touch-icon"
+          href={`${basePath}/apple-touch-icon.png`}
+          sizes="180x180"
+        />
       </head>
       <body
         className={`${inter.variable} antialiased`}
