@@ -68,7 +68,8 @@ export default function SchedulePage() {
     setSaveResult(null);
 
     try {
-      const response = await fetch('/api/public/schedule', {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiBaseUrl}/public/schedule`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

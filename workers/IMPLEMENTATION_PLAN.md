@@ -493,7 +493,7 @@ Brain skills (open those relevant to the current item):
   - **AC:** Checklist is completed with pass/fail notes.
   - **If Blocked:** Run a minimal smoke checklist and file follow-ups.
 
-- [ ] **14.2** End-to-end verification: lead + trial provisioning + first email
+- [x] **14.2** End-to-end verification: lead + trial provisioning + first email
   - **Goal:** Ensure the core funnel works.
   - **AC:**
     - lead submission works
