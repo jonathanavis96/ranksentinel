@@ -3,14 +3,21 @@ import { Metadata } from 'next';
 /**
  * Shared SEO metadata configuration for RankSentinel
  * 
- * References:
- * - brain/skills/domains/marketing/seo/seo-audit.md
- * - Task 12.1: SEO metadata defaults and per-page metadata
+ * SEO best practices applied:
+ * - brain/skills/domains/marketing/seo/seo-audit.md (meta tags, OG protocol)
+ * - brain/skills/domains/marketing/seo/schema-markup.md (Open Graph structure)
+ * 
+ * Copy guidelines applied:
+ * - brain/skills/domains/websites/copywriting/value-proposition.md
+ *   (outcome-focused description; clear, specific, believable)
+ * - brain/skills/domains/marketing/content/copy-editing.md
+ *   (tighten copy; remove fluff; concrete delivery mechanism)
  */
 
 export const siteConfig = {
   name: 'RankSentinel',
   // Value-prop first, concrete delivery mechanism second (email), avoid fluff.
+  // Pattern: [End result/transformation] + [specific audience pain] + [delivery method]
   // References:
   // - brain/skills/domains/websites/copywriting/value-proposition.md
   // - brain/skills/domains/marketing/content/copy-editing.md
@@ -19,6 +26,7 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://ranksentinel.com',
   // Needed for GitHub Pages (/ranksentinel) and future custom domains (empty basePath)
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  // OG image: 1200×630 webp, basePath-safe, text matches value-prop copy
   ogImage: '/og-image.webp',
   twitterHandle: '@ranksentinel',
 };
@@ -66,6 +74,7 @@ export function generateMetadata({
           alt: title,
         },
       ],
+      // Open Graph protocol: brain/skills/domains/marketing/seo/schema-markup.md
     },
     twitter: {
       card: 'summary_large_image',
