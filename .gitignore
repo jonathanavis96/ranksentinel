@@ -27,3 +27,6 @@ brain_upstream/
 
 # Ralph local markers
 workers/ralph/.verify/.brain_skills_synced
+
+# Cortex local examples (do not commit)
+cortex/examples/
