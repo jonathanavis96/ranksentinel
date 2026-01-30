@@ -457,7 +457,7 @@ Brain skills (open those relevant to the current item):
   - **AC:** robots allows indexing; sitemap lists all public routes.
   - **If Blocked:** Ship robots.txt only.
 
-- [ ] **12.3** Accessibility pass
+- [x] **12.3** Accessibility pass
   - **Goal:** Keyboard + semantics work.
   - **References:** `brain/skills/domains/frontend/accessibility-patterns.md`.
   - **AC:** No obvious keyboard traps; headings/landmarks are correct.
