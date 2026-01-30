@@ -10,11 +10,13 @@
 ### 1. Custom Domain Setup
 
 **CNAME File:**
+
 - Location: `website/public/CNAME`
 - Content: `ranksentinel.com` (single line, no protocol)
 - This file is automatically copied to the build output
 
 **DNS Configuration (at registrar):**
+
 ```text
 A record:    @     →  185.199.108.153
 A record:    @     →  185.199.109.153
@@ -26,6 +28,7 @@ CNAME:       www   →  <username>.github.io
 ### 2. GitHub Pages Configuration
 
 **Repository Settings:**
+
 1. Go to Settings → Pages
 2. Source: GitHub Actions (already configured via `.github/workflows/deploy.yml`)
 3. Custom domain: `ranksentinel.com`
@@ -34,11 +37,13 @@ CNAME:       www   →  <username>.github.io
 ### 3. Deployment Process
 
 **Automatic Deployment:**
+
 - Push to `main` branch triggers deployment via GitHub Actions
 - Workflow builds Next.js site and publishes to GitHub Pages
 - Custom domain is preserved via CNAME file
 
 **Manual Deployment (if needed):**
+
 ```bash
 cd website
 npm run build
@@ -78,10 +83,12 @@ npm run build
 ## Environment Configuration
 
 **Next.js Environment Variables:**
+
 - `NEXT_PUBLIC_API_BASE_URL`: API endpoint for lead submission
 - `NEXT_PUBLIC_GTM_ID`: Google Tag Manager container ID
 
 **Current Setup:**
+
 - Local dev: Uses local API defaults
 - Production: Configure via Vercel environment variables (if migrating from GitHub Pages)
 
@@ -106,10 +113,12 @@ GitHub Actions will automatically rebuild and deploy the previous version.
 ## Staging Environment
 
 **Option 1: GitHub Pages (separate repo/branch)**
+
 - Use `gh-pages` branch for staging
 - Configure separate DNS: `staging.ranksentinel.com`
 
 **Option 2: Vercel/Netlify preview**
+
 - Connect repo to Vercel for preview deployments
 - Every PR gets a preview URL
 - Production still on GitHub Pages
@@ -117,10 +126,12 @@ GitHub Actions will automatically rebuild and deploy the previous version.
 ## Security Headers
 
 GitHub Pages provides basic security headers. For custom headers, consider:
+
 - Cloudflare (free tier) as CDN/proxy
 - Vercel/Netlify for advanced header control
 
 **Recommended Headers (if migrating to Vercel):**
+
 ```json
 {
   "headers": [
@@ -140,20 +151,24 @@ GitHub Pages provides basic security headers. For custom headers, consider:
 ## Troubleshooting
 
 **"Domain's DNS record could not be retrieved":**
+
 - Wait 24-48h for DNS propagation
 - Verify A records point to all 4 GitHub IPs
 - Check CNAME file exists in build output
 
 **"404 on refresh":**
+
 - Next.js static export handles this automatically
 - Ensure `next.config.ts` has `output: 'export'`
 
 **SSL Certificate not provisioning:**
+
 - DNS must be fully propagated first
 - Remove and re-add custom domain in GitHub Settings
 - Wait 24h, GitHub uses Let's Encrypt
 
 **Build failing:**
+
 - Check GitHub Actions logs: Repository → Actions
 - Common issues: Node version, dependency install, build errors
 - Test locally: `cd website && npm run build`
