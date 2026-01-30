@@ -501,7 +501,7 @@ Brain skills (open those relevant to the current item):
     - at least one expected email is sent
   - **If Blocked:** Validate via logs and local email sink.
 
-- [ ] **14.3** Final content consistency sweep
+- [x] **14.3** Final content consistency sweep
   - **Goal:** Remove placeholders and enforce CTA consistency.
   - **AC:**
     - No placeholder copy.

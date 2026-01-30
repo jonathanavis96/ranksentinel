@@ -350,7 +350,7 @@ export default function Home() {
                   </li>
                 </ul>
                 <Button as="link" href="/pricing" variant="secondary" size="lg" className="w-full">
-                  Learn more
+                  See pricing
                 </Button>
               </div>
             </Card>
@@ -381,7 +381,7 @@ export default function Home() {
                   </li>
                 </ul>
                 <Button as="link" href="/pricing" variant="primary" size="lg" className="w-full">
-                  Learn more
+                  See pricing
                 </Button>
               </div>
             </Card>
@@ -411,7 +411,7 @@ export default function Home() {
                   </li>
                 </ul>
                 <Button as="link" href="/pricing" variant="secondary" size="lg" className="w-full">
-                  Learn more
+                  See pricing
                 </Button>
               </div>
             </Card>
