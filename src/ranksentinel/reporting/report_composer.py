@@ -37,6 +37,7 @@ class WeeklyReport:
     warning_findings: list[FindingWithRecommendation]
     info_findings: list[FindingWithRecommendation]
     coverage: CoverageStats | None = None
+    customer_status: str = "active"  # active, trial, paywalled, previously_interested
 
     @property
     def critical_count(self) -> int:
@@ -60,6 +61,9 @@ class WeeklyReport:
         lines.append(f"RankSentinel Weekly Digest — {self.customer_name}")
         lines.append("=" * 60)
         lines.append("")
+
+        # Check if this is a paywalled customer
+        is_paywalled = self.customer_status in ("paywalled", "previously_interested")
 
         # Add "All clear" header if no critical or warnings
         if self.critical_count == 0 and self.warning_count == 0:
@@ -102,61 +106,96 @@ class WeeklyReport:
                 lines.append(f"404 responses: {self.coverage.http_404_count}")
             lines.append("")
 
-        if self.critical_findings:
+        if self.critical_findings or (is_paywalled and self.critical_count == 0):
             lines.append("-" * 60)
             lines.append("CRITICAL")
             lines.append("-" * 60)
             lines.append("")
-            for idx, finding in enumerate(self.critical_findings, 1):
-                lines.append(f"{idx}) {finding.title}")
+            if is_paywalled:
+                # Show locked examples for paywalled customers
+                lines.append("🔒 LOCKED — Upgrade to see your site's critical issues")
                 lines.append("")
-                if finding.url:
-                    lines.append(f"   URL: {finding.url}")
-                lines.append(f"   Detected: {finding.created_at}")
+                lines.append("Example critical issues we detect:")
+                lines.append("• Important page became non-indexable")
+                lines.append("• Robots.txt blocking key sections")
+                lines.append("• Homepage accidentally set to noindex")
                 lines.append("")
-                lines.append(f"   {finding.details_md}")
-                lines.append("")
-                lines.append(f"   → Recommended Action: {finding.recommendation}")
-                lines.append("")
+            else:
+                # Show real findings for active/trial customers
+                for idx, finding in enumerate(self.critical_findings, 1):
+                    lines.append(f"{idx}) {finding.title}")
+                    lines.append("")
+                    if finding.url:
+                        lines.append(f"   URL: {finding.url}")
+                    lines.append(f"   Detected: {finding.created_at}")
+                    lines.append("")
+                    lines.append(f"   {finding.details_md}")
+                    lines.append("")
+                    lines.append(f"   → Recommended Action: {finding.recommendation}")
+                    lines.append("")
 
-        if self.warning_findings:
+        if self.warning_findings or (is_paywalled and self.warning_count == 0):
             lines.append("-" * 60)
             lines.append("WARNINGS")
             lines.append("-" * 60)
             lines.append("")
-            for idx, finding in enumerate(self.warning_findings, 1):
-                lines.append(f"{idx}) {finding.title}")
+            if is_paywalled:
+                # Show locked examples for paywalled customers
+                lines.append("🔒 LOCKED — Upgrade to see your site's warnings")
                 lines.append("")
-                if finding.url:
-                    lines.append(f"   URL: {finding.url}")
-                lines.append(f"   Detected: {finding.created_at}")
+                lines.append("Example warnings we track:")
+                lines.append("• Title or canonical changed on a key page")
+                lines.append("• Sitemap URL count dropped significantly")
+                lines.append("• Page speed score degraded")
                 lines.append("")
-                lines.append(f"   {finding.details_md}")
-                lines.append("")
-                lines.append(f"   → Recommended Action: {finding.recommendation}")
-                lines.append("")
+            else:
+                # Show real findings for active/trial customers
+                for idx, finding in enumerate(self.warning_findings, 1):
+                    lines.append(f"{idx}) {finding.title}")
+                    lines.append("")
+                    if finding.url:
+                        lines.append(f"   URL: {finding.url}")
+                    lines.append(f"   Detected: {finding.created_at}")
+                    lines.append("")
+                    lines.append(f"   {finding.details_md}")
+                    lines.append("")
+                    lines.append(f"   → Recommended Action: {finding.recommendation}")
+                    lines.append("")
 
-        if self.info_findings:
+        if self.info_findings or (is_paywalled and self.info_count == 0):
             lines.append("-" * 60)
             lines.append("INFO")
             lines.append("-" * 60)
             lines.append("")
-            for idx, finding in enumerate(self.info_findings, 1):
-                lines.append(f"{idx}) {finding.title}")
+            if is_paywalled:
+                # Show locked examples for paywalled customers
+                lines.append("🔒 LOCKED — Upgrade to see informational updates")
                 lines.append("")
-                if finding.url:
-                    lines.append(f"   URL: {finding.url}")
-                lines.append(f"   Detected: {finding.created_at}")
+                lines.append("Example info updates we monitor:")
+                lines.append("• Content changed since last snapshot")
+                lines.append("• New pages added to sitemap")
+                lines.append("• Minor metadata updates")
                 lines.append("")
-                lines.append(f"   {finding.details_md}")
-                lines.append("")
-                lines.append(f"   → Recommended Action: {finding.recommendation}")
-                lines.append("")
+            else:
+                # Show real findings for active/trial customers
+                for idx, finding in enumerate(self.info_findings, 1):
+                    lines.append(f"{idx}) {finding.title}")
+                    lines.append("")
+                    if finding.url:
+                        lines.append(f"   URL: {finding.url}")
+                    lines.append(f"   Detected: {finding.created_at}")
+                    lines.append("")
+                    lines.append(f"   {finding.details_md}")
+                    lines.append("")
+                    lines.append(f"   → Recommended Action: {finding.recommendation}")
+                    lines.append("")
 
         return "\n".join(lines)
 
     def to_html(self) -> str:
         """Generate HTML version of the report."""
+        is_paywalled = self.customer_status in ("paywalled", "previously_interested")
+        
         lines = []
         lines.append("<html><head><style>")
         lines.append(
@@ -187,6 +226,12 @@ class WeeklyReport:
             ".recommendation { background: #e8f5e9; border-radius: 4px; padding: 12px; margin-top: 15px; }"
         )
         lines.append(".recommendation strong { color: #2e7d32; }")
+        lines.append(
+            ".locked { background: #fff3cd; border-left: 4px solid #ff9800; padding: 20px; margin: 20px 0; border-radius: 8px; filter: blur(3px); }"
+        )
+        lines.append(
+            ".locked-label { background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; margin: 10px 0 20px 0; border-radius: 8px; font-weight: bold; }"
+        )
         lines.append("</style></head><body>")
 
         lines.append(f"<h1>RankSentinel Weekly Digest — {self.customer_name}</h1>")
@@ -247,53 +292,95 @@ class WeeklyReport:
             lines.append("</ul>")
             lines.append("</div>")
 
-        if self.critical_findings:
+        if self.critical_findings or (is_paywalled and self.critical_count == 0):
             lines.append("<h2>Critical</h2>")
-            for idx, finding in enumerate(self.critical_findings, 1):
-                lines.append("<div class='finding critical'>")
-                lines.append(f"<h3>{idx}) {finding.title}</h3>")
+            if is_paywalled:
+                # Show locked examples for paywalled customers
+                lines.append("<div class='locked-label'>🔒 LOCKED — Upgrade to see your site's critical issues</div>")
+                lines.append("<div class='locked'>")
+                lines.append("<h3>Example: Important page became non-indexable</h3>")
                 lines.append("<div class='meta'>")
-                if finding.url:
-                    lines.append(f"<div><strong>URL:</strong> <code>{finding.url}</code></div>")
-                lines.append(f"<div><strong>Detected:</strong> {finding.created_at}</div>")
+                lines.append("<div><strong>URL:</strong> <code>https://example.com/important-page</code></div>")
+                lines.append("<div><strong>Detected:</strong> 2024-01-15 08:30:00</div>")
                 lines.append("</div>")
-                lines.append(f"<div class='details'>{finding.details_md}</div>")
-                lines.append(
-                    f"<div class='recommendation'><strong>→ Recommended Action:</strong> {finding.recommendation}</div>"
-                )
+                lines.append("<div class='details'>Meta robots tag changed from 'index,follow' to 'noindex'. This will remove the page from search results.</div>")
+                lines.append("<div class='recommendation'><strong>→ Recommended Action:</strong> Review robots/noindex/canonical settings</div>")
                 lines.append("</div>")
+            else:
+                # Show real findings for active/trial customers
+                for idx, finding in enumerate(self.critical_findings, 1):
+                    lines.append("<div class='finding critical'>")
+                    lines.append(f"<h3>{idx}) {finding.title}</h3>")
+                    lines.append("<div class='meta'>")
+                    if finding.url:
+                        lines.append(f"<div><strong>URL:</strong> <code>{finding.url}</code></div>")
+                    lines.append(f"<div><strong>Detected:</strong> {finding.created_at}</div>")
+                    lines.append("</div>")
+                    lines.append(f"<div class='details'>{finding.details_md}</div>")
+                    lines.append(
+                        f"<div class='recommendation'><strong>→ Recommended Action:</strong> {finding.recommendation}</div>"
+                    )
+                    lines.append("</div>")
 
-        if self.warning_findings:
+        if self.warning_findings or (is_paywalled and self.warning_count == 0):
             lines.append("<h2>Warnings</h2>")
-            for idx, finding in enumerate(self.warning_findings, 1):
-                lines.append("<div class='finding warning'>")
-                lines.append(f"<h3>{idx}) {finding.title}</h3>")
+            if is_paywalled:
+                # Show locked examples for paywalled customers
+                lines.append("<div class='locked-label'>🔒 LOCKED — Upgrade to see your site's warnings</div>")
+                lines.append("<div class='locked'>")
+                lines.append("<h3>Example: Title or canonical changed on a key page</h3>")
                 lines.append("<div class='meta'>")
-                if finding.url:
-                    lines.append(f"<div><strong>URL:</strong> <code>{finding.url}</code></div>")
-                lines.append(f"<div><strong>Detected:</strong> {finding.created_at}</div>")
+                lines.append("<div><strong>URL:</strong> <code>https://example.com/product-page</code></div>")
+                lines.append("<div><strong>Detected:</strong> 2024-01-15 08:30:00</div>")
                 lines.append("</div>")
-                lines.append(f"<div class='details'>{finding.details_md}</div>")
-                lines.append(
-                    f"<div class='recommendation'><strong>→ Recommended Action:</strong> {finding.recommendation}</div>"
-                )
+                lines.append("<div class='details'>Page title changed from 'Best Product 2024' to 'Product - Site'. Canonical URL also updated.</div>")
+                lines.append("<div class='recommendation'><strong>→ Recommended Action:</strong> Review metadata changes for SEO impact</div>")
                 lines.append("</div>")
+            else:
+                # Show real findings for active/trial customers
+                for idx, finding in enumerate(self.warning_findings, 1):
+                    lines.append("<div class='finding warning'>")
+                    lines.append(f"<h3>{idx}) {finding.title}</h3>")
+                    lines.append("<div class='meta'>")
+                    if finding.url:
+                        lines.append(f"<div><strong>URL:</strong> <code>{finding.url}</code></div>")
+                    lines.append(f"<div><strong>Detected:</strong> {finding.created_at}</div>")
+                    lines.append("</div>")
+                    lines.append(f"<div class='details'>{finding.details_md}</div>")
+                    lines.append(
+                        f"<div class='recommendation'><strong>→ Recommended Action:</strong> {finding.recommendation}</div>"
+                    )
+                    lines.append("</div>")
 
-        if self.info_findings:
+        if self.info_findings or (is_paywalled and self.info_count == 0):
             lines.append("<h2>Info</h2>")
-            for idx, finding in enumerate(self.info_findings, 1):
-                lines.append("<div class='finding info'>")
-                lines.append(f"<h3>{idx}) {finding.title}</h3>")
+            if is_paywalled:
+                # Show locked examples for paywalled customers
+                lines.append("<div class='locked-label'>🔒 LOCKED — Upgrade to see informational updates</div>")
+                lines.append("<div class='locked'>")
+                lines.append("<h3>Example: Content changed since last snapshot</h3>")
                 lines.append("<div class='meta'>")
-                if finding.url:
-                    lines.append(f"<div><strong>URL:</strong> <code>{finding.url}</code></div>")
-                lines.append(f"<div><strong>Detected:</strong> {finding.created_at}</div>")
+                lines.append("<div><strong>URL:</strong> <code>https://example.com/blog-post</code></div>")
+                lines.append("<div><strong>Detected:</strong> 2024-01-15 08:30:00</div>")
                 lines.append("</div>")
-                lines.append(f"<div class='details'>{finding.details_md}</div>")
-                lines.append(
-                    f"<div class='recommendation'><strong>→ Recommended Action:</strong> {finding.recommendation}</div>"
-                )
+                lines.append("<div class='details'>Page content updated. Word count changed by 15%. H1 tag unchanged.</div>")
+                lines.append("<div class='recommendation'><strong>→ Recommended Action:</strong> Review content for consistency</div>")
                 lines.append("</div>")
+            else:
+                # Show real findings for active/trial customers
+                for idx, finding in enumerate(self.info_findings, 1):
+                    lines.append("<div class='finding info'>")
+                    lines.append(f"<h3>{idx}) {finding.title}</h3>")
+                    lines.append("<div class='meta'>")
+                    if finding.url:
+                        lines.append(f"<div><strong>URL:</strong> <code>{finding.url}</code></div>")
+                    lines.append(f"<div><strong>Detected:</strong> {finding.created_at}</div>")
+                    lines.append("</div>")
+                    lines.append(f"<div class='details'>{finding.details_md}</div>")
+                    lines.append(
+                        f"<div class='recommendation'><strong>→ Recommended Action:</strong> {finding.recommendation}</div>"
+                    )
+                    lines.append("</div>")
 
         lines.append("</body></html>")
         return "\n".join(lines)
@@ -366,7 +453,8 @@ def compose_daily_critical_report(customer_name: str, findings_rows: list[Any]) 
 
 
 def compose_weekly_report(
-    customer_name: str, findings_rows: list[Any], coverage: CoverageStats | None = None
+    customer_name: str, findings_rows: list[Any], coverage: CoverageStats | None = None,
+    customer_status: str = "active"
 ) -> WeeklyReport:
     """Compose a weekly report from database findings rows.
 
@@ -374,6 +462,7 @@ def compose_weekly_report(
         customer_name: Customer name for the report
         findings_rows: List of sqlite3.Row objects from findings table
         coverage: Optional coverage statistics for this run
+        customer_status: Customer status (active, trial, paywalled, previously_interested)
 
     Returns:
         WeeklyReport with sorted findings by severity and priority
@@ -419,4 +508,5 @@ def compose_weekly_report(
         warning_findings=warning_findings,
         info_findings=info_findings,
         coverage=coverage,
+        customer_status=customer_status,
     )

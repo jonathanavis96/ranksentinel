@@ -691,8 +691,9 @@ def run(settings: Settings) -> None:
 
                             # Compose report
                             customer_name = c["name"]
+                            customer_status = c["status"]
                             report = compose_weekly_report(
-                                customer_name, findings_rows, coverage_stats
+                                customer_name, findings_rows, coverage_stats, customer_status
                             )
 
                             # Send email
