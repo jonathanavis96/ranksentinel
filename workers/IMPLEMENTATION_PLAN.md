@@ -475,7 +475,7 @@ Brain skills (open those relevant to the current item):
   - **AC:** Workflow builds and deploys `website/` output.
   - **If Blocked:** Document manual deploy steps.
 
-- [ ] **13.2** Custom domain (CNAME) + launch docs
+- [x] **13.2** Custom domain (CNAME) + launch docs
   - **Goal:** Make launch repeatable.
   - **AC:** CNAME is configured and `docs/websites/12_launch.md` includes steps.
   - **If Blocked:** Deploy to default GitHub Pages domain first.
