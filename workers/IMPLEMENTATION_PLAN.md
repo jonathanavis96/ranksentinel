@@ -428,7 +428,7 @@ Brain skills (open those relevant to the current item):
   - **AC:** GTM container ID comes from env config and loads correctly.
   - **If Blocked:** Use `gtag.js` directly with GA4 measurement ID.
 
-- [ ] **11.2** Implement required analytics events
+- [x] **11.2** Implement required analytics events
   - **Goal:** Measure funnel.
   - **AC:** Events fire with useful properties:
     - `cta_get_sample_report_click`

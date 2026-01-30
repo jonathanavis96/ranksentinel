@@ -2,6 +2,7 @@
 
 import React, { useState, FormEvent } from 'react';
 import Button from './Button';
+import { trackEvent } from '../lib/analytics';
 
 interface LeadCaptureFormProps {
   className?: string;
@@ -185,6 +186,18 @@ export default function LeadCaptureForm({ className = '' }: LeadCaptureFormProps
 
       // Success state
       if (data.success) {
+        // Track successful lead submission
+        trackEvent('start_monitoring_submit', {
+          source: 'lead_capture_form',
+          domain_provided: !!formData.domain,
+          key_pages_provided: !!formData.keyPages,
+          sitemap_enabled: formData.useSitemap,
+        });
+        
+        trackEvent('lead_submit', {
+          form_type: 'start_monitoring',
+        });
+        
         alert(data.message || 'Thank you! We\'ll start monitoring your site shortly.');
         
         // Reset form on success

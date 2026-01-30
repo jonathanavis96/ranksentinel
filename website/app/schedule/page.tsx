@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Button } from '../components';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { trackEvent } from '../lib/analytics';
 
 interface ScheduleFormData {
   digest_weekday: string;
@@ -84,6 +85,14 @@ export default function SchedulePage() {
       }
 
       const result: ScheduleResponse = await response.json();
+      
+      // Track successful schedule submission
+      trackEvent('start_monitoring_submit', {
+        source: 'schedule_page',
+        weekday: formData.digest_weekday,
+        timezone: formData.digest_timezone,
+      });
+      
       setSaveResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
