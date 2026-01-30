@@ -397,7 +397,7 @@ Brain skills (open those relevant to the current item):
   - **If Blocked:** Implement weekly paywall only and stop after 4 sends; add follow-up for monthly.
   - **Completed:** 2026-01-30 - Fixed email_logs→deliveries table reference bug in paywall_cadence.py and tests. All paywall cadence logic was already implemented: should_send_paywall_digest() checks weekly (7-day spacing, max 4) for paywalled customers and monthly (first occurrence of digest weekday on/after 1st of month) for previously_interested; increment_digest_count_and_check_transition() auto-transitions paywalled→previously_interested after 4th digest. Weekly digest runner already integrates both functions. Verified with 13 passing tests.
 
-- [ ] **10.3** Implement unlocked vs paywalled digest templates (blurred locked examples)
+- [x] **10.3** Implement unlocked vs paywalled digest templates (blurred locked examples)
   - **Goal:** Make paywall obvious without revealing real findings.
   - **Paywalled copy (exact; blur the example text so it’s not legible):**
     - 🔴 Critical
