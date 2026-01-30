@@ -480,7 +480,7 @@ Brain skills (open those relevant to the current item):
   - **AC:** CNAME is configured and `docs/websites/12_launch.md` includes steps.
   - **If Blocked:** Deploy to default GitHub Pages domain first.
 
-- [ ] **13.3** Environment configuration strategy
+- [x] **13.3** Environment configuration strategy
   - **Goal:** Safe config for prod.
   - **AC:** API base URL and GTM IDs are configurable; safe local defaults exist.
   - **If Blocked:** Hardcode local dev URLs only; keep prod config pending.
