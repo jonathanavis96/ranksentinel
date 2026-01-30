@@ -13,6 +13,10 @@ from ranksentinel.db import (
 )
 from ranksentinel.http_client import fetch_text
 from ranksentinel.mailgun import MailgunClient, send_and_log
+from ranksentinel.paywall_cadence import (
+    increment_digest_count_and_check_transition,
+    should_send_paywall_digest,
+)
 from ranksentinel.reporting.report_composer import compose_weekly_report
 from ranksentinel.reporting.severity import CRITICAL
 from ranksentinel.runner.finding_utils import insert_finding
@@ -367,7 +371,11 @@ def run(settings: Settings) -> None:
     conn = connect(settings)
     try:
         init_db(conn)
-        customers = fetch_all(conn, "SELECT id, name FROM customers WHERE status='active'")
+        # Fetch active, paywalled, and previously_interested customers
+        customers = fetch_all(
+            conn,
+            "SELECT id, name FROM customers WHERE status IN ('active', 'paywalled', 'previously_interested')",
+        )
 
         log_structured(run_id, stage="init", status="complete", customer_count=len(customers))
 
@@ -381,6 +389,27 @@ def run(settings: Settings) -> None:
             customer_id = int(c["id"])
 
             try:
+                # Check if paywalled/previously_interested customer should receive digest
+                customer_status_row = fetch_one(
+                    conn,
+                    "SELECT status FROM customers WHERE id=?",
+                    (customer_id,),
+                )
+                customer_status = customer_status_row["status"] if customer_status_row else None
+
+                if customer_status in ("paywalled", "previously_interested"):
+                    should_send, reason = should_send_paywall_digest(conn, customer_id)
+                    if not should_send:
+                        log_structured(
+                            run_id,
+                            run_type="weekly",
+                            stage="skip_customer",
+                            status="info",
+                            customer_id=customer_id,
+                            reason=f"paywall_cadence_skip: {reason}",
+                        )
+                        continue
+
                 # Fetch customer settings (sitemap_url, crawl_limit)
                 settings_row = fetch_one(
                     conn,
@@ -691,6 +720,29 @@ def run(settings: Settings) -> None:
                                     customer_id=customer_id,
                                     recipient=settings.MAILGUN_TO,
                                 )
+
+                                # Track paywall digest count and transition if needed
+                                customer_status_row = fetch_one(
+                                    conn,
+                                    "SELECT status FROM customers WHERE id=?",
+                                    (customer_id,),
+                                )
+                                if (
+                                    customer_status_row
+                                    and customer_status_row["status"] == "paywalled"
+                                ):
+                                    transitioned = increment_digest_count_and_check_transition(
+                                        conn, customer_id
+                                    )
+                                    if transitioned:
+                                        log_structured(
+                                            run_id,
+                                            run_type="weekly",
+                                            stage="paywall_transition",
+                                            status="success",
+                                            customer_id=customer_id,
+                                            message="Transitioned paywalled → previously_interested after 4 digests",
+                                        )
                             else:
                                 log_structured(
                                     run_id,

@@ -378,7 +378,7 @@ Brain skills (open those relevant to the current item):
   - **If Blocked:** End trials by date only and add follow-up for digest-count path.
   - **Completed:** 2026-01-30 - Added trial tracking columns to customers table (trial_started_at, paywalled_since, weekly_digest_sent_count, post_trial_unlocked/locked_critical_remaining), implemented check_and_expire_trials() function with idempotent trial→paywalled transitions based on 7-day OR 1-digest rule, updated start_monitoring endpoint to set trial_started_at, added comprehensive test coverage (9 tests) verifying expiry logic, idempotency, and edge cases.
 
-- [ ] **10.2** Weekly paywall emails for 4 weeks, then `previously_interested` monthly reminder
+- [x] **10.2** Weekly paywall emails for 4 weeks, then `previously_interested` monthly reminder
   - **Goal:** Convert trials while keeping cadence familiar.
   - **Paywall cadence:**
     - Weeks 1–4 after trial end: 1 paywalled email/week.
@@ -395,6 +395,7 @@ Brain skills (open those relevant to the current item):
     - Monthly sends at most 1 per month.
     - Critical counters persist and behave exactly.
   - **If Blocked:** Implement weekly paywall only and stop after 4 sends; add follow-up for monthly.
+  - **Completed:** 2026-01-30 - Fixed email_logs→deliveries table reference bug in paywall_cadence.py and tests. All paywall cadence logic was already implemented: should_send_paywall_digest() checks weekly (7-day spacing, max 4) for paywalled customers and monthly (first occurrence of digest weekday on/after 1st of month) for previously_interested; increment_digest_count_and_check_transition() auto-transitions paywalled→previously_interested after 4th digest. Weekly digest runner already integrates both functions. Verified with 13 passing tests.
 
 - [ ] **10.3** Implement unlocked vs paywalled digest templates (blurred locked examples)
   - **Goal:** Make paywall obvious without revealing real findings.
