@@ -413,7 +413,7 @@ Brain skills (open those relevant to the current item):
     - Unlocked emails contain real findings.
   - **If Blocked:** Use locked content without blur (still no real findings) and file follow-up to add blur.
 
-- [ ] **10.4** Paystack checkout links in emails
+- [x] **10.4** Paystack checkout links in emails
   - **Goal:** One-click upgrade.
   - **AC:** Env vars exist and button points to correct Paystack URLs:
     - `PAYSTACK_STARTER_CHECKOUT_URL`

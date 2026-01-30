@@ -3,6 +3,7 @@
 Generates formatted weekly digest text/HTML from findings with prioritized recommendations.
 """
 
+import os
 from dataclasses import dataclass
 from typing import Any
 
@@ -120,6 +121,12 @@ class WeeklyReport:
                 lines.append("• Robots.txt blocking key sections")
                 lines.append("• Homepage accidentally set to noindex")
                 lines.append("")
+                lines.append("→ Upgrade to unlock:")
+                starter_url = os.getenv('PAYSTACK_STARTER_CHECKOUT_URL', 'https://ranksentinel.com/pricing')
+                pro_url = os.getenv('PAYSTACK_PRO_CHECKOUT_URL', 'https://ranksentinel.com/pricing')
+                lines.append(f"  Starter Plan: {starter_url}")
+                lines.append(f"  Pro Plan: {pro_url}")
+                lines.append("")
             else:
                 # Show real findings for active/trial customers
                 for idx, finding in enumerate(self.critical_findings, 1):
@@ -148,6 +155,12 @@ class WeeklyReport:
                 lines.append("• Sitemap URL count dropped significantly")
                 lines.append("• Page speed score degraded")
                 lines.append("")
+                lines.append("→ Upgrade to unlock:")
+                starter_url = os.getenv('PAYSTACK_STARTER_CHECKOUT_URL', 'https://ranksentinel.com/pricing')
+                pro_url = os.getenv('PAYSTACK_PRO_CHECKOUT_URL', 'https://ranksentinel.com/pricing')
+                lines.append(f"  Starter Plan: {starter_url}")
+                lines.append(f"  Pro Plan: {pro_url}")
+                lines.append("")
             else:
                 # Show real findings for active/trial customers
                 for idx, finding in enumerate(self.warning_findings, 1):
@@ -175,6 +188,12 @@ class WeeklyReport:
                 lines.append("• Content changed since last snapshot")
                 lines.append("• New pages added to sitemap")
                 lines.append("• Minor metadata updates")
+                lines.append("")
+                lines.append("→ Upgrade to unlock:")
+                starter_url = os.getenv('PAYSTACK_STARTER_CHECKOUT_URL', 'https://ranksentinel.com/pricing')
+                pro_url = os.getenv('PAYSTACK_PRO_CHECKOUT_URL', 'https://ranksentinel.com/pricing')
+                lines.append(f"  Starter Plan: {starter_url}")
+                lines.append(f"  Pro Plan: {pro_url}")
                 lines.append("")
             else:
                 # Show real findings for active/trial customers
@@ -306,6 +325,12 @@ class WeeklyReport:
                 lines.append("<div class='details'>Meta robots tag changed from 'index,follow' to 'noindex'. This will remove the page from search results.</div>")
                 lines.append("<div class='recommendation'><strong>→ Recommended Action:</strong> Review robots/noindex/canonical settings</div>")
                 lines.append("</div>")
+                starter_url = os.getenv('PAYSTACK_STARTER_CHECKOUT_URL', 'https://ranksentinel.com/pricing')
+                pro_url = os.getenv('PAYSTACK_PRO_CHECKOUT_URL', 'https://ranksentinel.com/pricing')
+                lines.append("<div style='text-align: center; margin: 20px 0;'>")
+                lines.append(f"<a href='{starter_url}' style='display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;'>Upgrade to Starter</a>")
+                lines.append(f"<a href='{pro_url}' style='display: inline-block; background: #764ba2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;'>Upgrade to Pro</a>")
+                lines.append("</div>")
             else:
                 # Show real findings for active/trial customers
                 for idx, finding in enumerate(self.critical_findings, 1):
@@ -336,6 +361,12 @@ class WeeklyReport:
                 lines.append("<div class='details'>Page title changed from 'Best Product 2024' to 'Product - Site'. Canonical URL also updated.</div>")
                 lines.append("<div class='recommendation'><strong>→ Recommended Action:</strong> Review metadata changes for SEO impact</div>")
                 lines.append("</div>")
+                starter_url = os.getenv('PAYSTACK_STARTER_CHECKOUT_URL', 'https://ranksentinel.com/pricing')
+                pro_url = os.getenv('PAYSTACK_PRO_CHECKOUT_URL', 'https://ranksentinel.com/pricing')
+                lines.append("<div style='text-align: center; margin: 20px 0;'>")
+                lines.append(f"<a href='{starter_url}' style='display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;'>Upgrade to Starter</a>")
+                lines.append(f"<a href='{pro_url}' style='display: inline-block; background: #764ba2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;'>Upgrade to Pro</a>")
+                lines.append("</div>")
             else:
                 # Show real findings for active/trial customers
                 for idx, finding in enumerate(self.warning_findings, 1):
@@ -365,6 +396,12 @@ class WeeklyReport:
                 lines.append("</div>")
                 lines.append("<div class='details'>Page content updated. Word count changed by 15%. H1 tag unchanged.</div>")
                 lines.append("<div class='recommendation'><strong>→ Recommended Action:</strong> Review content for consistency</div>")
+                lines.append("</div>")
+                starter_url = os.getenv('PAYSTACK_STARTER_CHECKOUT_URL', 'https://ranksentinel.com/pricing')
+                pro_url = os.getenv('PAYSTACK_PRO_CHECKOUT_URL', 'https://ranksentinel.com/pricing')
+                lines.append("<div style='text-align: center; margin: 20px 0;'>")
+                lines.append(f"<a href='{starter_url}' style='display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;'>Upgrade to Starter</a>")
+                lines.append(f"<a href='{pro_url}' style='display: inline-block; background: #764ba2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;'>Upgrade to Pro</a>")
                 lines.append("</div>")
             else:
                 # Show real findings for active/trial customers

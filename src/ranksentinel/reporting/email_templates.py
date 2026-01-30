@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from typing import Iterable
 
@@ -171,6 +172,10 @@ Your trial includes:
 
 After 7 days or your first weekly digest, you can upgrade to continue monitoring.
 
+→ Upgrade now:
+  Starter Plan: {os.getenv('PAYSTACK_STARTER_CHECKOUT_URL', 'https://ranksentinel.com/pricing')}
+  Pro Plan: {os.getenv('PAYSTACK_PRO_CHECKOUT_URL', 'https://ranksentinel.com/pricing')}
+
 Questions? Just reply to this email.
 
 Happy monitoring!
@@ -210,9 +215,13 @@ The RankSentinel Team
         </ul>
         
         <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin: 30px 0;">
-            <p style="margin: 0; font-size: 14px; color: #666;">
+            <p style="margin: 0 0 15px 0; font-size: 14px; color: #666;">
                 After 7 days or your first weekly digest, you can upgrade to continue monitoring.
             </p>
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{os.getenv('PAYSTACK_STARTER_CHECKOUT_URL', '#')}" style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;">Upgrade to Starter</a>
+                <a href="{os.getenv('PAYSTACK_PRO_CHECKOUT_URL', '#')}" style="display: inline-block; background: #764ba2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;">Upgrade to Pro</a>
+            </div>
         </div>
         
         <p style="margin-top: 30px;">Questions? Just reply to this email.</p>
