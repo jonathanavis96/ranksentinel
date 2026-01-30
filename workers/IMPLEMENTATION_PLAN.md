@@ -470,7 +470,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 13: Deployment (GitHub Pages + custom domain)
 
-- [ ] **13.1** GitHub Actions deploy workflow for GitHub Pages
+- [x] **13.1** GitHub Actions deploy workflow for GitHub Pages
   - **Goal:** Reproducible deployment.
   - **AC:** Workflow builds and deploys `website/` output.
   - **If Blocked:** Document manual deploy steps.
