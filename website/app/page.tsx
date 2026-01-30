@@ -1,6 +1,5 @@
 import React from 'react';
 import Image from 'next/image';
-import { withBasePath } from './lib/asset';
 import { Button, Container, EmailReportPreview, FAQAccordion, FeatureTabs, Footer, Header } from './components';
 
 export default function Home() {
@@ -23,7 +22,7 @@ export default function Home() {
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-[var(--color-headline)] max-w-5xl mx-auto leading-tight flex flex-wrap items-center justify-center gap-3">
                 <span>Catch SEO Issues</span>
                 <Image
-                  src={withBasePath('/ranksentinel-logo-icon.webp')}
+                  src="/ranksentinel-logo-icon.webp"
                   alt=""
                   width={32}
                   height={32}
@@ -82,7 +81,7 @@ export default function Home() {
                   <div className="px-2">
                     <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden">
                       <Image
-                        src={withBasePath('/critical-alerts-only.webp')}
+                        src="/critical-alerts-only.png"
                         alt=""
                         fill
                         sizes="(min-width: 768px) 33vw, 100vw"
@@ -117,7 +116,7 @@ export default function Home() {
                   <div className="px-2">
                     <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden">
                       <Image
-                        src={withBasePath('/seo-specific-checks.webp')}
+                        src="/seo-specific-checks.png"
                         alt=""
                         fill
                         sizes="(min-width: 768px) 33vw, 100vw"
@@ -152,7 +151,7 @@ export default function Home() {
                   <div className="px-2">
                     <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden">
                       <Image
-                        src={withBasePath('/prioritized-action-list.webp')}
+                        src="/prioritized-action-list.png"
                         alt=""
                         fill
                         sizes="(min-width: 768px) 33vw, 100vw"

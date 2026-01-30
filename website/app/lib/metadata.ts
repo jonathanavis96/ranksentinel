@@ -10,9 +10,16 @@ import { Metadata } from 'next';
 
 export const siteConfig = {
   name: 'RankSentinel',
-  description: 'Automated SEO monitoring that catches broken links, sitemap changes, and robots.txt issues before they tank your rankings.',
+  // Value-prop first, concrete delivery mechanism second (email), avoid fluff.
+  // References:
+  // - brain/skills/domains/websites/copywriting/value-proposition.md
+  // - brain/skills/domains/marketing/content/copy-editing.md
+  description:
+    'Low-noise SEO monitoring that catches the changes that hurt rankings—before traffic drops. Weekly digests + daily critical alerts via email.',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://ranksentinel.com',
-  ogImage: '/og-image.png',
+  // Needed for GitHub Pages (/ranksentinel) and future custom domains (empty basePath)
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  ogImage: '/og-image.webp',
   twitterHandle: '@ranksentinel',
 };
 
@@ -34,8 +41,8 @@ export function generateMetadata({
 }): Metadata {
   const fullTitle = title === siteConfig.name ? title : `${title} | ${siteConfig.name}`;
   const finalDescription = description || siteConfig.description;
-  const canonicalUrl = `${siteConfig.url}${path}`;
-  const finalOgImage = ogImage || `${siteConfig.url}${siteConfig.ogImage}`;
+  const canonicalUrl = `${siteConfig.url}${siteConfig.basePath}${path}`;
+  const finalOgImage = ogImage || `${siteConfig.url}${siteConfig.basePath}${siteConfig.ogImage}`;
 
   return {
     title: fullTitle,

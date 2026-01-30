@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Container from './Container';
 import Button from './Button';
-import { withBasePath } from '../lib/asset';
 
 interface NavLink {
   href: string;
@@ -62,14 +61,7 @@ export default function Header({ className = '' }: HeaderProps) {
               href="/"
               className="flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 rounded"
             >
-              <Image
-                src={withBasePath('/ranksentinel-logo.webp')}
-                alt="RankSentinel"
-                width={160}
-                height={40}
-                className="h-10 w-auto"
-                priority
-              />
+              <Image src="/ranksentinel-logo.webp" alt="RankSentinel" width={160} height={40} className="h-10 w-auto" priority />
             </Link>
 
             {/* Center nav links in white rounded box (Taskk style) */}
