@@ -16,3 +16,8 @@ if [ -d .venv ]; then
 fi
 
 python3 src/ranksentinel/runner/__main__weekly.py >> "$RANKSENTINEL_LOG_DIR/weekly_$(date +%Y%m%d).log" 2>&1
+
+# Run weekly analytics digest (optional - requires GA4_PROPERTY_ID)
+if [ -n "${GA4_PROPERTY_ID:-}" ]; then
+  python3 scripts/weekly_analytics_digest.py >> "$RANKSENTINEL_LOG_DIR/analytics_digest_$(date +%Y%m%d).log" 2>&1
+fi

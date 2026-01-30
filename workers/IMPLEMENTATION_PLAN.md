@@ -437,7 +437,7 @@ Brain skills (open those relevant to the current item):
     - `start_monitoring_submit`
   - **If Blocked:** Log events to console in dev; ship minimal events.
 
-- [ ] **11.3** Weekly analytics digest email (full report; no LLM)
+- [x] **11.3** Weekly analytics digest email (full report; no LLM)
   - **Goal:** Get a raw weekly report delivered for local summarization.
   - **AC:** Script exists (cron runnable) and emails:
     - full GA report payload as text or CSV attachment
