@@ -1,5 +1,12 @@
 import React from 'react';
 import { Container, Button, Badge } from '../components';
+import { generateMetadata as genMeta } from '../lib/metadata';
+
+export const metadata = genMeta({
+  title: 'Sample Report',
+  description: 'See what a RankSentinel weekly SEO monitoring report looks like. Real insights delivered to your inbox.',
+  path: '/sample-report',
+});
 
 export default function SampleReportPage() {
   return (

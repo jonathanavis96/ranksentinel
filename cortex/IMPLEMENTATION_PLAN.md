@@ -368,7 +368,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 10: Trial expiry + paywall campaign emails
 
-- [ ] **10.1** Enforce trial expiry and transition `trial → paywalled`
+- [x] **10.1** Enforce trial expiry and transition `trial → paywalled`
   - **Goal:** Automatically end trials deterministically.
   - **Rules:** Trial ends after 7 days OR 1 weekly digest.
   - **Counters (confirmed):**
@@ -376,8 +376,9 @@ Brain skills (open those relevant to the current item):
     - `post_trial_locked_critical_remaining = 2`
   - **AC:** Trial transitions are idempotent and test-covered.
   - **If Blocked:** End trials by date only and add follow-up for digest-count path.
+  - **Completed:** 2026-01-30 - Added trial tracking columns to customers table (trial_started_at, paywalled_since, weekly_digest_sent_count, post_trial_unlocked/locked_critical_remaining), implemented check_and_expire_trials() function with idempotent trial→paywalled transitions based on 7-day OR 1-digest rule, updated start_monitoring endpoint to set trial_started_at, added comprehensive test coverage (9 tests) verifying expiry logic, idempotency, and edge cases.
 
-- [ ] **10.2** Weekly paywall emails for 4 weeks, then `previously_interested` monthly reminder
+- [x] **10.2** Weekly paywall emails for 4 weeks, then `previously_interested` monthly reminder
   - **Goal:** Convert trials while keeping cadence familiar.
   - **Paywall cadence:**
     - Weeks 1–4 after trial end: 1 paywalled email/week.
@@ -394,8 +395,9 @@ Brain skills (open those relevant to the current item):
     - Monthly sends at most 1 per month.
     - Critical counters persist and behave exactly.
   - **If Blocked:** Implement weekly paywall only and stop after 4 sends; add follow-up for monthly.
+  - **Completed:** 2026-01-30 - Fixed email_logs→deliveries table reference bug in paywall_cadence.py and tests. All paywall cadence logic was already implemented: should_send_paywall_digest() checks weekly (7-day spacing, max 4) for paywalled customers and monthly (first occurrence of digest weekday on/after 1st of month) for previously_interested; increment_digest_count_and_check_transition() auto-transitions paywalled→previously_interested after 4th digest. Weekly digest runner already integrates both functions. Verified with 13 passing tests.
 
-- [ ] **10.3** Implement unlocked vs paywalled digest templates (blurred locked examples)
+- [x] **10.3** Implement unlocked vs paywalled digest templates (blurred locked examples)
   - **Goal:** Make paywall obvious without revealing real findings.
   - **Paywalled copy (exact; blur the example text so it’s not legible):**
     - 🔴 Critical
@@ -411,7 +413,7 @@ Brain skills (open those relevant to the current item):
     - Unlocked emails contain real findings.
   - **If Blocked:** Use locked content without blur (still no real findings) and file follow-up to add blur.
 
-- [ ] **10.4** Paystack checkout links in emails
+- [x] **10.4** Paystack checkout links in emails
   - **Goal:** One-click upgrade.
   - **AC:** Env vars exist and button points to correct Paystack URLs:
     - `PAYSTACK_STARTER_CHECKOUT_URL`
@@ -421,12 +423,12 @@ Brain skills (open those relevant to the current item):
 
 ### Task 11: Analytics (GA4/GTM) + events + weekly operator digest
 
-- [ ] **11.1** Add GTM/GA4 integration
+- [x] **11.1** Add GTM/GA4 integration
   - **Goal:** Track conversions.
   - **AC:** GTM container ID comes from env config and loads correctly.
   - **If Blocked:** Use `gtag.js` directly with GA4 measurement ID.
 
-- [ ] **11.2** Implement required analytics events
+- [x] **11.2** Implement required analytics events
   - **Goal:** Measure funnel.
   - **AC:** Events fire with useful properties:
     - `cta_get_sample_report_click`
@@ -435,7 +437,7 @@ Brain skills (open those relevant to the current item):
     - `start_monitoring_submit`
   - **If Blocked:** Log events to console in dev; ship minimal events.
 
-- [ ] **11.3** Weekly analytics digest email (full report; no LLM)
+- [x] **11.3** Weekly analytics digest email (full report; no LLM)
   - **Goal:** Get a raw weekly report delivered for local summarization.
   - **AC:** Script exists (cron runnable) and emails:
     - full GA report payload as text or CSV attachment

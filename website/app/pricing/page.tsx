@@ -3,6 +3,13 @@ import Container from '../components/Container';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { FAQAccordion } from '../components/FAQAccordion';
+import { generateMetadata as genMeta } from '../lib/metadata';
+
+export const metadata = genMeta({
+  title: 'Pricing',
+  description: 'Simple, transparent pricing for RankSentinel. Start free, upgrade when you need more monitoring coverage.',
+  path: '/pricing',
+});
 
 interface PricingTier {
   name: string;

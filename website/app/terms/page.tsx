@@ -1,10 +1,12 @@
 import React from 'react';
 import Container from '../components/Container';
+import { generateMetadata as genMeta } from '../lib/metadata';
 
-export const metadata = {
-  title: 'Terms of Service | RankSentinel',
+export const metadata = genMeta({
+  title: 'Terms of Service',
   description: 'RankSentinel Terms of Service - User agreement and service conditions.',
-};
+  path: '/terms',
+});
 
 export default function TermsPage() {
   return (

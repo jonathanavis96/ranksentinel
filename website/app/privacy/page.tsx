@@ -1,10 +1,12 @@
 import React from 'react';
 import Container from '../components/Container';
+import { generateMetadata as genMeta } from '../lib/metadata';
 
-export const metadata = {
-  title: 'Privacy Policy | RankSentinel',
+export const metadata = genMeta({
+  title: 'Privacy Policy',
   description: 'RankSentinel Privacy Policy - How we collect, use, and protect your data.',
-};
+  path: '/privacy',
+});
 
 export default function PrivacyPage() {
   return (

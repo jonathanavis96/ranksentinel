@@ -446,7 +446,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 12: SEO + accessibility + performance
 
-- [ ] **12.1** Implement SEO metadata defaults and per-page metadata
+- [x] **12.1** Implement SEO metadata defaults and per-page metadata
   - **Goal:** Avoid shipping an SEO tool with weak SEO.
   - **References:** `brain/skills/domains/marketing/seo/seo-audit.md`.
   - **AC:** Titles/descriptions, OG/Twitter, canonical correct.
