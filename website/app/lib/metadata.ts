@@ -27,7 +27,8 @@ export const siteConfig = {
   // Needed for GitHub Pages (/ranksentinel) and future custom domains (empty basePath)
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
   // OG image: 1200×630 webp, basePath-safe, text matches value-prop copy
-  ogImage: '/og-image.webp',
+  // Cache-busting timestamp forces social platforms to re-fetch after updates
+  ogImage: '/og-image.webp?v=1738248000',
   twitterHandle: '@ranksentinel',
 };
 
