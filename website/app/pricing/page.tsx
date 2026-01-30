@@ -3,6 +3,8 @@ import Container from '../components/Container';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { FAQAccordion } from '../components/FAQAccordion';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import { generateMetadata as genMeta } from '../lib/metadata';
 
 export const metadata = genMeta({
@@ -34,7 +36,7 @@ const pricingTiers: PricingTier[] = [
   {
     name: 'Growth',
     price: '$69',
-    bestFor: 'Multiple sites or bigger footprint',
+    bestFor: 'multiple sites or bigger footprint',
     features: [
       'Up to 3 sites',
       'Up to 200 pages monitored',
@@ -57,12 +59,33 @@ const pricingTiers: PricingTier[] = [
   },
 ];
 
-const allPlanFeatures = [
-  'Weekly SEO regression digest (Critical / Warning / Info)',
-  'Daily critical alerts (only when severity is Critical)',
-  'Key-page monitoring (status, redirects, title, canonical, noindex, normalized content)',
-  'Sitemap-aware weekly sampling (capped)',
-  'Action-first recommendations (top priorities)',
+interface AllPlanFeature {
+  title: string;
+  description: string;
+}
+
+// Kept intentionally short for scannability (see brain/skills: page-cro, marketing-psychology).
+const allPlanFeatures: AllPlanFeature[] = [
+  {
+    title: 'Critical-only alerts (no spam)',
+    description:
+      'Daily emails only when severity is Critical—so you don’t get interrupted for minor changes.',
+  },
+  {
+    title: 'Weekly action digest (prioritized)',
+    description:
+      'A weekly email that groups findings by Critical / Warning / Info and shows the Top 3 actions first.',
+  },
+  {
+    title: 'Key-page monitoring (high leverage)',
+    description:
+      'We monitor your most important pages for status/redirect changes and SEO tag changes (title, canonical, noindex).',
+  },
+  {
+    title: 'Action-first recommendations',
+    description:
+      'Each finding includes the recommended next step—written to be easy to forward to dev/PM.',
+  },
 ];
 
 const pricingFAQs = [
@@ -87,9 +110,11 @@ const pricingFAQs = [
 
 export default function PricingPage() {
   return (
-    <main id="main-content" className="min-h-screen bg-[var(--color-background)]">
+    <div className="min-h-screen bg-[var(--color-background)] flex flex-col">
+      <Header />
+      <main id="main-content" className="flex-1">
       {/* Hero Section */}
-      <section id="top" className="py-16 md:py-24">
+      <section id="top" className="pt-12 pb-8 md:pt-16 md:pb-12">
         <Container size="lg">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl md:text-5xl font-bold text-[var(--color-headline)] mb-6">
@@ -99,45 +124,35 @@ export default function PricingPage() {
               Start small and upgrade when your monitoring footprint grows.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button as="link" href="/sample-report" size="lg" variant="primary">
-                Get a sample report
-              </Button>
               <Button
                 as="link"
-                href="#plans"
+                href="/start"
                 size="lg"
-                variant="secondary"
+                variant="primary"
+                analyticsEventName="cta_start_monitoring_click"
+                analyticsEventProperties={{ location: 'pricing_hero' }}
               >
-                See pricing
+                Start monitoring
+              </Button>
+              <Button as="link" href="/sample-report" size="lg" variant="secondary">
+                See sample report
               </Button>
             </div>
           </div>
         </Container>
       </section>
 
-      {/* What You Get Section */}
-      <section id="what-you-get" className="py-16 bg-white">
-        <Container size="lg">
-          <h2 className="text-3xl md:text-4xl font-bold text-[var(--color-headline)] text-center mb-12">
-            What you get (all plans)
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allPlanFeatures.map((feature, index) => (
-              <Card key={index} padding="md" className="text-center">
-                <p className="text-[var(--color-body)]">{feature}</p>
-              </Card>
-            ))}
-          </div>
-        </Container>
-      </section>
-
       {/* Pricing Plans Section */}
-      <section id="plans" className="py-16 md:py-24">
+      <section id="plans" className="pt-8 pb-16 md:pt-12 md:pb-20">
         <Container size="lg">
-          <h2 className="text-3xl md:text-4xl font-bold text-[var(--color-headline)] text-center mb-12">
-            Plans
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="text-center mb-10 space-y-3">
+            <h2 className="text-3xl md:text-4xl font-bold text-[var(--color-headline)]">Plans</h2>
+            <p className="text-lg text-[var(--color-body)] max-w-2xl mx-auto">
+              Same checks and email formats on every plan. You’re only choosing your monitoring limits.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
             {pricingTiers.map((tier) => (
               <Card
                 key={tier.name}
@@ -187,13 +202,51 @@ export default function PricingPage() {
                 </ul>
                 <Button
                   as="link"
-                  href="https://api.ranksentinel.com/signup"
+                  href="/start"
                   size="lg"
                   variant={tier.highlighted ? 'primary' : 'secondary'}
                   className="w-full"
+                  analyticsEventName="cta_start_monitoring_click"
+                  analyticsEventProperties={{ location: `pricing_plan_${tier.name.toLowerCase()}` }}
                 >
                   Start monitoring
                 </Button>
+              </Card>
+            ))}
+          </div>
+
+          <p className="text-sm text-[var(--color-body-secondary)] text-center max-w-2xl mx-auto mt-10">
+            Plans only change your monitoring limits. All plans include the same checks and email formats.
+          </p>
+        </Container>
+      </section>
+
+      {/* What You Get Section */}
+      <section
+        id="what-you-get"
+        className="py-12 md:py-16 bg-[var(--color-background)] border-y border-black/5"
+      >
+        <Container size="lg">
+          <div className="text-center mb-10 space-y-3">
+            <h2 className="text-2xl md:text-3xl font-bold text-[var(--color-headline)]">
+              What you get on every plan
+            </h2>
+            <p className="text-base md:text-lg text-[var(--color-body)] max-w-2xl mx-auto">
+              The core value is the same — plans only change your monitoring limits.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {allPlanFeatures.map((feature) => (
+              <Card key={feature.title} padding="md" className="text-left">
+                <div className="space-y-2">
+                  <div className="text-sm font-semibold text-[var(--color-headline)] leading-5">
+                    {feature.title}
+                  </div>
+                  <p className="text-sm text-[var(--color-body-secondary)] leading-6">
+                    {feature.description}
+                  </p>
+                </div>
               </Card>
             ))}
           </div>
@@ -201,7 +254,7 @@ export default function PricingPage() {
       </section>
 
       {/* Upgrade Triggers Section */}
-      <section id="upgrade-triggers" className="py-16 bg-white">
+      <section id="upgrade-triggers" className="py-16 md:py-24 bg-white">
         <Container size="lg">
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--color-headline)] text-center mb-8">
             Upgrade when:
@@ -262,7 +315,7 @@ export default function PricingPage() {
       </section>
 
       {/* Pages Monitored Explanation */}
-      <section id="pages-monitored" className="py-16">
+      <section id="pages-monitored" className="py-16 md:py-24 bg-[var(--color-background)]">
         <Container size="lg">
           <Card padding="lg" className="max-w-3xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold text-[var(--color-headline)] text-center mb-6">
@@ -291,7 +344,7 @@ export default function PricingPage() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-16 bg-white">
+      <section id="faq" className="py-16 md:py-24 bg-white">
         <Container size="lg">
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--color-headline)] text-center mb-12">
             Pricing FAQ
@@ -313,16 +366,25 @@ export default function PricingPage() {
               Choose a plan and get your first weekly digest in days.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button as="link" href="https://api.ranksentinel.com/signup" size="lg" variant="primary">
+              <Button
+                as="link"
+                href="/start"
+                size="lg"
+                variant="primary"
+                analyticsEventName="cta_start_monitoring_click"
+                analyticsEventProperties={{ location: 'pricing_final_cta' }}
+              >
                 Start monitoring
               </Button>
               <Button as="link" href="/sample-report" size="lg" variant="secondary">
-                See a sample report
+                See sample report
               </Button>
             </div>
           </Card>
         </Container>
       </section>
     </main>
+    <Footer />
+    </div>
   );
 }

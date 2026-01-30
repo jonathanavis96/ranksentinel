@@ -31,8 +31,8 @@
 
 ### Primary Nav Button (MVP)
 
-- **Label:** "Get a sample report"
-- **Destination:** `/sample-report` (or form/action endpoint when available)
+- **Label:** "Start monitoring"
+- **Destination:** `/start` (lead capture)
 - **Style:** Primary button (brand color, high contrast)
 - **Consistency rule:** This button appears identically on all pages
 
@@ -90,7 +90,7 @@ Multi-column layout with links grouped by category.
 
 **Rule:** Each page or viewport section should have ONE dominant call-to-action. Secondary CTAs are allowed but must be visually de-emphasized.
 
-**Primary CTA (site-wide):** "Get a sample report"
+**Primary CTA (site-wide):** "Start monitoring"
 
 **Secondary CTA (optional):** "See how it works" or "Book a demo"
 
@@ -98,25 +98,25 @@ Multi-column layout with links grouped by category.
 
 | Section | Primary CTA | Secondary CTA | Notes |
 |---------|-------------|---------------|-------|
-| `#top` (Hero) | Get a sample report | See how it works (optional) | Above the fold, maximum prominence |
+| `#top` (Hero) | Start monitoring | See sample report (optional) | Above the fold, maximum prominence |
 | `#outcomes` | — | — | Social proof only, no CTA |
 | `#why-different` | — | — | Educational content, no CTA |
 | `#features` | — | — | Feature showcase, no CTA |
-| `#how-it-works` | Get a sample report | — | CTA inside section after explanation |
-| `#sample-report` | Get a sample report | — | Showcases value, reinforces CTA |
+| `#how-it-works` | Start monitoring | — | CTA inside section after explanation |
+| `#sample-report` | Start monitoring | — | Showcases value, reinforces CTA |
 | `#pricing` | See pricing details | — | Links to `/pricing` (button or link) |
 | `#faq` | — | — | FAQ section, no CTA |
-| `#final-cta` | Get a sample report | — | Final conversion opportunity |
+| `#final-cta` | Start monitoring | — | Final conversion opportunity |
 
 ### Pricing Page CTA Placement
 
 - **Primary CTA:** "Start monitoring" (on each plan card)
-- **Alternative:** "Get a sample report" (for users not ready to commit)
+- **Alternative:** "See sample report" (for users not ready to commit)
 - **Rule:** Each pricing tier card has ONE prominent button
 
 ### Sample Report Page CTA Placement
 
-- **Primary CTA:** "Get a sample report" (after showcasing the report value)
+- **Primary CTA:** "Start monitoring" (after showcasing the report value)
 - **Context:** User has seen the value; CTA is the natural next step
 
 ---
@@ -127,8 +127,8 @@ Multi-column layout with links grouped by category.
 
 Use these interchangeably based on context:
 
-1. **"Get a sample report"** (default, most pages)
-2. **"Start monitoring"** (pricing page, plan selection)
+1. **"Start monitoring"** (default, most pages)
+2. **"See sample report"** (secondary / for users who want proof)
 3. **"See a sample report"** (alternative phrasing for variety)
 
 ### Secondary CTA Variants

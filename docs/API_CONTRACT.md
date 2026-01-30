@@ -58,7 +58,7 @@ These endpoints will be called by the marketing website and require no authentic
 
 **Endpoint:** `POST /public/leads`
 
-**Purpose:** Capture early interest leads from homepage "Get Started" CTA.
+**Purpose:** Capture early interest leads from homepage "Start monitoring" CTA.
 
 **Request Body:**
 

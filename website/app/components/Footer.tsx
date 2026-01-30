@@ -14,29 +14,26 @@ interface FooterSection {
 
 /**
  * Footer component
- * 
- * Accessibility features:
- * - Semantic footer and nav elements
- * - Proper heading hierarchy
- * - Focus-visible styles on all interactive elements
+ *
+ * Source of truth:
+ * - docs/websites/03_ia_sitemap.md (footer navigation)
+ * - docs/websites/NAV_CTA_SPEC.md
  */
 export default function Footer() {
   const sections: FooterSection[] = [
     {
       title: 'Product',
       links: [
-        { href: '/features', label: 'Features' },
-        { href: '/pricing', label: 'Pricing' },
-        { href: '/docs', label: 'Documentation' },
-        { href: '/changelog', label: 'Changelog' },
+        { href: '/#features', label: 'Features' },
+        { href: '/#how-it-works', label: 'How It Works' },
+        { href: '/#faq', label: 'FAQ' },
       ],
     },
     {
-      title: 'Company',
+      title: 'Resources',
       links: [
-        { href: '/about', label: 'About' },
-        { href: '/blog', label: 'Blog' },
-        { href: '/contact', label: 'Contact' },
+        { href: '/sample-report', label: 'Sample Report' },
+        { href: '/pricing', label: 'Pricing' },
       ],
     },
     {
@@ -46,20 +43,19 @@ export default function Footer() {
         { href: '/terms', label: 'Terms of Service' },
       ],
     },
+    {
+      title: 'Contact',
+      links: [{ href: 'mailto:support@ranksentinel.com', label: 'support@ranksentinel.com' }],
+    },
   ];
 
   return (
-    <footer 
-      className="w-full border-t border-[var(--color-border)] bg-white mt-auto"
-      role="contentinfo"
-    >
+    <footer className="w-full border-t border-[var(--color-border)] bg-white mt-auto" role="contentinfo">
       <Container>
         <div className="py-12">
-          {/* Main footer grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            {/* Brand column */}
             <div className="col-span-2 md:col-span-1">
-              <Link 
+              <Link
                 href="/"
                 className="text-xl font-semibold text-[var(--color-headline)] hover:text-[var(--color-primary)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 rounded inline-block"
               >
@@ -70,16 +66,14 @@ export default function Footer() {
               </p>
             </div>
 
-            {/* Footer sections */}
             {sections.map((section) => (
               <div key={section.title}>
-                <h3 className="text-sm font-semibold text-[var(--color-headline)] mb-4">
-                  {section.title}
-                </h3>
+                <h3 className="text-sm font-semibold text-[var(--color-headline)] mb-4">{section.title}</h3>
                 <nav aria-label={`${section.title} links`}>
                   <ul className="space-y-3">
                     {section.links.map((link) => (
-                      <li key={link.href}>
+                      <li key={`${section.title}-${link.href}`}> 
+                        {/* next/link supports mailto: but use <a> semantics via Link */}
                         <Link
                           href={link.href}
                           className="text-sm text-[var(--color-body)] hover:text-[var(--color-headline)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 rounded inline-block"
@@ -94,7 +88,6 @@ export default function Footer() {
             ))}
           </div>
 
-          {/* Bottom bar */}
           <div className="pt-8 border-t border-[var(--color-border)]">
             <p className="text-sm text-[var(--color-body)] text-center">
               © {new Date().getFullYear()} RankSentinel. All rights reserved.

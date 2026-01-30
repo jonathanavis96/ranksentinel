@@ -37,8 +37,8 @@ Pricing page anchors:
 
 Start small and upgrade when your monitoring footprint grows.
 
-Primary CTA: **Get a sample report**  
-Secondary CTA: **See pricing** (scroll to plans)
+Primary CTA: **Start monitoring**  
+Secondary CTA: **See sample report** (for proof)
 
 ### What you get (all plans) (anchor: #what-you-get)
 

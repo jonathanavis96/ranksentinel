@@ -1,5 +1,6 @@
 import React from 'react';
 import Container from '../components/Container';
+import Header from '../components/Header';
 import { generateMetadata as genMeta } from '../lib/metadata';
 
 export const metadata = genMeta({
@@ -10,8 +11,10 @@ export const metadata = genMeta({
 
 export default function TermsPage() {
   return (
-    <main id="main-content" className="min-h-screen bg-white">
-      <Container>
+    <div className="min-h-screen bg-white flex flex-col">
+      <Header />
+      <main id="main-content" className="flex-1">
+        <Container>
         <div className="py-16 max-w-3xl mx-auto">
           <h1 className="text-4xl font-bold text-[var(--color-headline)] mb-8">
             Terms of Service
@@ -27,7 +30,7 @@ export default function TermsPage() {
                 1. Acceptance of Terms
               </h2>
               <p>
-                By accessing or using RankSentinel ("the Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Service.
+                By accessing or using RankSentinel (&quot;the Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you do not agree to these Terms, do not use the Service.
               </p>
             </section>
 
@@ -82,7 +85,7 @@ export default function TermsPage() {
                 <strong>Cancellation:</strong> You may cancel your subscription at any time. Cancellation takes effect at the end of the current billing period.
               </p>
               <p className="mt-4">
-                <strong>Price Changes:</strong> We reserve the right to modify pricing with 30 days' advance notice. Continued use after price changes constitutes acceptance.
+                <strong>Price Changes:</strong> We reserve the right to modify pricing with 30 days&apos; advance notice. Continued use after price changes constitutes acceptance.
               </p>
             </section>
 
@@ -118,7 +121,7 @@ export default function TermsPage() {
                 7. Disclaimer of Warranties
               </h2>
               <p>
-                THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL MEET YOUR REQUIREMENTS OR THAT IT WILL BE UNINTERRUPTED, TIMELY, SECURE, OR ERROR-FREE.
+                The Service is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement. We do not warrant that the Service will meet your requirements or that it will be uninterrupted, timely, secure, or error-free.
               </p>
             </section>
 
@@ -127,7 +130,7 @@ export default function TermsPage() {
                 8. Limitation of Liability
               </h2>
               <p>
-                TO THE MAXIMUM EXTENT PERMITTED BY LAW, RANKSENTINEL SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS, REVENUE, DATA, OR BUSINESS OPPORTUNITIES ARISING FROM YOUR USE OF THE SERVICE. OUR TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID FOR THE SERVICE IN THE 12 MONTHS PRECEDING THE CLAIM.
+                To the maximum extent permitted by law, RankSentinel shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits, revenue, data, or business opportunities arising from your use of the Service. Our total liability shall not exceed the amount you paid for the Service in the 12 months preceding the claim.
               </p>
             </section>
 
@@ -195,7 +198,8 @@ export default function TermsPage() {
             </section>
           </div>
         </div>
-      </Container>
-    </main>
+        </Container>
+      </main>
+    </div>
   );
 }

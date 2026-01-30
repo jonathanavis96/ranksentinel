@@ -9,8 +9,13 @@
 
 // Declare global dataLayer type
 declare global {
+  type DataLayerEvent = {
+    event: string;
+    [key: string]: unknown;
+  };
+
   interface Window {
-    dataLayer: Array<Record<string, any>>;
+    dataLayer: DataLayerEvent[];
   }
 }
 

@@ -34,7 +34,6 @@ function isNextDevRunningForThisProject() {
 if (existsSync(devLockPath) && !isNextDevRunningForThisProject()) {
   try {
     unlinkSync(devLockPath);
-    // eslint-disable-next-line no-console
     console.warn(`Removed stale Next dev lock: ${devLockPath}`);
   } catch {
     // Ignore; Next will surface a clear error if it can't acquire the lock.

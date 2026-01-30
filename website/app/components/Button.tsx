@@ -1,10 +1,19 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { trackEvent } from '../lib/analytics';
 
 type ButtonVariant = 'primary' | 'secondary';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
-interface BaseButtonProps {
+interface AnalyticsProps {
+  /** If provided, a click will emit a dataLayer event via trackEvent() */
+  analyticsEventName?: string;
+  analyticsEventProperties?: Record<string, string | number | boolean>;
+}
+
+interface BaseButtonProps extends AnalyticsProps {
   children: React.ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -23,7 +32,11 @@ interface ButtonAsLinkProps extends BaseButtonProps {
   as: 'link';
   href: string;
   type?: never;
-  onClick?: never;
+  /**
+   * Optional additional click handler (runs after analytics tracking).
+   * Note: keep this client-side only.
+   */
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 type ButtonProps = ButtonAsButtonProps | ButtonAsLinkProps;
@@ -50,14 +63,16 @@ export default function Button({
   className = '',
   disabled = false,
   as = 'button',
+  analyticsEventName,
+  analyticsEventProperties,
   ...props
 }: ButtonProps) {
   // Base styles shared by all variants
   const baseStyles = 'inline-flex items-center justify-center font-medium transition-all focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
-  // Variant styles
+  // Variant styles (primary uses black bg to match reference examples, hovers to teal)
   const variantStyles = {
-    primary: 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white hover:shadow-md',
+    primary: 'bg-[var(--color-headline)] hover:bg-[var(--color-primary)] text-white hover:shadow-md',
     secondary: 'bg-transparent border border-[var(--color-border)] text-[var(--color-headline)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]',
   };
 
@@ -70,13 +85,26 @@ export default function Button({
 
   const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
 
+  const emitAnalytics = () => {
+    if (analyticsEventName) {
+      trackEvent(analyticsEventName, analyticsEventProperties || {});
+    }
+  };
+
   if (as === 'link') {
     const linkProps = props as ButtonAsLinkProps;
+
+    const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+      emitAnalytics();
+      linkProps.onClick?.(e);
+    };
+
     return (
       <Link
         href={linkProps.href}
         className={combinedClassName}
         aria-disabled={disabled}
+        onClick={handleLinkClick}
       >
         {children}
       </Link>
@@ -85,10 +113,15 @@ export default function Button({
 
   const buttonProps = props as ButtonAsButtonProps;
   
+  const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    emitAnalytics();
+    buttonProps.onClick?.(e);
+  };
+
   return (
     <button
       type={buttonProps.type || 'button'}
-      onClick={buttonProps.onClick}
+      onClick={handleButtonClick}
       disabled={disabled}
       className={combinedClassName}
     >

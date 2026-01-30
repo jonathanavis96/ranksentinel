@@ -6,64 +6,67 @@ interface Tab {
   id: string;
   label: string;
   bullets: string[];
-  preview: string;
+  microProof: string;
+  example: string;
 }
 
 const tabs: Tab[] = [
   {
-    id: 'daily-critical',
-    label: 'Daily Critical Checks',
+    id: 'what-you-get',
+    label: 'What you get',
     bullets: [
-      'Alerts only when severity is Critical',
-      'Focused on key pages (high leverage)',
-      'Designed for low false positives (dedupe + confirmation)',
+      'Weekly digest with Top 3 priorities (so you know what to do first)',
+      'Daily email only when something is genuinely Critical',
+      'Emails are forwardable (share with dev/PM without rewriting the issue)',
     ],
-    preview: 'Daily email sent only when critical SEO regressions are detected on your most important pages.',
+    microProof: 'Daily alerts are gated by severity and sent only after confirmation logic (so you don\'t get paged for blips).',
+    example: '“This week’s priorities: Fix homepage noindex • Restore robots crawlability • Investigate LCP regression”',
   },
   {
-    id: 'weekly-digest',
-    label: 'Weekly Digest',
+    id: 'noise-prevention',
+    label: 'Noise prevention',
     bullets: [
-      'Critical / Warning / Info grouped summaries',
-      '"Top actions this week" prioritized list',
-      'Stable diffs (normalized content) to reduce noise',
+      'Normalization + dedupe reduce template-change spam',
+      'Confirmation runs filter one-off fetch/infra errors',
+      'Focused scope (key pages) keeps signal high',
     ],
-    preview: 'Comprehensive weekly summary with actionable recommendations ranked by priority.',
+    microProof: 'If something changes once, it’s tracked; if it repeats and impacts SEO, it becomes a prioritized item (or a critical alert).',
+    example: '“Confirmed regression (2 runs): LCP +650ms on /pricing”',
   },
   {
-    id: 'seo-signals',
-    label: 'SEO Signals',
+    id: 'what-we-monitor',
+    label: 'What we monitor',
     bullets: [
-      'robots.txt change detection',
-      'sitemap deltas (hash + URL count)',
-      'canonical/noindex/title changes',
-      'internal broken links + new 404s',
+      'Indexability: meta robots (noindex/nofollow) and canonical changes',
+      'Crawl control: robots.txt + sitemap changes (adds/removals/count shifts)',
+      'Site integrity: internal link issues + spikes in 404s',
+      'Performance: key-page PSI regressions (tracked as regressions, not vanity scores)',
     ],
-    preview: 'Monitor the signals that matter: robots rules, sitemaps, meta tags, and link integrity.',
+    microProof: 'Coverage is opinionated: it prioritizes signals that commonly precede traffic drops—then groups them by severity.',
+    example: '“Critical: Homepage set to noindex • Warning: Sitemap URL count dropped 18%”',
   },
   {
-    id: 'psi-monitoring',
-    label: 'PSI Monitoring',
+    id: 'setup-scope',
+    label: 'Setup & scope',
     bullets: [
-      'PageSpeed Insights on key URLs',
-      'Confirmation logic for regressions (avoid one-off blips)',
-      'Track performance trends over time',
+      'Add your domain + email (minutes)',
+      'Choose your key pages (homepage, pricing, top landing pages)',
+      'Set weekly schedule (optional) and let it run',
     ],
-    preview: 'PageSpeed monitoring with smart confirmation to filter out temporary fluctuations.',
+    microProof: 'Monitoring starts with a baseline snapshot so future diffs are meaningful (not noisy).',
+    example: '“Baseline established → Next digest includes only confirmed changes since last week”',
   },
 ];
 
 export function FeatureTabs() {
   const [activeTab, setActiveTab] = useState(tabs[0].id);
 
-  const activeTabData = tabs.find((tab) => tab.id === activeTab) || tabs[0];
-
   return (
     <div className="w-full">
       {/* Tab List */}
       <div
         role="tablist"
-        aria-label="Feature categories"
+        aria-label="Product coverage"
         className="flex flex-wrap gap-2 mb-8 border-b border-[var(--color-border)]"
       >
         {tabs.map((tab) => (
@@ -137,9 +140,16 @@ export function FeatureTabs() {
                 ))}
               </ul>
 
-              {/* Preview Snippet */}
-              <div className="bg-[var(--color-bg-subtle)] border border-[var(--color-border)] rounded-lg p-6">
-                <p className="text-[var(--color-body)] text-base italic">{tab.preview}</p>
+              {/* Micro-proof + example */}
+              <div className="bg-[var(--color-bg-subtle)] border border-[var(--color-border)] rounded-lg p-6 space-y-4">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--color-headline)]">Micro-proof</div>
+                  <p className="text-[var(--color-body)] text-base">{tab.microProof}</p>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-[var(--color-headline)]">Example</div>
+                  <p className="text-[var(--color-body)] text-base italic">{tab.example}</p>
+                </div>
               </div>
             </div>
           )}

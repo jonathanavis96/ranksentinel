@@ -27,17 +27,18 @@ Avoid:
 
 ## CTA system (single primary)
 
-Default primary CTA (site-wide): **Get a sample report**
+Default primary CTA (site-wide): **Start monitoring**
 
 Why:
 
-- Fits early-stage reality (sample report builds trust fastest)
-- Matches email-first product UX
+- Aligns with conversion (trial → scan → paid)
+- Still offers proof via a secondary "See sample report" CTA
 
 Secondary CTAs (optional):
 
-- **See how it works**
+- **See sample report**
 - **See pricing**
+- **See how it works**
 - **Book a demo** (only if you are actually booking demos)
 
 Rules:
@@ -173,7 +174,7 @@ Recommended:
 
 Heading options:
 
-- “Get a sample report”
+- “Start monitoring”
 - “Ready to catch regressions before traffic drops?”
 
 Recommended:

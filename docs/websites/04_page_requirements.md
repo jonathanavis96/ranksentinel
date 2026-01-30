@@ -76,13 +76,13 @@ Default nav links (recommended):
 - Pricing (`/pricing` or `/#pricing`)
 - Sample report (`/sample-report` or `/#sample-report`)
 - FAQ (`/faq` or `/#faq`)
-- Primary button: **Get a sample report**
+- Primary button: **Start monitoring**
 
 ### Primary conversion goal
 
 Site-wide primary CTA should be consistent.
 
-Default primary CTA: **Get a sample report**
+Default primary CTA: **Start monitoring**
 
 Secondary CTA (optional): **See how it works** or **Book a demo**
 
@@ -109,8 +109,8 @@ Default content (recommended):
 - Headline: **Low-noise SEO regression monitoring that emails you the actions.**
 - Subhead: **Robots, sitemaps, canonicals, noindex, broken links, and PageSpeed regressions—summarized into one weekly digest (with critical-only daily alerts).**
 - CTAs:
-  - Primary: **Get a sample report**
-  - Secondary: **See how it works** (or **Book a demo**)
+  - Primary: **Start monitoring**
+  - Secondary: **See sample report** (or **See how it works**)
 
 Hero “object” visual (required): **Email report preview card**
 
@@ -266,7 +266,7 @@ Requirements:
 
 CTA inside section:
 
-- Primary: **Get a sample report**
+- Primary: **Start monitoring**
 - Secondary: **See pricing**
 
 ---
@@ -286,7 +286,7 @@ Requirements:
 Homepage CTA:
 
 - Primary: **See pricing**
-- Secondary: **Get a sample report**
+- Secondary: **See sample report**
 
 ---
 
@@ -314,7 +314,7 @@ FAQ format:
 
 Requirements:
 
-- Repeat primary CTA: **Get a sample report**
+- Repeat primary CTA: **Start monitoring**
 - Short reassurance line:
   - “Weekly clarity. Critical-only alerts. No dashboard required.”
 
@@ -339,7 +339,7 @@ Requirements:
 
 - Lead with the email preview object
 - Show a complete example digest (or a close approximation)
-- CTA: Get a sample report
+- CTA: Start monitoring
 
 ### Pricing page (`/pricing`)
 

@@ -156,13 +156,13 @@ export default function SchedulePage() {
   return (
     <>
       <Header />
-      <main id="main-content" className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-16">
+      <main id="main-content" className="min-h-screen bg-[var(--color-background)] py-16">
         <Container className="max-w-2xl">
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="bg-white rounded-2xl p-8 border border-[var(--color-border)]" style={{ boxShadow: '0 10px 30px rgba(16, 24, 40, 0.08)' }}>
+            <h1 className="text-3xl font-bold text-[var(--color-headline)] mb-2">
               Schedule Settings
             </h1>
-            <p className="text-gray-600 mb-8">
+            <p className="text-[var(--color-body)] mb-8">
               Customize when you receive your weekly SEO digest reports
             </p>
 
@@ -178,7 +178,7 @@ export default function SchedulePage() {
                   ✓ Saved
                 </h2>
                 <p className="text-green-800 mb-3">
-                  You'll receive reports every{' '}
+                  You&apos;ll receive reports every{' '}
                   <strong className="capitalize">{formData.digest_weekday}</strong> at{' '}
                   <strong>{formData.digest_time_local}</strong>{' '}
                   <span className="text-green-700">
@@ -200,14 +200,14 @@ export default function SchedulePage() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="weekday" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="weekday" className="block text-sm font-medium text-[var(--color-headline)] mb-2">
                   Day of Week
                 </label>
                 <select
                   id="weekday"
                   value={formData.digest_weekday}
                   onChange={(e) => setFormData(prev => ({ ...prev, digest_weekday: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg bg-white text-[var(--color-headline)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   disabled={isSubmitting || !token}
                 >
                   {weekdays.map(day => (
@@ -219,7 +219,7 @@ export default function SchedulePage() {
               </div>
 
               <div>
-                <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="time" className="block text-sm font-medium text-[var(--color-headline)] mb-2">
                   Time
                 </label>
                 <input
@@ -227,16 +227,16 @@ export default function SchedulePage() {
                   id="time"
                   value={formData.digest_time_local}
                   onChange={(e) => setFormData(prev => ({ ...prev, digest_time_local: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg bg-white text-[var(--color-headline)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   disabled={isSubmitting || !token}
                 />
               </div>
 
               <div>
-                <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="timezone" className="block text-sm font-medium text-[var(--color-headline)] mb-2">
                   Timezone
                   {detectedTimezone !== 'UTC' && (
-                    <span className="ml-2 text-xs text-gray-500">
+                    <span className="ml-2 text-xs text-[var(--color-body)] opacity-80">
                       (detected: {detectedTimezone})
                     </span>
                   )}
@@ -245,7 +245,7 @@ export default function SchedulePage() {
                   id="timezone"
                   value={formData.digest_timezone}
                   onChange={(e) => setFormData(prev => ({ ...prev, digest_timezone: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg bg-white text-[var(--color-headline)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   disabled={isSubmitting || !token}
                 >
                   {timezoneOptions.map(tz => (
@@ -266,7 +266,7 @@ export default function SchedulePage() {
             </form>
 
             {!token && (
-              <p className="mt-4 text-sm text-gray-500 text-center">
+              <p className="mt-4 text-sm text-[var(--color-body)] opacity-80 text-center">
                 Need a new link? Check your email for the latest schedule settings link.
               </p>
             )}

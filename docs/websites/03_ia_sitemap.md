@@ -15,20 +15,20 @@ These pages are **required** for the initial launch and align with the section b
 1. **Homepage** (`/` or `/index.html`)
    - Primary landing page with 8 sections (hero → final CTA)
    - Sections: `#top`, `#outcomes`, `#why-different`, `#features`, `#how-it-works`, `#sample-report`, `#pricing`, `#faq`, `#final-cta`
-   - **Primary CTA:** "Get a sample report"
+   - **Primary CTA:** "Start monitoring"
    - **Status:** MVP — implementation required
 
 2. **Pricing page** (`/pricing`)
    - Dedicated pricing with plans and packaging
    - Anchor: `#plans` (for cross-links)
    - Copy/structure from `docs/websites/06_pricing_packaging.md`
-   - **Primary CTA:** "Start monitoring" or "Get a sample report"
+   - **Primary CTA:** "Start monitoring" (default) or "See sample report" (secondary)
    - **Status:** MVP — implementation required
 
 3. **Sample report page** (`/sample-report`)
    - Showcases email report preview (weekly digest + critical alert)
    - Demonstrates actual value delivered
-   - **Primary CTA:** "Get a sample report"
+   - **Primary CTA:** "Start monitoring"
    - **Status:** MVP — implementation required
 
 ### Optional Pages (Post-MVP)
@@ -55,7 +55,7 @@ Following the 7±2 rule from `sitemap-builder.md`, RankSentinel uses a **minimal
 ### Primary Navigation (Header)
 
 ```text
-[RankSentinel Logo] Product | Pricing | Sample Report [Get a Sample Report CTA Button]
+[RankSentinel Logo] Product | Pricing | Sample Report [Start Monitoring CTA Button]
 ```
 
 **Nav items:**
@@ -63,12 +63,12 @@ Following the 7±2 rule from `sitemap-builder.md`, RankSentinel uses a **minimal
 1. **Product** → `/#features` or `/product` (if optional page is built)
 2. **Pricing** → `/pricing` or `/#pricing`
 3. **Sample Report** → `/sample-report`
-4. **CTA Button:** "Get a sample report" → leads to sample report request flow
+4. **CTA Button:** "Start monitoring" → leads to `/start` lead capture flow
 
 **Alternative minimal nav (3 items):**
 
 ```text
-[RankSentinel Logo] Pricing | Sample Report [Get a Sample Report CTA Button]
+[RankSentinel Logo] Pricing | Sample Report [Start Monitoring CTA Button]
 ```
 
 - Removes "Product" link, relies on homepage sections for feature discovery
@@ -129,8 +129,8 @@ FAQ (/faq)
    - Cross-linking between pages is explicit (e.g., `/#pricing` vs `/pricing`)
 
 4. **Primary CTA consistency:**
-   - Site-wide: "Get a sample report"
-   - Pricing page secondary: "Start monitoring"
+   - Site-wide: "Start monitoring"
+   - Secondary: "See sample report"
 
 ### Open Questions
 

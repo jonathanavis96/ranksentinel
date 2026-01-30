@@ -1,5 +1,6 @@
 import React from 'react';
 import Container from '../components/Container';
+import Header from '../components/Header';
 import { generateMetadata as genMeta } from '../lib/metadata';
 
 export const metadata = genMeta({
@@ -10,8 +11,10 @@ export const metadata = genMeta({
 
 export default function PrivacyPage() {
   return (
-    <main id="main-content" className="min-h-screen bg-white">
-      <Container>
+    <div className="min-h-screen bg-white flex flex-col">
+      <Header />
+      <main id="main-content" className="flex-1">
+        <Container>
         <div className="py-16 max-w-3xl mx-auto">
           <h1 className="text-4xl font-bold text-[var(--color-headline)] mb-8">
             Privacy Policy
@@ -116,7 +119,7 @@ export default function PrivacyPage() {
 
             <section>
               <h2 className="text-2xl font-semibold text-[var(--color-headline)] mt-8 mb-4">
-                9. Children's Privacy
+                9. Children&apos;s Privacy
               </h2>
               <p>
                 RankSentinel is not intended for users under 18. We do not knowingly collect information from children.
@@ -145,7 +148,8 @@ export default function PrivacyPage() {
             </section>
           </div>
         </div>
-      </Container>
-    </main>
+        </Container>
+      </main>
+    </div>
   );
 }
