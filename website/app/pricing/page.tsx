@@ -87,7 +87,7 @@ const pricingFAQs = [
 
 export default function PricingPage() {
   return (
-    <main className="min-h-screen bg-[var(--color-background)]">
+    <main id="main-content" className="min-h-screen bg-[var(--color-background)]">
       {/* Hero Section */}
       <section id="top" className="py-16 md:py-24">
         <Container size="lg">

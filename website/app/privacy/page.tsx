@@ -10,7 +10,7 @@ export const metadata = genMeta({
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-white">
+    <main id="main-content" className="min-h-screen bg-white">
       <Container>
         <div className="py-16 max-w-3xl mx-auto">
           <h1 className="text-4xl font-bold text-[var(--color-headline)] mb-8">

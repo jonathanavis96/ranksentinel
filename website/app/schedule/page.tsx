@@ -155,7 +155,7 @@ export default function SchedulePage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-16">
+      <main id="main-content" className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-16">
         <Container className="max-w-2xl">
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">

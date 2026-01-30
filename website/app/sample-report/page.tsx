@@ -13,7 +13,7 @@ export default function SampleReportPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       <Container className="py-12 md:py-20">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div id="main-content" className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
             Sample RankSentinel Weekly Digest
           </h1>

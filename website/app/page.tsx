@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-zinc-50">
       {/* Hero Section */}
-      <section id="top" className="pt-24 pb-16 md:pt-32 md:pb-24">
+      <section id="main-content" className="pt-24 pb-16 md:pt-32 md:pb-24">
         <Container size="lg">
           <div className="text-center space-y-8">
             {/* Hero Badge */}
