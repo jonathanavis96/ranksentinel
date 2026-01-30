@@ -8,7 +8,7 @@
 
 - `docs/websites/04_page_requirements.md` (global layout requirements)
 - `docs/websites/05_copy_system.md` (voice + tone)
-- `brain/skills/domains/websites/copywriting/cta-optimizer.md` (CTA best practices)
+- `skills/domains/websites/copywriting/cta-optimizer.md` (CTA best practices)
 
 ---
 

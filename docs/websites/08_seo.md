@@ -2,5 +2,5 @@
 
 ## Required reading (agents must open these)
 
-- `brain/skills/domains/marketing/seo/schema-markup.md`
-- `brain/skills/domains/marketing/seo/seo-audit.md`
+- `skills/domains/marketing/seo/schema-markup.md`
+- `skills/domains/marketing/seo/seo-audit.md`

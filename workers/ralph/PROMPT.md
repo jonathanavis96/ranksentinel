@@ -33,7 +33,7 @@ If the `# VERIFIER STATUS` section shows `[WARN]` lines:
 
 ### Before Implementation
 
-1. **Always consult** `./brain/skills/SUMMARY.md` to locate relevant domain knowledge
+1. **Always consult** `./skills/SUMMARY.md` to locate relevant domain knowledge
 2. **Read the specific skill file** that matches your task domain (e.g., SEO, observability, API design)
 3. **Apply patterns** from the skill to your implementation
 

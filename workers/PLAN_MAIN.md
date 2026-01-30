@@ -58,17 +58,17 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 
 - [x] **0-K.1** Fix `./brain/skills` availability inside the workspace (no external symlink)
   - **Problem:** `brain/skills` is currently a symlink to `/home/grafe/code/brain/skills` which is outside the workspace. Rovo/CI cannot read that path, so skills are effectively unavailable to the agent.
-  - **Goal:** Ensure `./brain/skills/` is a real directory committed in-repo (or vendored during setup), not a symlink to outside paths.
+  - **Goal:** Ensure `./skills/` is a real directory committed in-repo (or vendored during setup), not a symlink to outside paths.
   - **Implementation guidance (choose one):**
     - **Preferred:** run `bash workers/ralph/sync_brain_skills.sh --from-repo` to vendor the upstream Brain repo into `./brain/skills`.
     - Alternative: run `--from-local` or `--from-sibling` if you have the Brain repo locally.
-    - Remove the symlink and ensure `brain/skills/SUMMARY.md` exists and is readable from within the workspace.
-  - **AC:** `test -f brain/skills/SUMMARY.md` passes and `readlink brain/skills` fails (meaning it’s not a symlink).
+    - Remove the symlink and ensure `skills/SUMMARY.md` exists and is readable from within the workspace.
+  - **AC:** `test -f skills/SUMMARY.md` passes and `readlink brain/skills` fails (meaning it’s not a symlink).
 
 - [x] **0-K.2** Update Ralph prompt to require Brain skills consult + SKILL_REQUEST on block
   - **Files:** `workers/ralph/PROMPT.md` (protected), `workers/ralph/.verify/prompt.sha256` (protected)
   - **Implementation guidance:** Add explicit steps at the top of the prompt:
-    - Before implementing: consult `./brain/skills/SUMMARY.md` + relevant domain skill.
+    - Before implementing: consult `./skills/SUMMARY.md` + relevant domain skill.
     - If blocked: create `docs/SKILL_REQUEST_<topic>.md` and include: context, attempted approach, links, open questions, acceptance criteria.
   - **AC:** Prompt contains explicit language: “MUST consult brain skills first” and “If blocked, MUST create docs/SKILL_REQUEST_*.md before proceeding.”
   - **Validate:** `bash tools/validate_protected_hashes.sh` passes (update hash baseline intentionally).
@@ -144,25 +144,25 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 - [x] **0-R.5** Fix sqlite test inserts to satisfy NOT NULL columns (`customers.created_at`, `customers.updated_at`, `targets.created_at`)
   - **Why:** `pytest` currently fails with `NOT NULL constraint failed: customers.created_at` in sitemap tests.
   - **Do:** Update tests (at least `tests/test_sitemap_fetch.py`) to insert required timestamp columns, or change schema to provide safe defaults.
-  - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
+  - **Skills:** `skills/domains/backend/sqlite-schema-test-alignment.md`, `skills/domains/backend/database-patterns.md`, `skills/domains/code-quality/testing-patterns.md`, `skills/playbooks/investigate-test-failures.md`
   - **AC:** `./.venv/bin/pytest -q tests/test_sitemap_fetch.py` passes.
 
 - [x] **0-R.6** Fix `tests/test_page_fetcher.py::test_persist_fetch_results_placeholder` to initialize schema (call `init_db()` before using snapshots)
   - **Why:** Fails with `sqlite3.OperationalError: no such table: snapshots` because test creates a bare SQLite DB.
   - **Do:** In the test, call `init_db(conn)` (or use shared fixture) before invoking `persist_fetch_results()`.
-  - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
+  - **Skills:** `skills/domains/backend/sqlite-schema-test-alignment.md`, `skills/domains/code-quality/testing-patterns.md`, `skills/playbooks/investigate-test-failures.md`
   - **AC:** `./.venv/bin/pytest -q tests/test_page_fetcher.py::test_persist_fetch_results_placeholder` passes.
 
 - [x] **0-R.7** Align robots fetch tests with current artifact storage semantics
   - **Why:** `tests/test_robots_fetch.py` has failing assertions vs actual implementation (subject/raw_content expectations).
   - **Do:** Inspect current daily robots persistence (kind/subject normalization, newline normalization, etc.) and update tests to assert the real contract (ideally via `get_latest_artifact()` rather than raw SQL).
-  - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
+  - **Skills:** `skills/domains/backend/sqlite-schema-test-alignment.md`, `skills/domains/code-quality/testing-patterns.md`, `skills/playbooks/investigate-test-failures.md`
   - **AC:** `./.venv/bin/pytest -q tests/test_robots_fetch.py` passes.
 
 - [x] **0-R.8** Ensure customer status gating tests create data consistent with schema + runner behavior
   - **Why:** `tests/test_customer_status_gating.py` is currently failing in full suite.
   - **Do:** Ensure test DB setup inserts required `created_at/updated_at` fields and any required settings rows so the runner can proceed without error.
-  - **Skills:** `brain/skills/domains/backend/sqlite-schema-test-alignment.md`, `brain/skills/domains/code-quality/testing-patterns.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/playbooks/investigate-test-failures.md`
+  - **Skills:** `skills/domains/backend/sqlite-schema-test-alignment.md`, `skills/domains/code-quality/testing-patterns.md`, `skills/domains/backend/database-patterns.md`, `skills/playbooks/investigate-test-failures.md`
   - **AC:** `./.venv/bin/pytest -q tests/test_customer_status_gating.py` passes.
 
 - [x] **0-R.9** Weekly crawl resilience: handle HTTP 429 without hanging the whole run
@@ -186,7 +186,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - Persist auditability:
       - when skipping due to threshold, create snapshots/run_coverage entries that make it obvious we were rate-limited.
   - **Done:** Fixed `page_fetcher_scheduled.py` to persist 429 responses to results dict so they get counted in `run_coverage.http_429_count`. All AC requirements verified: (1) Weekly run completes with repeated 429s, (2) Rate-limited customers are interleaved (not deferred), (3) http_429_count recorded correctly, (4) Runtime bounded by caps, (5) Interleaving behavior confirmed via integration test. All existing tests pass (12/12 for scheduler + weekly fetcher integration).
-  - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/infrastructure/observability-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **Skills:** `skills/domains/backend/error-handling-patterns.md`, `skills/domains/backend/api-design-patterns.md`, `skills/domains/infrastructure/observability-patterns.md`, `skills/domains/code-quality/testing-patterns.md`
   - **AC:**
     - Weekly run completes even when a customer domain responds with repeated 429s.
     - Rate-limited customer URLs are retried throughout the run (interleaved), not only at the end.
@@ -204,7 +204,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
     - Wire weekly fetch loop to use this helper (likely in `src/ranksentinel/runner/weekly_digest.py` / `page_fetcher.py`).
   - **Done:** Implemented `fetch_scheduler.py` with round-robin scheduling, per-domain cooldown, exponential backoff with jitter, attempt tracking, and 429 threshold caps. Created `page_fetcher_scheduled.py` for multi-customer scheduled fetching. Refactored `weekly_digest.py` into 3 phases: (1) collect URLs, (2) scheduled fetch across all customers, (3) process results. All scheduler tests passing (9/9).
     - Add structured logs for scheduling decisions: `event=schedule_defer`, `domain`, `cooldown_ms`, `queue_len`, `customer_id`.
-  - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/infrastructure/observability-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **Skills:** `skills/domains/backend/error-handling-patterns.md`, `skills/domains/backend/api-design-patterns.md`, `skills/domains/infrastructure/observability-patterns.md`, `skills/domains/code-quality/testing-patterns.md`
   - **AC:**
     - Unit test exists for scheduler ordering under cooldown (A deferred, B/C proceed, A retried later).
     - Weekly integration test for interleaving remains green.
@@ -212,7 +212,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 - [x] **0-R.10** Restore green test suite after above fixes
   - **Why:** Currently `pytest -q` reports `9 failed`.
   - **Do:** Run full suite and fix any remaining failures introduced by changes.
-  - **Skills:** `brain/skills/playbooks/investigate-test-failures.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **Skills:** `skills/playbooks/investigate-test-failures.md`, `skills/domains/code-quality/testing-patterns.md`
   - **AC:** `./.venv/bin/pytest -q` passes.
 
 > Motivation: real sites frequently rate-limit bots (HTTP 429), and weekly runs must persist snapshots for auditability/diffing.
@@ -627,7 +627,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Implementation guidance:**
     - Add `POST /admin/customers/{customer_id}/send_first_insight`.
     - Endpoint calls an internal function (no duplicated business logic in API layer).
-  - **Skills:** `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/backend/auth-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **Skills:** `skills/domains/backend/api-design-patterns.md`, `skills/domains/backend/auth-patterns.md`, `skills/domains/code-quality/testing-patterns.md`
   - **AC:** Hitting the endpoint returns 200 and enqueues/executes the first-insight flow for that customer.
   - **Validate:** Unit test for endpoint routing + mocked service call.
   - **Completed:** Added endpoint with stub service function and full test coverage
@@ -641,7 +641,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
       - robots.txt + sitemap hash
       - optional PSI on key pages (respect caps)
     - Write findings scoped to a new run type (e.g., `run_type='first_insight'`) or reuse weekly composer but with a distinct header.
-  - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/backend/database-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **Skills:** `skills/domains/backend/error-handling-patterns.md`, `skills/domains/backend/database-patterns.md`, `skills/domains/code-quality/testing-patterns.md`
   - **AC:** Running the first insight runner produces a report payload with Critical/Warning/Info sections.
   - **Validate:** Unit test for "first insight" report composition given fixture inputs.
   - **Completed:** Implemented run_first_insight_checks() and trigger_first_insight_report() with full test coverage. Updated schema to support 'first_insight' run_type.
@@ -652,7 +652,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
   - **Implementation guidance:**
     - Reuse existing weekly email template/layout if possible, but label as "First Insight".
     - Ensure idempotency: repeated trigger within same day should not send duplicates (dedupe key).
-  - **Skills:** `brain/skills/domains/backend/error-handling-patterns.md`, `brain/skills/domains/infrastructure/observability-patterns.md`, `brain/skills/domains/code-quality/testing-patterns.md`
+  - **Skills:** `skills/domains/backend/error-handling-patterns.md`, `skills/domains/infrastructure/observability-patterns.md`, `skills/domains/code-quality/testing-patterns.md`
   - **AC:** Exactly one email is sent per trigger window; a delivery row is recorded with `run_type='first_insight'`.
   - **Validate:** Integration test with mocked Mailgun client asserts exactly one delivery recorded.
   - **Completed:** Added `render_first_insight()` email template, updated `trigger_first_insight_report()` to send emails via Mailgun with idempotency check (one email per customer per day), updated type hints in `mailgun.py` to support `run_type='first_insight'`, and created comprehensive integration tests in `tests/test_first_insight_email.py` covering success, idempotency, failure, and no-email scenarios.
@@ -660,7 +660,7 @@ Ship an autonomous SEO regression monitor (daily critical checks + weekly digest
 - [x] **4.6d** First Insight: payment integration hook (deferred wiring)
   - **Goal:** When payments exist, automatically trigger First Insight on successful payment.
   - **Scope:** Do not implement Stripe/payment processor in this task unless already in scope.
-  - **Skills:** `brain/skills/domains/backend/api-design-patterns.md`, `brain/skills/domains/backend/error-handling-patterns.md`
+  - **Skills:** `skills/domains/backend/api-design-patterns.md`, `skills/domains/backend/error-handling-patterns.md`
   - **AC:** A single internal function exists that the future webhook handler can call.
   - **Validate:** Code structure supports calling `trigger_first_insight(customer_id)` from webhook code.
   - **Completed:** Created `trigger_first_insight_for_customer()` internal hook function in `api.py` that webhook handlers can call, refactored existing endpoint to use the hook, and created comprehensive tests in `tests/test_payment_integration_hook.py` validating the function exists, handles errors, and can be called from webhook code.

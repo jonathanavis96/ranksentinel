@@ -2,10 +2,10 @@
 
 ## Required reading (agents must open these)
 
-- `brain/skills/domains/websites/design/design-direction.md`
-- `brain/skills/domains/websites/design/typography-system.md`
-- `brain/skills/domains/websites/design/color-system.md`
-- `brain/skills/domains/websites/design/spacing-layout.md`
+- `skills/domains/websites/design/design-direction.md`
+- `skills/domains/websites/design/typography-system.md`
+- `skills/domains/websites/design/color-system.md`
+- `skills/domains/websites/design/spacing-layout.md`
 
 ---
 
@@ -78,7 +78,7 @@ Hero headline requirements:
 
 ## Spacing + layout rules
 
-Use the spacing guidance from `brain/skills/domains/websites/design/spacing-layout.md`.
+Use the spacing guidance from `skills/domains/websites/design/spacing-layout.md`.
 
 Recommended landing page rhythm:
 

@@ -6,7 +6,7 @@ It is designed for humans and agents:
 
 - Use this file for the **full, end-to-end requirements**.
 - Use `docs/websites/SUMMARY.md` for the **low-token navigation map**.
-- For each step, the agent **MUST open and read the linked skill documents** in `brain/skills/…` before writing copy, designing, or implementing.
+- For each step, the agent **MUST open and read the linked skill documents** in `skills/…` before writing copy, designing, or implementing.
 
 ## Scope
 
@@ -36,8 +36,8 @@ It is designed for humans and agents:
 
 **Read (required)**
 
-- `brain/skills/domains/websites/discovery/requirements-distiller.md`
-- `brain/skills/domains/websites/discovery/scope-control.md`
+- `skills/domains/websites/discovery/requirements-distiller.md`
+- `skills/domains/websites/discovery/scope-control.md`
 
 ---
 
@@ -56,8 +56,8 @@ It is designed for humans and agents:
 
 **Read (required)**
 
-- `brain/skills/domains/websites/discovery/audience-mapping.md`
-- `brain/skills/domains/marketing/strategy/launch-strategy.md`
+- `skills/domains/websites/discovery/audience-mapping.md`
+- `skills/domains/marketing/strategy/launch-strategy.md`
 
 ---
 
@@ -75,7 +75,7 @@ It is designed for humans and agents:
 
 **Read (required)**
 
-- `brain/skills/domains/websites/architecture/sitemap-builder.md`
+- `skills/domains/websites/architecture/sitemap-builder.md`
 
 ---
 
@@ -95,8 +95,8 @@ It is designed for humans and agents:
 
 **Read (required)**
 
-- `brain/skills/domains/websites/architecture/section-composer.md`
-- `brain/skills/domains/websites/copywriting/objection-handler.md`
+- `skills/domains/websites/architecture/section-composer.md`
+- `skills/domains/websites/copywriting/objection-handler.md`
 
 ---
 
@@ -104,9 +104,9 @@ It is designed for humans and agents:
 
 **Read (required)**
 
-- `brain/skills/domains/websites/copywriting/value-proposition.md`
-- `brain/skills/domains/websites/copywriting/cta-optimizer.md`
-- `brain/skills/domains/marketing/content/copywriting.md`
+- `skills/domains/websites/copywriting/value-proposition.md`
+- `skills/domains/websites/copywriting/cta-optimizer.md`
+- `skills/domains/marketing/content/copywriting.md`
 
 ---
 
@@ -116,7 +116,7 @@ Pricing must match the MVP crawl reality (small sites + key pages + weekly sampl
 
 **Read (required)**
 
-- `brain/skills/domains/marketing/strategy/pricing-strategy.md`
+- `skills/domains/marketing/strategy/pricing-strategy.md`
 
 ### Competitor anchors (must reference)
 
@@ -151,8 +151,8 @@ If the pricing page shows a single “pages monitored” number, define it expli
 
 **Read (required)**
 
-- `brain/skills/domains/marketing/cro/page-cro.md`
-- `brain/skills/domains/marketing/cro/form-cro.md`
+- `skills/domains/marketing/cro/page-cro.md`
+- `skills/domains/marketing/cro/form-cro.md`
 
 ---
 
@@ -160,8 +160,8 @@ If the pricing page shows a single “pages monitored” number, define it expli
 
 **Read (required)**
 
-- `brain/skills/domains/marketing/seo/schema-markup.md`
-- `brain/skills/domains/marketing/seo/seo-audit.md`
+- `skills/domains/marketing/seo/schema-markup.md`
+- `skills/domains/marketing/seo/seo-audit.md`
 
 ---
 
@@ -169,7 +169,7 @@ If the pricing page shows a single “pages monitored” number, define it expli
 
 **Read (required)**
 
-- `brain/skills/domains/marketing/growth/analytics-tracking.md`
+- `skills/domains/marketing/growth/analytics-tracking.md`
 
 ---
 
@@ -177,10 +177,10 @@ If the pricing page shows a single “pages monitored” number, define it expli
 
 **Read (required)**
 
-- `brain/skills/domains/websites/design/design-direction.md`
-- `brain/skills/domains/websites/design/typography-system.md`
-- `brain/skills/domains/websites/design/color-system.md`
-- `brain/skills/domains/websites/design/spacing-layout.md`
+- `skills/domains/websites/design/design-direction.md`
+- `skills/domains/websites/design/typography-system.md`
+- `skills/domains/websites/design/color-system.md`
+- `skills/domains/websites/design/spacing-layout.md`
 
 ---
 
@@ -188,9 +188,9 @@ If the pricing page shows a single “pages monitored” number, define it expli
 
 **Read (required)**
 
-- `brain/skills/domains/websites/qa/acceptance-criteria.md`
-- `brain/skills/domains/websites/qa/accessibility.md`
-- `brain/skills/domains/websites/qa/visual-qa.md`
+- `skills/domains/websites/qa/acceptance-criteria.md`
+- `skills/domains/websites/qa/accessibility.md`
+- `skills/domains/websites/qa/visual-qa.md`
 
 ---
 
@@ -198,5 +198,5 @@ If the pricing page shows a single “pages monitored” number, define it expli
 
 **Read (required)**
 
-- `brain/skills/domains/websites/launch/deployment.md`
-- `brain/skills/domains/websites/launch/finishing-pass.md`
+- `skills/domains/websites/launch/deployment.md`
+- `skills/domains/websites/launch/finishing-pass.md`

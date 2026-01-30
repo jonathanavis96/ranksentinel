@@ -23,15 +23,15 @@ Before any work, read in this order:
 
 Progressive disclosure:
 
-1. `./brain/skills/SUMMARY.md` — knowledge base overview
-2. `./brain/skills/index.md` — find relevant skills
+1. `./skills/SUMMARY.md` — knowledge base overview
+2. `./skills/index.md` — find relevant skills
 3. Open only the specific skill file you need
 
 Suggested skills likely relevant to RankSentinel:
 
-- `./brain/skills/domains/marketing/seo/seo-audit.md`
-- `./brain/skills/domains/infrastructure/observability-patterns.md`
-- `./brain/skills/domains/backend/api-design-patterns.md`
+- `./skills/domains/marketing/seo/seo-audit.md`
+- `./skills/domains/infrastructure/observability-patterns.md`
+- `./skills/domains/backend/api-design-patterns.md`
 
 ## Blocked knowledge rule (project-local)
 

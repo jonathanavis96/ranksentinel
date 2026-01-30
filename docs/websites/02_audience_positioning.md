@@ -7,5 +7,5 @@
 
 ## Required reading (agents must open these)
 
-- `brain/skills/domains/websites/discovery/audience-mapping.md`
-- `brain/skills/domains/marketing/strategy/launch-strategy.md`
+- `skills/domains/websites/discovery/audience-mapping.md`
+- `skills/domains/marketing/strategy/launch-strategy.md`

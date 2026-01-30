@@ -75,21 +75,21 @@ Project docs:
 Brain skills (open those relevant to the current item):
 
 - IA/structure:
-  - `brain/skills/domains/websites/architecture/sitemap-builder.md`
-  - `brain/skills/domains/websites/architecture/section-composer.md`
+  - `skills/domains/websites/architecture/sitemap-builder.md`
+  - `skills/domains/websites/architecture/section-composer.md`
 - Copy:
-  - `brain/skills/domains/websites/copywriting/value-proposition.md`
-  - `brain/skills/domains/websites/copywriting/cta-optimizer.md`
-  - `brain/skills/domains/websites/copywriting/objection-handler.md`
+  - `skills/domains/websites/copywriting/value-proposition.md`
+  - `skills/domains/websites/copywriting/cta-optimizer.md`
+  - `skills/domains/websites/copywriting/objection-handler.md`
 - Design:
-  - `brain/skills/domains/websites/design/color-system.md`
-  - `brain/skills/domains/websites/design/typography-system.md`
-  - `brain/skills/domains/websites/design/spacing-layout.md`
+  - `skills/domains/websites/design/color-system.md`
+  - `skills/domains/websites/design/typography-system.md`
+  - `skills/domains/websites/design/spacing-layout.md`
 - Frontend quality:
-  - `brain/skills/domains/frontend/accessibility-patterns.md`
-  - `brain/skills/domains/frontend/react-patterns.md`
+  - `skills/domains/frontend/accessibility-patterns.md`
+  - `skills/domains/frontend/react-patterns.md`
 - SEO:
-  - `brain/skills/domains/marketing/seo/seo-audit.md`
+  - `skills/domains/marketing/seo/seo-audit.md`
 
 ---
 
@@ -113,7 +113,7 @@ Brain skills (open those relevant to the current item):
 
 - [x] **1.1** Confirm MVP page list and section blueprint alignment
   - **Goal:** Ensure IA matches the section blueprint and we’re shipping the right pages first.
-  - **References:** `docs/websites/03_ia_sitemap.md`, `docs/websites/04_page_requirements.md`, `brain/skills/domains/websites/architecture/sitemap-builder.md`.
+  - **References:** `docs/websites/03_ia_sitemap.md`, `docs/websites/04_page_requirements.md`, `skills/domains/websites/architecture/sitemap-builder.md`.
   - **AC:**
     - `docs/websites/03_ia_sitemap.md` clearly marks MVP pages vs optional.
     - Any contradictions with `04_page_requirements.md` are resolved and documented.
@@ -121,7 +121,7 @@ Brain skills (open those relevant to the current item):
 
 - [x] **1.2** Lock nav labels + destinations + CTA placement rules
   - **Goal:** Make the site consistent and avoid conversion-killing copy drift.
-  - **References:** `docs/websites/05_copy_system.md`, `brain/skills/domains/websites/copywriting/cta-optimizer.md`.
+  - **References:** `docs/websites/05_copy_system.md`, `skills/domains/websites/copywriting/cta-optimizer.md`.
   - **AC:**
     - Nav labels and URLs are explicitly listed (header + footer).
     - "One primary CTA per page view" is documented with examples.
@@ -134,7 +134,7 @@ Brain skills (open those relevant to the current item):
 
 - [x] **2.1** Create Next.js App Router site under `website/` configured for static export
   - **Goal:** Establish the marketing site codebase with reproducible builds.
-  - **References:** `brain/skills/domains/frontend/react-patterns.md`.
+  - **References:** `skills/domains/frontend/react-patterns.md`.
   - **AC:**
     - `website/` exists and runs locally (`dev`) and builds (`build` + `export` or equivalent).
     - Static output is compatible with GitHub Pages.
@@ -151,7 +151,7 @@ Brain skills (open those relevant to the current item):
 
 - [x] **3.1** Implement Palette A tokens (hex) as CSS variables (and/or Tailwind theme)
   - **Goal:** Make design consistent and easy to evolve.
-  - **References:** `docs/websites/10_design_ux.md`, `brain/skills/domains/websites/design/color-system.md`.
+  - **References:** `docs/websites/10_design_ux.md`, `skills/domains/websites/design/color-system.md`.
   - **AC:**
     - Tokens exist for all specified hexes:
       - Core: `#F7FAFC`, `#FFFFFF`, `#E6EDF5`, `#0B1220`, `#445066`
@@ -162,7 +162,7 @@ Brain skills (open those relevant to the current item):
 
 - [x] **3.2** Implement layout primitives (container widths, spacing scale)
   - **Goal:** Create a predictable “soft SaaS” rhythm and readable measure.
-  - **References:** `docs/websites/10_design_ux.md`, `brain/skills/domains/websites/design/spacing-layout.md`.
+  - **References:** `docs/websites/10_design_ux.md`, `skills/domains/websites/design/spacing-layout.md`.
   - **AC:**
     - Max-width container component exists.
     - Spacing scale is documented or encoded in utility classes.
@@ -170,7 +170,7 @@ Brain skills (open those relevant to the current item):
 
 - [x] **3.3** Implement core UI components
   - **Goal:** Standardize nav/buttons/cards to match the design direction.
-  - **References:** `docs/websites/10_design_ux.md`, `brain/skills/domains/frontend/accessibility-patterns.md`.
+  - **References:** `docs/websites/10_design_ux.md`, `skills/domains/frontend/accessibility-patterns.md`.
   - **Scope:** Header/Nav, Footer, Button (primary/secondary), Card, Badge/Pill.
   - **AC:**
     - Rounded corners + light borders + subtle shadows match the doc.
@@ -194,7 +194,7 @@ Brain skills (open those relevant to the current item):
 - [x] **4.1** Implement homepage sections exactly per blueprint
   - **Completed:** 2026-01-30 - All homepage sections implemented per blueprint (hero, social proof, why different, features, how it works, sample report, pricing teaser, FAQ teaser, final CTA)
   - **Goal:** Ship the primary conversion page in the intended “soft SaaS” style.
-  - **References:** `docs/websites/04_page_requirements.md`, `docs/websites/05_copy_system.md`, `brain/skills/domains/websites/architecture/section-composer.md`.
+  - **References:** `docs/websites/04_page_requirements.md`, `docs/websites/05_copy_system.md`, `skills/domains/websites/architecture/section-composer.md`.
   - **AC:** Homepage contains:
     - Hero (badge, headline, subhead, CTAs, email preview)
     - Social proof strip
@@ -219,7 +219,7 @@ Brain skills (open those relevant to the current item):
 
 - [x] **4.3** Implement FAQ accordion (accessible)
   - **Goal:** Handle core objections with low friction.
-  - **References:** `docs/websites/04_page_requirements.md`, `brain/skills/domains/frontend/accessibility-patterns.md`.
+  - **References:** `docs/websites/04_page_requirements.md`, `skills/domains/frontend/accessibility-patterns.md`.
   - **AC:**
     - Contains the required questions (noise, JS-heavy, setup).
     - Keyboard navigable with correct ARIA.
@@ -448,7 +448,7 @@ Brain skills (open those relevant to the current item):
 
 - [x] **12.1** Implement SEO metadata defaults and per-page metadata
   - **Goal:** Avoid shipping an SEO tool with weak SEO.
-  - **References:** `brain/skills/domains/marketing/seo/seo-audit.md`.
+  - **References:** `skills/domains/marketing/seo/seo-audit.md`.
   - **AC:** Titles/descriptions, OG/Twitter, canonical correct.
   - **If Blocked:** Implement site-wide defaults and add follow-up for per-page overrides.
 
@@ -459,7 +459,7 @@ Brain skills (open those relevant to the current item):
 
 - [x] **12.3** Accessibility pass
   - **Goal:** Keyboard + semantics work.
-  - **References:** `brain/skills/domains/frontend/accessibility-patterns.md`.
+  - **References:** `skills/domains/frontend/accessibility-patterns.md`.
   - **AC:** No obvious keyboard traps; headings/landmarks are correct.
   - **If Blocked:** Fix the most severe issues and file follow-ups.
 

@@ -2,4 +2,4 @@
 
 ## Required reading (agents must open these)
 
-- `brain/skills/domains/marketing/growth/analytics-tracking.md`
+- `skills/domains/marketing/growth/analytics-tracking.md`

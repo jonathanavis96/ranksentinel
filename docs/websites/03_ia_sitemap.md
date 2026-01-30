@@ -2,7 +2,7 @@
 
 ## Required reading (agents must open these)
 
-- `brain/skills/domains/websites/architecture/sitemap-builder.md`
+- `skills/domains/websites/architecture/sitemap-builder.md`
 
 ---
 

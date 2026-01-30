@@ -2,5 +2,5 @@
 
 ## Required reading (agents must open these)
 
-- `brain/skills/domains/marketing/cro/page-cro.md`
-- `brain/skills/domains/marketing/cro/form-cro.md`
+- `skills/domains/marketing/cro/page-cro.md`
+- `skills/domains/marketing/cro/form-cro.md`

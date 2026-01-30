@@ -8,7 +8,7 @@ RankSentinel is an SEO monitoring tool with a marketing website built in Next.js
 
 ## Attempted Approach
 
-- Consulted `brain/skills/domains/marketing/growth/analytics-tracking.md` but it focuses on event implementation, not API reporting
+- Consulted `skills/domains/marketing/growth/analytics-tracking.md` but it focuses on event implementation, not API reporting
 - Checked existing codebase - no GA4 Data API integration exists
 - Need to build a Python script that can run via cron
 

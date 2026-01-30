@@ -4,11 +4,11 @@ This step defines the **pricing page content** (copy + tier table + clarificatio
 
 Agent rule:
 
-- Before changing tiers or pricing logic, **open and read** `brain/skills/domains/marketing/strategy/pricing-strategy.md`.
+- Before changing tiers or pricing logic, **open and read** `skills/domains/marketing/strategy/pricing-strategy.md`.
 
 ## Required reading (agents must open these)
 
-- `brain/skills/domains/marketing/strategy/pricing-strategy.md`
+- `skills/domains/marketing/strategy/pricing-strategy.md`
 
 ## Competitor reference
 

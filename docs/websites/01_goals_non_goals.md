@@ -12,5 +12,5 @@
 
 ## Required reading (agents must open these)
 
-- `brain/skills/domains/websites/discovery/requirements-distiller.md`
-- `brain/skills/domains/websites/discovery/scope-control.md`
+- `skills/domains/websites/discovery/requirements-distiller.md`
+- `skills/domains/websites/discovery/scope-control.md`
