@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+:root {
+  /* Palette A: Signal Teal + Ink */
+  
+  /* Core */
+  --color-background: #F7FAFC;
+  --color-surface: #FFFFFF;
+  --color-border: #E6EDF5;
+  --color-headline: #0B1220;
+  --color-body: #445066;
+  
+  /* Brand accent */
+  --color-primary: #0F766E;
+  --color-primary-hover: #0B5F59;
+  --color-accent-tint: #E6FFFB;
+  
+  /* Severity (email + UI) */
+  --color-critical: #B42318;
+  --color-warning: #B54708;
+  --color-info: #175CD3;
+  --color-success: #027A48;
+  
+  /* Hero gradient */
+  --gradient-hero: radial-gradient(60% 60% at 50% 0%, #E6FFFB 0%, #F7FAFC 65%);
+  
+  /* Spacing scale (8px base) */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
+  --space-24: 6rem;    /* 96px */
+  --space-32: 8rem;    /* 128px */
+  
+  /* Container widths */
+  --container-sm: 640px;   /* Narrow content */
+  --container-md: 768px;   /* Medium content */
+  --container-lg: 1024px;  /* Standard content */
+  --container-xl: 1280px;  /* Wide content */
+  --container-2xl: 1536px; /* Full-width sections */
+  
+  /* Legacy aliases for compatibility */
+  --background: var(--color-background);
+  --foreground: var(--color-headline);
+}
+
+@theme inline {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-headline);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-body);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}

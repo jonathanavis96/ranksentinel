@@ -76,30 +76,7 @@ Markdown lint errors?
 │   ├── 0 errors → Done!
 │   ├── <5 errors → Individual find_and_replace OK
 │   └── 5+ errors → Batch fixes (sed or section replacement)
-```
-
-## Verifier-First Workflow
-
-**Auto-fix runs automatically** before every BUILD iteration in Ralph loop:
-
-1. `fix-markdown.sh` - fixes ~40-60% of markdown issues
-2. `pre-commit run --all-files` - fixes shell/python/yaml issues  
-3. `verifier.sh` - checks current state
-
-**You receive verifier output in context.** Focus ONLY on remaining `[WARN]` and `[FAIL]` items.
-
-**If verifier shows all passing:** Skip lint tasks, work on feature tasks instead.
-
-**Only these need manual fixes (not auto-fixable):**
-
-| Rule | Fix |
-| ---- | --- |
-| MD040 | Add language after ``` (e.g., ```bash) |
-| MD060 | Add spaces around table pipes |
-| MD024 | Make duplicate headings unique |
-| MD036 | Convert **bold** to #### heading |
-
-**Anti-pattern:** Making 30+ individual `find_and_replace_code` calls - batch remaining fixes efficiently.text
+```text
 
 ## Anti-Patterns
 

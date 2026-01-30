@@ -24,8 +24,8 @@
 # Check recent iteration logs for markers
 grep ":::ITER_START:::\|:::ITER_END:::" workers/ralph/logs/*.log | tail -20
 
-# Get task completion times from workers/ralph/THUNK.md
-tail -20 workers/ralph/workers/ralph/THUNK.md
+# Get task completion times from THUNK.md
+tail -20 workers/ralph/THUNK.md
 
 # Check rollflow_analyze output (if available)
 cat artifacts/review_packs/iter_latest.md
@@ -45,7 +45,7 @@ Look for patterns in pending tasks:
 
 ```bash
 # Find similar pending tasks
-grep "^\- \[ \]" workers/workers/IMPLEMENTATION_PLAN.md
+grep "^\- \[ \]" workers/IMPLEMENTATION_PLAN.md
 ```
 
 **Clustering signals:**
@@ -112,7 +112,7 @@ Proposed:
 - [ ] **9C.2.B1** BATCH: ...
 ```
 
-**Never add tasks above the marker** - this breaks the plan-copy step (workers → cortex).
+**Never add tasks above the marker** - this breaks `sync_cortex_plan.sh`.
 
 ---
 
@@ -161,4 +161,4 @@ Ralph responsibilities:
 
 - Execute tasks
 - Commit changes
-- Report completion to workers/ralph/THUNK.md
+- Report completion to THUNK.md

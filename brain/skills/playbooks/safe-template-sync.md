@@ -64,7 +64,7 @@ Open `templates/ralph/README.md` and check the **Template Sync Policy** section.
 - `verifier.sh` - Core verification logic
 - `current_ralph_tasks.sh` - Monitor display (minor differences allowed)
 - `thunk_ralph_tasks.sh` - Monitor display
-- `sync_workers_plan_to_cortex.sh` - Plan copy (workers → cortex)
+- `sync_cortex_plan.sh` - Cortex integration
 - `pr-batch.sh` - PR automation
 - `init_verifier_baselines.sh` - Baseline initialization
 
@@ -77,7 +77,7 @@ Open `templates/ralph/README.md` and check the **Template Sync Policy** section.
 
 - **If file SHOULD sync and changes are bug fixes/general improvements** → Continue to Step 3 (sync)
 - **If file INTENTIONALLY differs** → Go to Step 4 (document or request waiver)
-- **If unsure** → Check recent workers/ralph/THUNK.md entries or ask: "Does this change depend on brain repo structure?"
+- **If unsure** → Check recent THUNK.md entries or ask: "Does this change depend on brain repo structure?"
 
 **Checkpoint:** ✓ You've determined whether to sync, document, or request waiver
 
@@ -180,7 +180,7 @@ bash verifier.sh
 
 ```bash
 git add templates/ralph/<filename>
-git add workers/workers/IMPLEMENTATION_PLAN.md workers/ralph/workers/ralph/THUNK.md
+git add workers/IMPLEMENTATION_PLAN.md workers/ralph/THUNK.md
 git commit -m "sync(templates): update <filename> from workers/ralph
 
 - <Brief description of what changed>
@@ -195,7 +195,7 @@ Brain-Repo: jonathanavis96/brain"
 
 ```bash
 git add templates/ralph/README.md .verify/waiver_requests/WVR-*.json
-git add workers/workers/IMPLEMENTATION_PLAN.md workers/ralph/workers/ralph/THUNK.md
+git add workers/IMPLEMENTATION_PLAN.md workers/ralph/THUNK.md
 git commit -m "docs(templates): document intentional drift in <filename>
 
 - Updated README.md to explain brain-specific features

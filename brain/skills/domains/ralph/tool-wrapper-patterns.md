@@ -135,7 +135,7 @@ tool_key="${agent_key,,}|${phase}|${prompt_hash:0:16}|${git_sha}"
 ```bash
 # Context variables (from loop.sh)
 phase="build"
-plan_file="${ROOT}/workers/workers/IMPLEMENTATION_PLAN.md"
+plan_file="${ROOT}/workers/IMPLEMENTATION_PLAN.md"
 iter=5
 tool_key="rovodev|build|a3f7b2c9|1a2b3c4"
 git_sha="1a2b3c4"
@@ -410,7 +410,7 @@ tool_key="rovodev|build|${prompt_hash:0:16}|${git_sha}"
 
 ## Future Enhancements
 
-See Phase 13 tasks in workers/workers/IMPLEMENTATION_PLAN.md:
+See Phase 13 tasks in workers/IMPLEMENTATION_PLAN.md:
 
 - **Task 13.1.2:** Extract non-cacheable tools to config file
 - **Task 13.2.1:** Prototype YAML tool registry schema

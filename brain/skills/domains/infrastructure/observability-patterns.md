@@ -788,4 +788,4 @@ module.exports = { initTracing };
 - **[deployment-patterns.md](./deployment-patterns.md)** - Deployment strategies and CI/CD
 - **[security-patterns.md](./security-patterns.md)** - Security best practices
 - **[state-management-patterns.md](./state-management-patterns.md)** - Managing distributed state
-- **[testing-patterns.md](../code-quality/testing-patterns.md)** - Testing strategies
+- **[skills/domains/code-quality/testing-patterns.md](../../code-quality/testing-patterns.md)** - Testing strategies

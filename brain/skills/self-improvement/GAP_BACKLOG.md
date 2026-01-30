@@ -93,5 +93,5 @@ Rules:
     - Detect logic errors and edge cases
     - Run as pre-commit hook or CI check
 - **Priority:** P1
-- **Status:** Done (promoted to skills/domains/code-quality/semantic-code-review.md)
+- **Status:** Identified
 - **Related:** See `docs/CODERABBIT_PR5_ALL_ISSUES.md` for full list of semantic issues caught by CodeRabbit

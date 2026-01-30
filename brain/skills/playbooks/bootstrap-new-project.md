@@ -146,8 +146,8 @@ Admins can manage widgets, regular users can view only.
   │   ├── PROMPT.md       # Ralph prompt with context
   │   ├── THOUGHTS.md     # Generated from idea (goals, success criteria)
   │   ├── NEURONS.md      # Generated codebase map
-  │   ├── workers/IMPLEMENTATION_PLAN.md  # Generated task breakdown
-  │   ├── workers/ralph/THUNK.md        # Task completion log
+  │   ├── IMPLEMENTATION_PLAN.md  # Generated task breakdown
+  │   ├── THUNK.md        # Task completion log
   │   ├── VALIDATION_CRITERIA.md  # Quality gates
   │   ├── loop.sh         # Ralph execution loop
   │   ├── verifier.sh     # Acceptance criteria checker
@@ -182,7 +182,7 @@ Admins can manage widgets, regular users can view only.
 - Add project-specific file location notes
 - Update validation commands section
 
-**workers/IMPLEMENTATION_PLAN.md customization:**
+**IMPLEMENTATION_PLAN.md customization:**
 
 - Review generated phases (Setup → Core → Features → Polish → Deploy)
 - Reorder tasks by priority
@@ -195,7 +195,7 @@ Admins can manage widgets, regular users can view only.
 cd ralph
 vim THOUGHTS.md      # Review goals, add project-specific context
 vim NEURONS.md       # Verify directory structure matches conventions
-vim workers/IMPLEMENTATION_PLAN.md  # Prioritize phases, add subtasks
+vim IMPLEMENTATION_PLAN.md  # Prioritize phases, add subtasks
 ```
 
 **Anti-pattern:** ❌ Don't run loop.sh without reviewing generated files. Instead: ✅ Customize THOUGHTS/NEURONS/PLAN first.
@@ -209,7 +209,7 @@ vim workers/IMPLEMENTATION_PLAN.md  # Prioritize phases, add subtasks
 - Navigate to ralph directory: `cd ralph`
 - Run loop with limited iterations for testing: `bash loop.sh --iterations 3`
 - Monitor output for PLAN mode → BUILD mode progression
-- Verify workers/ralph/THUNK.md tracks completed tasks
+- Verify THUNK.md tracks completed tasks
 - Check logs directory for iteration logs
 
 **Command:**
@@ -219,14 +219,14 @@ cd ralph
 bash loop.sh --iterations 3
 ```
 
-**Checkpoint:** ✓ Loop completes 3 iterations, tasks logged to workers/ralph/THUNK.md, no critical errors
+**Checkpoint:** ✓ Loop completes 3 iterations, tasks logged to THUNK.md, no critical errors
 
 ### Step 8: Monitor Task Progress
 
 **Action:** Use monitor scripts to track Ralph's progress in real-time.
 
-- **Current tasks:** `bash current_ralph_tasks.sh` - Shows pending tasks from workers/IMPLEMENTATION_PLAN.md
-- **Completed tasks:** `bash thunk_ralph_tasks.sh` - Shows task log from workers/ralph/THUNK.md
+- **Current tasks:** `bash current_ralph_tasks.sh` - Shows pending tasks from IMPLEMENTATION_PLAN.md
+- **Completed tasks:** `bash thunk_ralph_tasks.sh` - Shows task log from THUNK.md
 - Both monitors support hotkeys:
   - `r` - Refresh display
   - `q` - Quit
@@ -276,7 +276,7 @@ Use these to verify you're on track throughout the process:
 - [ ] **GitHub repo created** (or local-only mode confirmed)
 - [ ] **Project structure verified** - all ralph/ files present, executables have +x
 - [ ] **Generated files customized** - THOUGHTS/NEURONS/PLAN reviewed and adjusted
-- [ ] **First Ralph run successful** - 3 iterations complete, workers/ralph/THUNK.md updated
+- [ ] **First Ralph run successful** - 3 iterations complete, THUNK.md updated
 - [ ] **Monitors working** - current_ralph_tasks.sh and thunk_ralph_tasks.sh display correctly
 - [ ] **PR workflow tested** - pr-batch.sh creates PR successfully (if using GitHub)
 
@@ -341,7 +341,7 @@ If new-project.sh doesn't fit (existing repo, custom setup):
 # Generate individual files
 bash generators/generate-thoughts.sh idea.md project/ralph/THOUGHTS.md
 bash generators/generate-neurons.sh idea.md project/ralph/NEURONS.md
-bash generators/generate-implementation-plan.sh idea.md project/workers/IMPLEMENTATION_PLAN.md
+bash generators/generate-implementation-plan.sh idea.md project/ralph/IMPLEMENTATION_PLAN.md
 
 # Copy template files manually
 cp -r templates/ralph/* project/ralph/

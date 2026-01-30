@@ -15,7 +15,7 @@
 | **Markdown Validation**  | `grep -E '^#{1,3} ' file.md \| sort \| uniq -d`                  | Duplicate headings              |
 | **Fence Language Tags**  | `grep -n '\`\`\`$' file.md`                                      | Missing code fence tags         |
 | **Shellcheck**           | `shellcheck script.sh`                                           | SC2034, SC2155, SC2086          |
-| **Status Consistency**   | `rg "Status:\|commits ahead" workers/IMPLEMENTATION_PLAN.md`             | Inconsistent status text        |
+| **Status Consistency**   | `rg "Status:\|commits ahead" IMPLEMENTATION_PLAN.md`             | Inconsistent status text        |
 
 **Common Fixes:**
 
@@ -59,7 +59,7 @@ Prevent recurring mistakes where Ralph fixes code but forgets related documentat
    - If you update overview/status in one place, grep for ALL status mentions:
 
      ```bash
-     rg "Status:|Branch status:|commits ahead|up to date" workers/IMPLEMENTATION_PLAN.md
+     rg "Status:|Branch status:|commits ahead|up to date" IMPLEMENTATION_PLAN.md
      ```
 
    - Update ALL occurrences to match.

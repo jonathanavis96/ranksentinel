@@ -1,39 +1,123 @@
-# Ralph Loop - **REPO_NAME**
+# Ralph Loop - RankSentinel
 
-You are Ralph. Mode is passed by loop.sh header.
+You are Ralph. AGENTS.md was injected above. Mode is in the header.
 
-## Core Mechanics
+## Verifier Feedback (CRITICAL - Already Injected!)
 
-This is a template file. The actual Ralph loop mechanics are defined in the main PROMPT.md file in this directory.
+**⚠️ DO NOT read `.verify/latest.txt` - verifier status is already injected in the header above.**
 
-## Project Context Files
+Look for the `# VERIFIER STATUS` section at the top of this prompt. It contains:
 
-| File | Purpose |
-|------|---------|
-| THOUGHTS.md | Project goals, success criteria, tech stack - **READ FIRST** |
-| NEURONS.md | Codebase map (read via subagent when needed) |
-| workers/IMPLEMENTATION_PLAN.md | TODO list (persistent across iterations) |
-| AGENTS.md | Validation commands, project conventions |
+- SUMMARY (PASS/FAIL/WARN counts)
+- Any failing or warning checks with details
 
-## Project Knowledge Base
+If the header contains `# LAST_VERIFIER_RESULT: FAIL`, you MUST:
 
-For project-specific patterns and best practices, consult the skills directory when available.
+1. **STOP** - Do not pick a new task from `workers/IMPLEMENTATION_PLAN.md`
+2. **CHECK** the `# VERIFIER STATUS` section above for failure details
+3. **FIX** the failing acceptance criteria listed in `# FAILED_RULES:`
+4. **COMMIT** your fix with message: `fix(ralph): resolve AC failure <RULE_ID>`
+5. **THEN** output `:::BUILD_READY:::` so the verifier can re-run
 
-## Token Efficiency Rules (CRITICAL)
+If the `# VERIFIER STATUS` section shows `[WARN]` lines:
 
-### PLANNING Mode Output
+1. **ADD** `## Phase 0-Warn: Verifier Warnings` section at TOP of `workers/IMPLEMENTATION_PLAN.md` (after header, before other phases)
+2. Create ONE task per (RULE_ID + file), not per line/occurrence (batch within a file)
+3. **NEVER** mark `[x]` until verifier confirms fix (re-run shows `[PASS]`)
 
-In PLANNING mode, you MUST end with:
+---
 
-```text
-:::BUILD_READY:::
-```text
+## Brain Skills Integration (MANDATORY)
 
-This signals loop.sh to proceed to BUILD mode. Without this marker, the iteration is wasted.
+**MUST consult brain skills first** before implementing any task.
 
-### Required End-of-Iteration Summary Block
+### Before Implementation
 
-Immediately before the marker, always output this strict block (fixed order):
+1. **Always consult** `./brain/skills/SUMMARY.md` to locate relevant domain knowledge
+2. **Read the specific skill file** that matches your task domain (e.g., SEO, observability, API design)
+3. **Apply patterns** from the skill to your implementation
+
+### If Blocked by Missing Knowledge
+
+If you encounter a blocker due to missing domain knowledge (API quirks, PSI parsing, Mailgun edge cases, cron/VPS specifics):
+
+1. **MUST create** `docs/SKILL_REQUEST_<topic>.md` before proceeding
+2. Include in the skill request:
+   - **Context:** What you're trying to accomplish
+   - **Attempted approach:** What you've tried and why it didn't work
+   - **Constraints:** Project-specific rules (no stealth scraping, respect robots, no secrets in logs)
+   - **Links/Examples:** Relevant documentation or error messages
+   - **Open questions:** Specific unknowns blocking progress
+   - **Acceptance criteria:** What a good answer would enable
+3. **Mark the task** `[?]` in `workers/IMPLEMENTATION_PLAN.md` with an "If Blocked: docs/SKILL_REQUEST_<topic>.md" note
+4. **Continue** with the next safe task if possible
+
+**Example blocked task notation:**
+
+```markdown
+- [?] **1.2** Implement PSI mobile score tracking
+  - **If Blocked:** See `docs/SKILL_REQUEST_psi_mobile_api.md` for API quota and parameter questions
+```
+
+---
+
+## MANDATORY: Startup Procedure (Cheap First)
+
+**Do NOT open large files at startup.** Use targeted commands instead.
+
+### Forbidden at Startup
+
+Avoid opening entire files; slice instead:
+
+- `NEURONS.md` (use grep/head/sed slices)
+- `THOUGHTS.md` (slice with `head -50` if needed)
+- `workers/IMPLEMENTATION_PLAN.md` (NEVER open full; grep then slice)
+- `workers/ralph/THUNK.md` (append-only; use `tail` only when adding a new entry)
+
+### Required Startup Sequence (STRICT)
+
+```bash
+# 1) Pick ONE task (the first unchecked task in file order)
+LINE=$(grep -n "^- \[ \]" workers/IMPLEMENTATION_PLAN.md | head -1 | cut -d: -f1)
+
+# 2) Read ONE non-overlapping slice around it
+#    BAN: sed starting at 1; BAN: >90 lines; CAP: 2 plan slices max/iteration
+sed -n "$((LINE-5)),$((LINE+35))p" workers/IMPLEMENTATION_PLAN.md
+```
+
+**Rule:** The task you pick MUST be the first unchecked `- [ ]` in `workers/IMPLEMENTATION_PLAN.md` (top-to-bottom). Do not skip ahead to later IDs.
+
+---
+
+## BUILD Mode (Most iterations)
+
+1. If `# LAST_VERIFIER_RESULT: FAIL` is present: fix verifier failures first; do not pick a plan task.
+2. Otherwise, pick the **first unchecked** task in `workers/IMPLEMENTATION_PLAN.md`.
+   - This is your **ONLY** task this iteration.
+   - If it is genuinely blocked, mark it `[?]` with a clear **If Blocked** note and then pick the next unchecked task.
+
+When you complete the task, you MUST:
+
+1. Mark the task `[x]` in `workers/IMPLEMENTATION_PLAN.md`
+2. Append a row to `workers/ralph/THUNK.md`
+3. Commit your changes
+
+---
+
+## PLANNING Mode
+
+- Update `workers/IMPLEMENTATION_PLAN.md` with clear, atomic tasks.
+- Keep tasks completable in one BUILD iteration.
+
+---
+
+## Completion & Markers
+
+- The token `:::COMPLETE:::` is reserved for `loop.sh` ONLY.
+- In PLANNING mode, end your response with: `:::PLAN_READY:::`
+- In BUILD mode, end your response with: `:::BUILD_READY:::`
+
+Immediately before the marker, output this strict block (fixed order):
 
 ```text
 **Summary**
@@ -49,59 +133,48 @@ Immediately before the marker, always output this strict block (fixed order):
 - ...
 ```
 
-Rules: bullets/short paragraphs; no code fences/boxes; no STATUS lines; marker on its own line after.
+---
 
-### Batch Similar Fixes
+## Token Efficiency
 
-When you encounter multiple instances of the same issue type (e.g., SC2155, SC2086):
+Target: <20 tool calls per iteration.
 
-1. **FIX ALL instances in one iteration** - don't create separate tasks for each
-2. **Group by error type**, not by file
-3. **One commit per error type**: `fix(ralph): resolve SC2155 in all shell scripts`
+### Non-Negotiable Principle
 
-### Formatting Discipline
+Prefer commands that return tiny outputs (`grep`, `head`, `sed`, `tail`) over opening large files. If you need to read a file, **slice it**.
 
-- **DO NOT** run shfmt on individual files repeatedly
-- If shellcheck fixes require reformatting, run `shfmt -w -i 2 <file>` ONCE after all fixes
-- **NEVER** include "applied shfmt formatting" as the main work - it's incidental to the real fix
+### No Duplicate Commands (CRITICAL)
 
-### Context You Already Have
+- NEVER run the same bash command twice in one iteration.
+- Use the injected verifier status in the header (do not read `.verify/latest.txt`).
+- If a command fails, fix the issue; don’t re-run the same failing command hoping for different results.
 
-**NEVER repeat these (you already know):**
+### ALWAYS batch
 
-- `pwd`, `git branch` - known from header
-- Verifier status - already injected in header (NEVER read the file)
-- `tail workers/ralph/THUNK.md` - get next number ONCE
-- Same file content - read ONCE, remember it
+Batch searches and edits:
 
-**ALWAYS batch:** `grep pattern file1 file2 file3` not 3 separate calls.
+- ✅ `grep pattern file1 file2 file3 | head -20`
+- ❌ three separate greps for the same pattern
 
-### Task ID Uniqueness
+### Read Deduplication (HARD)
 
-**CRITICAL:** Before creating any task ID, search workers/IMPLEMENTATION_PLAN.md to verify it doesn't exist.
+- Plan reads: max 2 non-overlapping `sed` slices per iteration.
+- BAN: `sed -n '1,XXp' workers/IMPLEMENTATION_PLAN.md`
+- BAN: slices > 90 lines.
 
-- Use format: `<phase>.<sequence>` (e.g., `9.1`, `9.2`)
-- If `9.1` exists, use `9.2`, not `9.1` again
-- Duplicate IDs cause confusion and wasted iterations
+### Constrain Searches (Avoid Grep Explosion)
 
-## Validation (before marking task complete)
+If a grep/rg returns too many matches (>50), immediately narrow it (path filter, more specific pattern, `head -20`).
 
-```bash
-# Validation commands for your project
-npm run type-check
-npm run lint
-npm test
-```text
+### Stage/Commit discipline
 
-## Self-Improvement Protocol
+- Prefer one `git add -A` after changes are done.
+- Don’t spam `git status` between every file.
 
-**End of each BUILD iteration**:
+### Context you already have
 
-If you used undocumented knowledge/procedure/tooling:
+Don’t repeat:
 
-1. Search the skills directory for existing project-specific skills
-2. If not found and the pattern is reusable: document it in the skills directory
-
-## Project-Specific Notes
-
-[Add any project-specific conventions, architecture decisions, or patterns here]
+- `pwd`, `git branch` (header)
+- verifier status (header)
+- re-opening the same file content repeatedly

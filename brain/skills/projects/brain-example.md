@@ -25,7 +25,7 @@ Reference this skill file when:
 - Editing files in `brain/templates/`
 - Modifying `brain/` Ralph prompts (PROMPT.md, loop.sh)
 - Running `brain/loop.sh`
-- Updating `brain/workers/IMPLEMENTATION_PLAN.md`
+- Updating `brain/IMPLEMENTATION_PLAN.md`
 - Contributing to the knowledge base
 
 ## Details
@@ -40,7 +40,7 @@ brain/
 ├── references/            # Read-only reference materials (45 React rules)
 ├── templates/             # Bootstrap templates for new projects
 ├── loop.sh                # Brain's OWN Ralph loop for self-improvement
-├── workers/IMPLEMENTATION_PLAN.md # Brain's OWN improvement backlog
+├── IMPLEMENTATION_PLAN.md # Brain's OWN improvement backlog
 ├── new-project.sh         # Bootstrap script
 ├── verifier.sh            # Validation script
 └── AGENTS.md              # Guidance for agents working ON brain
@@ -68,10 +68,10 @@ This is critical to understand:
 
 ```markdown
 <!-- In brain/AGENTS.md (local paths) -->
-Read [conventions](../conventions.md)
+Read [conventions](skills/conventions.md)
 
 <!-- In brain/templates/AGENTS.project.md (relative paths) -->
-Read [conventions](../conventions.md)
+Read [conventions](../brain/skills/conventions.md)
 
 <!-- In brain/PROMPT.md (local paths, brain's own Ralph) -->
 Read `skills/SUMMARY.md`
@@ -86,11 +86,11 @@ The brain repository has its own Ralph loop at `loop.sh`:
 
 **How it works:**
 
-1. Brain's `workers/IMPLEMENTATION_PLAN.md` contains improvement tasks for the brain itself
+1. Brain's `IMPLEMENTATION_PLAN.md` contains improvement tasks for the brain itself
 2. Running `loop.sh` executes the brain's Ralph loop
-3. Ralph reads brain's skills (local paths), implements top task from workers/IMPLEMENTATION_PLAN.md
+3. Ralph reads brain's skills (local paths), implements top task from IMPLEMENTATION_PLAN.md
 4. Changes are validated with `verifier.sh`
-5. Progress logged to `workers/ralph/THUNK.md`
+5. Progress logged to `THUNK.md`
 
 **What Ralph considers "source code" for the brain:**
 
@@ -148,7 +148,7 @@ The `new-project.sh` script creates new projects with intelligent generator infe
 
 - Pre-flight checks (templates exist, name valid, directory available)
 - Tech stack inference from project idea file
-- Automatic generation of NEURONS.md, THOUGHTS.md, workers/IMPLEMENTATION_PLAN.md
+- Automatic generation of NEURONS.md, THOUGHTS.md, IMPLEMENTATION_PLAN.md
 - GitHub repository creation integration
 - Post-creation validation
 
@@ -198,10 +198,10 @@ When updating templates, ensure consistency:
 
 **Running brain's Ralph loop:**
 
-1. Add tasks to `workers/IMPLEMENTATION_PLAN.md`
+1. Add tasks to `IMPLEMENTATION_PLAN.md`
 2. Run `./loop.sh --iterations 10`
 3. Ralph implements tasks, validates with `verifier.sh`
-4. Check `workers/ralph/THUNK.md` for completed task log
+4. Check `THUNK.md` for completed task log
 
 ### Brain-Specific Gotchas
 
@@ -216,13 +216,13 @@ When updating templates, ensure consistency:
 
 - Projects are self-contained with their own Ralph infrastructure
 - Generators intelligently adapt templates to project type
-- Each project has customized NEURONS.md, THOUGHTS.md, workers/IMPLEMENTATION_PLAN.md
+- Each project has customized NEURONS.md, THOUGHTS.md, IMPLEMENTATION_PLAN.md
 
 **Why brain has its own Ralph loop:**
 
 - Brain needs to evolve and improve itself
 - Meta-approach: brain uses its own tools for self-improvement
-- workers/IMPLEMENTATION_PLAN.md tracks brain's own improvement tasks
+- IMPLEMENTATION_PLAN.md tracks brain's own improvement tasks
 
 **Why validation script is necessary:**
 
@@ -253,7 +253,7 @@ Before committing changes to brain repository:
 
 When contributing new features to brain:
 
-1. **Add task to workers/IMPLEMENTATION_PLAN.md** with rationale and relevant rules
+1. **Add task to IMPLEMENTATION_PLAN.md** with rationale and relevant rules
 2. **Run brain's Ralph loop** to implement the task
 3. **Validate changes** with `./verifier.sh`
 4. **Update documentation** (AGENTS.md, README.md, etc.)

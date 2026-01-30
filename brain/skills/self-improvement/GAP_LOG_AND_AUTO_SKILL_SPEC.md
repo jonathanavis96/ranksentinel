@@ -15,11 +15,11 @@ These features work together to create a self-improving knowledge system that ca
 
 ### Purpose
 
-Provide a complete, chronological history of all gap discoveries and updates. While `skills/self-improvement/GAP_BACKLOG.md` is the "current state" (consolidated, editable), `GAP_LOG.md` is the "event history" (append-only, immutable).
+Provide a complete, chronological history of all gap discoveries and updates. While `GAP_BACKLOG.md` is the "current state" (consolidated, editable), `GAP_LOG.md` is the "event history" (append-only, immutable).
 
 ### Problem Being Solved
 
-Current behavior: When Claude discovers more about an existing topic, it **updates** the existing `skills/self-improvement/GAP_BACKLOG.md` entry. This loses visibility into:
+Current behavior: When Claude discovers more about an existing topic, it **updates** the existing `GAP_BACKLOG.md` entry. This loses visibility into:
 
 - When each piece of knowledge was learned
 - The evolution of understanding over time
@@ -36,7 +36,7 @@ brain/ralph/skills/self-improvement/GAP_LOG.md
 Each entry includes:
 
 - **Full timestamp** (date + time) — not just date
-- **Gap name** — matches the name in skills/self-improvement/GAP_BACKLOG.md
+- **Gap name** — matches the name in GAP_BACKLOG.md
 - **Action type** — NEW or UPDATED
 - **Content** — what was discovered/added
 
@@ -65,9 +65,9 @@ Each entry includes:
 
 **Timing:** Logging happens at the moment of gap capture (Rule 2 in GAP_CAPTURE_RULES.md), not during review.
 
-**Relationship to skills/self-improvement/GAP_BACKLOG.md:**
+**Relationship to GAP_BACKLOG.md:**
 
-- `skills/self-improvement/GAP_BACKLOG.md` — Edit/update in place (consolidated view)
+- `GAP_BACKLOG.md` — Edit/update in place (consolidated view)
 - `GAP_LOG.md` — Always append (historical view)
 - Both are updated in the same operation
 
@@ -88,13 +88,13 @@ Automatically create skill files from qualified gaps when all planned work is co
 
 ### Problem Being Solved
 
-Current state: The system defines promotion criteria but has no engine to drive reviews. Gaps accumulate in `skills/self-improvement/GAP_BACKLOG.md` and never get converted to skills unless manually triggered.
+Current state: The system defines promotion criteria but has no engine to drive reviews. Gaps accumulate in `GAP_BACKLOG.md` and never get converted to skills unless manually triggered.
 
 ### Trigger Condition
 
 Auto-skill promotion activates **only when all planned work is done**:
 
-- All tasks in `workers/IMPLEMENTATION_PLAN.md` are marked complete
+- All tasks in `IMPLEMENTATION_PLAN.md` are marked complete
 - No pending items remain in the current plan
 - `loop.sh` has finished its planned iteration
 
@@ -103,7 +103,7 @@ Auto-skill promotion activates **only when all planned work is done**:
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    PLANNED WORK PHASE                        │
-│  (Normal loop.sh execution of workers/IMPLEMENTATION_PLAN.md tasks) │
+│  (Normal loop.sh execution of IMPLEMENTATION_PLAN.md tasks) │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -117,7 +117,7 @@ Auto-skill promotion activates **only when all planned work is done**:
                                └───────────────────┘
                                         │
                                         ▼
-                              Review skills/self-improvement/GAP_BACKLOG.md
+                              Review GAP_BACKLOG.md
                                         │
                                         ▼
                               Any gaps meet ALL 4 criteria?
@@ -130,7 +130,7 @@ Auto-skill promotion activates **only when all planned work is done**:
                                                   │
                                                   ▼
                                       Append skill creation tasks
-                                      to workers/IMPLEMENTATION_PLAN.md
+                                      to IMPLEMENTATION_PLAN.md
                                                   │
                                                   ▼
                                       Execute skill creation
@@ -145,7 +145,7 @@ Auto-skill promotion activates **only when all planned work is done**:
 1. **One at a time** — Only one gap is promoted per cycle
 2. **Re-check after each** — After completing a skill, review again (new gaps may have been discovered during skill creation)
 3. **No cap** — Process continues until no more gaps qualify
-4. **Auto-append** — Tasks are automatically added to workers/IMPLEMENTATION_PLAN.md (user reviews before execution via normal loop.sh flow)
+4. **Auto-append** — Tasks are automatically added to IMPLEMENTATION_PLAN.md (user reviews before execution via normal loop.sh flow)
 
 ### Promotion Criteria (All Must Be True)
 
@@ -160,7 +160,7 @@ From `GAP_CAPTURE_RULES.md`:
 
 ### Skill Creation Task Breakdown
 
-When a gap qualifies for promotion, these tasks are appended to `workers/IMPLEMENTATION_PLAN.md`:
+When a gap qualifies for promotion, these tasks are appended to `IMPLEMENTATION_PLAN.md`:
 
 ```markdown
 ## Phase N: Skill Creation — <Gap Name>
@@ -185,7 +185,7 @@ When a gap qualifies for promotion, these tasks are appended to `workers/IMPLEME
 - [ ] Update `skills/SUMMARY.md` with new entry
 
 ### Task N.4: Update Backlogs
-- [ ] Update `skills/self-improvement/GAP_BACKLOG.md` entry status to "Promoted to SKILL_BACKLOG"
+- [ ] Update `GAP_BACKLOG.md` entry status to "Promoted to SKILL_BACKLOG"
 - [ ] Add entry to `SKILL_BACKLOG.md` with status "Done" and link to skill file
 - [ ] Append promotion event to `GAP_LOG.md`
 
@@ -226,15 +226,15 @@ When multiple gaps qualify, select based on:
 Add logic at end of main loop:
 
 ```text
-After all workers/IMPLEMENTATION_PLAN.md tasks complete:
-1. Read skills/self-improvement/GAP_BACKLOG.md
+After all IMPLEMENTATION_PLAN.md tasks complete:
+1. Read GAP_BACKLOG.md
 2. For each gap with Status: Identified
    - Evaluate against 4 promotion criteria
    - If ALL criteria met, select this gap (respect priority order)
    - Break after first selection
 3. If gap selected:
    - Generate skill creation tasks (see breakdown above)
-   - Append to workers/IMPLEMENTATION_PLAN.md as new phase
+   - Append to IMPLEMENTATION_PLAN.md as new phase
    - Continue loop (execute new tasks)
 4. If no gap selected:
    - Log "No gaps ready for promotion"
@@ -264,7 +264,7 @@ Every gap capture or update must also append to `GAP_LOG.md`:
 
 1. User provides task: "Optimize the bash script for performance"
 2. Claude works on task, discovers caching pattern isn't documented
-3. Claude logs to `skills/self-improvement/GAP_BACKLOG.md` (new entry)
+3. Claude logs to `GAP_BACKLOG.md` (new entry)
 4. Claude **also** appends to `GAP_LOG.md` with timestamp and `(NEW)`
 5. Claude completes the optimization task
 6. All planned work done → skill review triggers
@@ -278,14 +278,14 @@ Every gap capture or update must also append to `GAP_LOG.md`:
 
 1. Gap "Bash Terminal Control" already exists from yesterday
 2. Today, Claude learns about color support while working
-3. Claude updates `skills/self-improvement/GAP_BACKLOG.md` entry (adds color info)
+3. Claude updates `GAP_BACKLOG.md` entry (adds color info)
 4. Claude **also** appends to `GAP_LOG.md` with `(UPDATED)` showing only the new color info
 5. Historical record preserved
 
 ### Scenario C: Multiple Gaps, Prioritized Processing
 
 1. Planned work completes
-2. skills/self-improvement/GAP_BACKLOG.md has 3 qualifying gaps: P2, P1, P2
+2. GAP_BACKLOG.md has 3 qualifying gaps: P2, P1, P2
 3. P1 gap selected first (highest priority)
 4. Skill created for P1 gap
 5. Review again → 2 gaps remain (both P2)

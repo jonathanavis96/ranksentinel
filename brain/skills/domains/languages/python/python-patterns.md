@@ -362,5 +362,5 @@ When you import inside a try block:
 
 ## Related
 
-- [error-handling-patterns.md](../../backend/error-handling-patterns.md) - General error handling
-- [testing-patterns.md](../../code-quality/testing-patterns.md) - Python testing with pytest
+- [error-handling-patterns.md](./error-handling-patterns.md) - General error handling
+- [testing-patterns.md](./testing-patterns.md) - Python testing with pytest

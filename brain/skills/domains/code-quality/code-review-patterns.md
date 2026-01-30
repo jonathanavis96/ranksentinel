@@ -496,33 +496,6 @@ git diff --function-context
 difft --display side-by-side file1.py file2.py
 ```
 
-## Discovery-Defer Pattern
-
-**Context:** While fixing one issue, you discover additional problems.
-
-**Pattern:** Note discoveries but defer plan updates to PLAN mode.
-
-**During BUILD mode:**
-
-- **DO:** Note new issues in commit message body
-  - Example: `"Note: also found SC2034 in foo.sh, SC2162 in bar.sh"`
-- **DO NOT:** Update IMPLEMENTATION_PLAN.md with new tasks
-- **WAIT:** Until PLAN mode to add discovered tasks to plan
-
-**Rationale:** Prevents "docs(plan): add new task" spam commits. Plan updates batched at PLAN phase.
-
-**Example commit message:**
-
-```text
-fix(ralph): resolve SC2086 in loop.sh
-
-Added quotes around $file variable expansion.
-
-Note: Also discovered SC2034 (unused variable) in 
-verifier.sh and SC2162 (missing -r flag) in 3 other scripts.
-Will add to plan in next PLAN iteration.
-```
-
 ## Gap Identification
 
-If you encounter code review patterns not covered here, add to `skills/self-improvement/skills/self-improvement/GAP_BACKLOG.md`.
+If you encounter code review patterns not covered here, add to `skills/self-improvement/GAP_BACKLOG.md`.

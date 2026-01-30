@@ -271,7 +271,7 @@ Common error patterns:
   - Task depends on unavailable resource
 
 - **Solutions:**
-  - Manually mark task `[x]` in `workers/workers/IMPLEMENTATION_PLAN.md` if actually complete
+  - Manually mark task `[x]` in `workers/IMPLEMENTATION_PLAN.md` if actually complete
   - Add troubleshooting context to `THOUGHTS.md`
   - Request waiver if verifier check is false positive
   - Skip to next task if blocked
@@ -309,9 +309,9 @@ Common error patterns:
 
 **Action:** Record the issue and resolution for future reference.
 
-- Add entry to `workers/ralph/workers/ralph/THUNK.md` if you manually intervened
+- Add entry to `workers/ralph/THUNK.md` if you manually intervened
 - Clean up any temporary debug files
-- If this was a novel issue, consider adding to `skills/self-improvement/skills/self-improvement/GAP_BACKLOG.md`
+- If this was a novel issue, consider adding to `skills/self-improvement/GAP_BACKLOG.md`
 
 **Example commit (if manual fix was needed):**
 
@@ -353,7 +353,7 @@ Core skills referenced by this playbook:
 
 - [Ralph Patterns](../domains/ralph/ralph-patterns.md) - Architecture, troubleshooting, and common patterns
 - [Cache Debugging](../domains/ralph/cache-debugging.md) - Cache-specific issues and solutions
-- [Token Efficiency](../domains/code-quality/token-efficiency.md) - Performance optimization to prevent slowness
+- [Token Efficiency](../code-quality/token-efficiency.md) - Performance optimization to prevent slowness
 
 ## Related Playbooks
 

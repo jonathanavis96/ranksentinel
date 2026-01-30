@@ -19,7 +19,7 @@ Use this playbook when:
 Before decomposing:
 
 - **Tools:** Access to `current_ralph_tasks.sh` for ETA tracking
-- **Files:** `workers/workers/IMPLEMENTATION_PLAN.md`, `workers/ralph/workers/ralph/THUNK.md`
+- **Files:** `workers/IMPLEMENTATION_PLAN.md`, `workers/ralph/THUNK.md`
 - **Knowledge:** Understanding of the original task's acceptance criteria
 - **Context:** Recent iteration logs showing task durations
 
@@ -30,7 +30,7 @@ Before decomposing:
 **Action:** Examine why the task is oversized.
 
 - Read the task description and acceptance criteria
-- Check `workers/ralph/workers/ralph/THUNK.md` for similar past tasks and their durations
+- Check `workers/ralph/THUNK.md` for similar past tasks and their durations
 - Identify distinct phases within the task (scan → modify → verify)
 - Look for multiple concerns bundled together
 
@@ -150,7 +150,7 @@ Quality checklist:
 
 **Important:** Mark original task `[x]` with note "DECOMPOSED" so Ralph skips it and works on subtasks instead.
 
-### Step 6: Update workers/ralph/THUNK.md
+### Step 6: Update THUNK.md
 
 **Action:** Log the decomposition decision.
 

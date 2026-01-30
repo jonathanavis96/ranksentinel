@@ -201,7 +201,7 @@ When updating skills files:
 - **Code blocks**: Always specify language (`markdown`, `javascript`, etc.)
 - **Lists**: Use `-` for bullets, `1.` for numbered lists
 - **Emphasis**: Use **bold** for key terms, `code` for inline code
-- **Links**: Use relative paths: `[Skills Summary](./SUMMARY.md)`
+- **Links**: Use relative paths: `[link](../path/to/file.md)`
 
 ### Example Formatting
 

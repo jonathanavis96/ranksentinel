@@ -88,5 +88,5 @@ When documenting an anti-pattern:
 
 - `skills/domains/code-quality/` - Positive patterns for code quality
 - `skills/domains/languages/shell/common-pitfalls.md` - Shell-specific pitfalls
-- `skills/self-improvement/skills/self-improvement/GAP_BACKLOG.md` - Discovered knowledge gaps
+- `skills/self-improvement/GAP_BACKLOG.md` - Discovered knowledge gaps
 - `skills/conventions.md` - Skill authoring guidelines

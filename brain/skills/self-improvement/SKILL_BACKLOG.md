@@ -26,7 +26,7 @@ Rules:
 
 ### <Suggested Skill Name>
 - **Status:** Pending / In-Progress / Done
-- **Source gap:** Link to skills/self-improvement/GAP_BACKLOG.md entry or date
+- **Source gap:** Link to GAP_BACKLOG.md entry or date
 - **Target path:** `skills/domains/<topic>/<name>.md` or `skills/projects/<project>/<name>.md`
 - **Assigned iteration:** (optional)
 - **Skill file link:** (fill when Done)
@@ -37,7 +37,7 @@ Rules:
 ### Bash/Shell Project Validation Patterns
 
 - **Status:** Done
-- **Source gap:** 2026-01-19 entry in skills/self-improvement/GAP_BACKLOG.md
+- **Source gap:** 2026-01-19 entry in GAP_BACKLOG.md
 - **Target path:** `skills/domains/languages/shell/validation-patterns.md`
 - **Priority:** P1 (high leverage / recurring)
 - **Skill file link:** [validation-patterns.md](../domains/languages/shell/validation-patterns.md)

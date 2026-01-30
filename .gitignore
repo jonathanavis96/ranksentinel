@@ -1,6 +1,21 @@
 # Ralph logs
 workers/workers/ralph/logs/
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+ENV/
+
 # Local environment
 .env.local
 *.local
@@ -8,3 +23,7 @@ workers/workers/ralph/logs/
 # OS files
 .DS_Store
 Thumbs.db
+brain_upstream/
+
+# Ralph local markers
+workers/ralph/.verify/.brain_skills_synced

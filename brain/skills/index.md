@@ -45,7 +45,6 @@ Catalog of all skill files in the brain system.
 - [code-consistency.md](domains/code-quality/code-consistency.md) - Documentation accuracy, terminology, parsing consistency
 - [code-hygiene.md](domains/code-quality/code-hygiene.md) - Definition of Done checklists
 - [code-review-patterns.md](domains/code-quality/code-review-patterns.md) - Code review checklist for regex, scope, examples, documentation quality
-- [semantic-code-review.md](domains/code-quality/semantic-code-review.md) - LLM-based semantic analysis patterns for logic validation and intent checking
 - [markdown-patterns.md](domains/code-quality/markdown-patterns.md) - Lint rules (MD040, MD024, MD050), documentation accuracy
 - [research-cheatsheet.md](domains/code-quality/research-cheatsheet.md) - One-page quick reference for research patterns
 - [research-patterns.md](domains/code-quality/research-patterns.md) - Systematic research methodology for gathering and evaluating information
@@ -168,7 +167,6 @@ Catalog of all skill files in the brain system.
 - [pricing-strategy.md](domains/marketing/strategy/pricing-strategy.md) - Design pricing models and pages
 - [launch-strategy.md](domains/marketing/strategy/launch-strategy.md) - Plan product launches
 - [marketing-ideas.md](domains/marketing/strategy/marketing-ideas.md) - Generate marketing ideas
-- [business-ideas.md](domains/marketing/strategy/business-ideas.md) - Generate and evaluate business ideas (market gaps, autonomy-first)
 - [marketing-psychology.md](domains/marketing/strategy/marketing-psychology.md) - Apply psychology to marketing
 - [competitor-alternatives.md](domains/marketing/strategy/competitor-alternatives.md) - Analyze competitors and positioning
 
@@ -248,7 +246,7 @@ Catalog of all skill files in the brain system.
 
 - [README.md](self-improvement/README.md) - Self-improvement system overview
 - [GAP_CAPTURE_RULES.md](self-improvement/GAP_CAPTURE_RULES.md) - Gap capture protocol
-- [skills/self-improvement/GAP_BACKLOG.md](self-improvement/GAP_BACKLOG.md) - Raw gap capture log
+- [GAP_BACKLOG.md](self-improvement/GAP_BACKLOG.md) - Raw gap capture log
 - [GAP_LOG_AND_AUTO_SKILL_SPEC.md](self-improvement/GAP_LOG_AND_AUTO_SKILL_SPEC.md) - Gap log structure and auto-skill generation spec
 - [SKILL_BACKLOG.md](self-improvement/SKILL_BACKLOG.md) - Promotion queue
 - [SKILL_TEMPLATE.md](self-improvement/SKILL_TEMPLATE.md) - Template for new skills

@@ -214,7 +214,7 @@ modify_file() {  # BUG: Contradicts header!
 #!/usr/bin/env bash
 # task-manager.sh - Display and manage tasks
 #
-# This script displays tasks and can modify workers/ralph/THUNK.md via hotkeys.
+# This script displays tasks and can modify THUNK.md via hotkeys.
 ```text
 
 ### Usage Comments Must Be Current
@@ -291,66 +291,6 @@ markdownlint -d MD013 "**/*.md"  # Ignore line length
 | Mixed `**` and `__` | Inconsistent style | Pick one style |
 | Stale usage comment | Misleads users | Keep comments current |
 | Old terminology | Confuses readers | Update all references |
-
-## Agent-Specific Patterns
-
-### Cortex Writing Task Contracts
-
-**Context:** When writing task contracts in workers/IMPLEMENTATION_PLAN.md, code fences are used to show example outputs, implementation snippets, and expected formats.
-
-**Common mistake:** Forgetting language tags when focused on task structure
-
-```markdown
-❌ Wrong - bare code fence in task implementation
-- [ ] **1.2** Add summary function
-  - **Implementation:**
-    - Output format:
-      ```
-      **Iteration 1 (BUILD)**
-      Summary: ...
-      ```
-
-✅ Right - language tag specified
-- [ ] **1.2** Add summary function
-  - **Implementation:**
-    - Output format:
-      ```text
-      **Iteration 1 (BUILD)**
-      Summary: ...
-      ```
-```
-
-**Decision tree for language tags:**
-
-1. **Is it executable code?**
-   - Shell/bash script → `bash`
-   - Python code → `python`
-   - JavaScript → `javascript`
-   - JSON → `json`
-   - YAML → `yaml`
-
-2. **Is it example output or text?**
-   - Log output → `text`
-   - Error messages → `text`
-   - Command output → `text`
-   - Mixed/formatted text → `text`
-
-3. **Not sure?**
-   - Default to `text` (safe choice)
-
-**Pre-commit checklist for workers/IMPLEMENTATION_PLAN.md:**
-
-- [ ] Every ` ``` ` has a language tag
-- [ ] Example outputs use `text` tag
-- [ ] Code snippets use appropriate language tag
-- [ ] Blank lines before/after code blocks
-- [ ] Run `markdownlint workers/workers/IMPLEMENTATION_PLAN.md` before committing
-
-**Prevention strategy:**
-
-1. Add to CRITICAL 8 checklist: "Did I add language tags to ALL code fences?"
-2. Use pre-commit hook: `cortex/docs/pre-commit-hook-markdown.sh`
-3. Remember: Example output = `text` tag (most common case)
 
 ## Related Playbooks
 

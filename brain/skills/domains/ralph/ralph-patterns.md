@@ -20,8 +20,8 @@ Ralph is the automated self-improvement loop for brain repositories and projects
 | File | Purpose | When Updated |
 |------|---------|--------------|
 | `PROMPT.md` | Instructions for each iteration | Rarely (core behavior) |
-| `workers/IMPLEMENTATION_PLAN.md` | Task list with priorities | Every BUILD (mark progress) |
-| `workers/ralph/THUNK.md` | Completed work log | On task completion |
+| `IMPLEMENTATION_PLAN.md` | Task list with priorities | Every BUILD (mark progress) |
+| `THUNK.md` | Completed work log | On task completion |
 | `THOUGHTS.md` | Goals, context, decisions | On major decisions |
 | `NEURONS.md` | Codebase map | When structure changes |
 | `AGENTS.md` | Operational commands | When features change |
@@ -78,7 +78,7 @@ RovoDev Agent (executes prompt instructions)
     ↓
 Spawns subagents as instructed by prompt
     ↓
-Updates workers/IMPLEMENTATION_PLAN.md + workers/ralph/THUNK.md
+Updates IMPLEMENTATION_PLAN.md + THUNK.md
     ↓
 Monitors detect changes and update displays
 ```text
@@ -143,7 +143,7 @@ Ralph includes two real-time monitoring scripts that demonstrate advanced bash p
 
 ### Current Ralph Tasks Monitor (`current_ralph_tasks.sh`)
 
-**Purpose**: Display pending tasks from workers/IMPLEMENTATION_PLAN.md in real-time
+**Purpose**: Display pending tasks from IMPLEMENTATION_PLAN.md in real-time
 
 **Key Features**:
 
@@ -221,12 +221,12 @@ fi
 
 ### THUNK Monitor (`thunk_ralph_tasks.sh`)
 
-**Purpose**: Display completed tasks appended to workers/ralph/THUNK.md in real-time
+**Purpose**: Display completed tasks appended to THUNK.md in real-time
 
 **Key Features**:
 
-- Watches workers/ralph/THUNK.md for Ralph-appended completions
-- Safety net: Auto-syncs from workers/IMPLEMENTATION_PLAN.md if Ralph forgets
+- Watches THUNK.md for Ralph-appended completions
+- Safety net: Auto-syncs from IMPLEMENTATION_PLAN.md if Ralph forgets
 - Append-only display optimization (tail parsing)
 - Interactive hotkeys: `r` (refresh), `f` (force sync), `e` (new era), `q` (quit)
 - Sequential THUNK numbering across project lifecycle
@@ -294,18 +294,18 @@ parse_new_thunk_entries() {
 **Auto-Sync Pattern** (Safety Net):
 
 ```bash
-# Scan workers/IMPLEMENTATION_PLAN.md for new [x] tasks
+# Scan IMPLEMENTATION_PLAN.md for new [x] tasks
 scan_for_new_completions() {
     while IFS= read -r line; do
         if [[ "$line" =~ ^[[:space:]]*-[[:space:]]\[x\][[:space:]]*(.*)$ ]]; then
             local task_desc="${BASH_REMATCH[1]}"
             
-            # Check if already in workers/ralph/THUNK.md
+            # Check if already in THUNK.md
             if task_exists_in_thunk "$task_desc"; then
                 continue
             fi
             
-            # Append to workers/ralph/THUNK.md
+            # Append to THUNK.md
             append_to_thunk_table "$task_desc"
         fi
     done < "$PLAN_FILE"
@@ -388,182 +388,6 @@ if [[ "$desc" =~ ^(Create|Update|Fix|Test|Implement)([[:space:]]*:[[:space:]]*|[
     echo "$verb $rest" | cut -c1-50
 fi
 ```text
-
-## Operational Patterns
-
-### PLAN-Mode Governance Rules
-
-**Purpose**: Prevent uncontrolled scope expansion while allowing Ralph to identify and propose improvements.
-
-**The Problem**: Ralph needs to identify knowledge gaps and improvements, but adding new phases directly could expand scope without review.
-
-**The Pattern**:
-
-```bash
-# Ralph identifies a gap during PLAN mode
-# Example: Brain is referenced by web projects, but frontend skills are minimal
-```
-
-**Implementation**:
-
-1. **Propose, don't commit** - Describe new phases in console output only
-2. **Explain rationale** - What gap does it fill? Why is it needed?
-3. **Wait for approval** - Human or Cortex must approve before implementation
-4. **Exception** - `## Phase 0-Warn: Verifier Warnings` can be added immediately (urgent fixes)
-
-**Example Proposal Format**:
-
-```text
-PROPOSED NEW PHASES:
-- Phase 8: Frontend Skills Expansion
-  - Rationale: Brain is referenced by web projects, needs React/Vue patterns
-  - Tasks: 8.1.1 Create frontend README, 8.1.2 Add component patterns...
-
-Awaiting approval before adding to workers/IMPLEMENTATION_PLAN.md.
-```
-
-**Why This Exists**:
-
-- New phases = significant scope expansion
-- Cortex owns strategic planning; Ralph executes
-- Proposing allows review before commitment
-- Prevents Ralph from creating unbounded work
-
-**When to Propose New Phases**:
-
-- Discovering systematic gaps across multiple domains
-- Identifying recurring issues that need dedicated focus
-- Finding missing infrastructure or tooling categories
-
-**When NOT to Propose**:
-
-- Single tasks within existing phases (just add the task)
-- Verifier warnings (use Phase 0-Warn section)
-- Minor documentation updates (existing phases cover it)
-
-### THUNK Tracking Patterns
-
-**Purpose**: Efficient access to task completion log without reading large files.
-
-**The Problem**: `workers/ralph/THUNK.md` grows continuously. Reading the full file wastes tokens and time.
-
-**Access Rules**:
-
-| Operation | Command | Why |
-|-----------|---------|-----|
-| **Lookups** | `grep "keyword" workers/ralph/THUNK.md \| head -3` | Fast, targeted search |
-| **Get next ID** | `tail -10 workers/ralph/THUNK.md \| grep "^\|" \| tail -1` | Only read last 10 lines |
-| **Append entry** | Get ID once, then append | Single tail operation per task |
-| **History search** | `bin/brain-search "keyword"` | Structured multi-source search |
-| **Statistics** | `bin/thunk-parse --stats` | Dedicated tool, not raw parsing |
-
-**Never Do**:
-
-```bash
-# ❌ BAD: Opens entire file
-open_files(["workers/ralph/THUNK.md"])
-
-# ❌ BAD: Multiple reads for same task
-tail -10 workers/ralph/THUNK.md  # Get ID
-# ... do work ...
-tail -10 workers/ralph/THUNK.md  # Get ID again (wasteful)
-```
-
-**Correct Pattern**:
-
-```bash
-# ✅ GOOD: Get ID once, cache it, append once
-NEXT_ID=$(tail -10 workers/ralph/THUNK.md | grep "^|" | tail -1 | awk -F'|' '{print $2+1}')
-
-# ... implement task ...
-
-# Append to THUNK (single operation)
-echo "| $NEXT_ID | 35.1.3 | skills | Enhanced Ralph operational patterns..." >> workers/ralph/THUNK.md
-```
-
-**THUNK Entry Format**:
-
-```text
-| ID | Task | Scope | Description (max ~200 chars, truncate with ...) |
-```
-
-**Key Insights**:
-
-- THUNK is append-only, so tail operations are safe
-- Full file reads are wasteful after ~100 entries
-- Dedicated tools (`brain-search`, `thunk-parse`) handle complex queries
-- Only read THUNK when actually appending a completion
-
-### Discovery-Defer Pattern
-
-**Purpose**: Prevent "docs(plan): add new task" spam commits during BUILD mode.
-
-**The Problem**: While fixing issues, Ralph often discovers additional related problems. Adding them to the plan immediately creates extra commits and interrupts BUILD focus.
-
-**The Pattern**:
-
-**During BUILD Mode**:
-
-```bash
-# Ralph fixes shellcheck issue SC2086 in loop.sh
-# Ralph notices SC2034 (unused variable) in same file
-# Ralph notices SC2162 (missing -r) in monitor.sh
-```
-
-**❌ Wrong Approach**:
-
-```bash
-# Fix SC2086
-git add loop.sh
-git commit -m "fix(ralph): resolve SC2086 in loop.sh"
-
-# Update plan with new discoveries
-find_and_replace_code("workers/IMPLEMENTATION_PLAN.md", ...)
-git add workers/IMPLEMENTATION_PLAN.md
-git commit -m "docs(plan): add SC2034 and SC2162 tasks"
-
-# Continue to next task...
-```
-
-**✅ Correct Approach**:
-
-```bash
-# Fix SC2086 only
-git add loop.sh workers/IMPLEMENTATION_PLAN.md workers/ralph/THUNK.md
-
-# Note discoveries in commit body
-git commit -m "fix(ralph): resolve SC2086 in loop.sh
-
-Note: Also discovered SC2034 in loop.sh and SC2162 in monitor.sh
-These will be added to plan during next PLAN phase."
-
-# STOP - Do not add new tasks to plan yet
-```
-
-**During PLAN Mode**:
-
-- Review commit messages for noted discoveries
-- Add new tasks to appropriate phases in `workers/IMPLEMENTATION_PLAN.md`
-- Group related discoveries into logical task structure
-
-**Benefits**:
-
-- Cleaner commit history (fewer noise commits)
-- BUILD mode stays focused on assigned task
-- PLAN mode has context to organize discoveries properly
-- Reduces plan file churn
-
-**When to Use**:
-
-- During BUILD mode when discovering new issues
-- When one fix reveals related problems
-- When refactoring exposes additional opportunities
-
-**When NOT to Use**:
-
-- During PLAN mode (add tasks directly)
-- For verifier warnings (add to Phase 0-Warn immediately)
-- For critical blockers (document and stop)
 
 ## Troubleshooting Patterns
 

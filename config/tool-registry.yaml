@@ -1,0 +1,132 @@
+# Tool Registry Schema
+#
+# This registry defines commonly used tools in the Ralph loop with metadata
+# for caching, validation, and execution behavior.
+#
+# Schema:
+#   name: string (tool command name)
+#   type: validator | formatter | git | build | test | custom
+#   command: string (full command template, use {args} for substitution)
+#   cacheable: boolean (whether results can be cached)
+#   tags: list[string] (categorization for filtering/grouping)
+#   description: string (human-readable purpose)
+#   exit_codes:
+#     success: list[int] (exit codes indicating success, default [0])
+#     failure: list[int] (exit codes indicating failure)
+
+version: "1.0"
+tools:
+  # Shell validators
+  - name: shellcheck
+    type: validator
+    command: "shellcheck -e SC1091 {args}"
+    cacheable: true
+    tags: [shell, linter, validator]
+    description: "Shell script static analysis tool"
+    exit_codes:
+      success: [0]
+      failure: [1]
+
+  - name: shfmt
+    type: formatter
+    command: "shfmt -w -i 2 {args}"
+    cacheable: true
+    tags: [shell, formatter]
+    description: "Shell script formatter (2-space indent)"
+    exit_codes:
+      success: [0]
+      failure: [1]
+
+  # Markdown validators
+  - name: markdownlint
+    type: validator
+    command: "markdownlint {args}"
+    cacheable: true
+    tags: [markdown, linter, validator]
+    description: "Markdown style checker and linter"
+    exit_codes:
+      success: [0]
+      failure: [1]
+
+  - name: markdownlint-fix
+    type: formatter
+    command: "markdownlint --fix {args}"
+    cacheable: false
+    tags: [markdown, formatter]
+    description: "Auto-fix markdown style issues"
+    exit_codes:
+      success: [0]
+      failure: [1]
+
+  # YAML validators
+  - name: yamllint
+    type: validator
+    command: "yamllint {args}"
+    cacheable: true
+    tags: [yaml, linter, validator]
+    description: "YAML syntax and style validator"
+    exit_codes:
+      success: [0]
+      failure: [1]
+
+  # Git operations
+  - name: git-push
+    type: git
+    command: "git push {args}"
+    cacheable: false
+    tags: [git, remote, mutation]
+    description: "Push commits to remote repository"
+    exit_codes:
+      success: [0]
+      failure: [1, 128]
+
+  - name: git-commit
+    type: git
+    command: "git commit {args}"
+    cacheable: false
+    tags: [git, local, mutation]
+    description: "Commit staged changes to repository"
+    exit_codes:
+      success: [0]
+      failure: [1]
+
+  - name: git-fetch
+    type: git
+    command: "git fetch {args}"
+    cacheable: false
+    tags: [git, remote, query]
+    description: "Fetch updates from remote repository"
+    exit_codes:
+      success: [0]
+      failure: [1, 128]
+
+  # Pre-commit framework
+  - name: pre-commit
+    type: validator
+    command: "pre-commit run --all-files"
+    cacheable: true
+    tags: [validator, meta, hooks]
+    description: "Run all configured pre-commit hooks"
+    exit_codes:
+      success: [0]
+      failure: [1]
+
+  # Python validators
+  - name: ruff
+    type: validator
+    command: "ruff check {args}"
+    cacheable: true
+    tags: [python, linter, validator]
+    description: "Fast Python linter (replaces flake8, isort)"
+    exit_codes:
+      success: [0]
+      failure: [1]
+
+# Registry metadata
+metadata:
+  created: "2026-01-26"
+  purpose: "Declarative tool registry for Ralph loop caching and validation"
+  schema_version: "1.0"
+  related_files:
+    - "workers/ralph/config/non_cacheable_tools.txt"
+    - "artifacts/rollflow_cache/config.yml"

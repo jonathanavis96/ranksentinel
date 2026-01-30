@@ -33,7 +33,7 @@ new-project.sh (orchestrator)
 
     ├── generate-thoughts.sh      (THOUGHTS.md - project goals)
     ├── generate-neurons.sh       (NEURONS.md - codebase map)
-    └── generate-implementation-plan.sh (workers/IMPLEMENTATION_PLAN.md - tasks)
+    └── generate-implementation-plan.sh (IMPLEMENTATION_PLAN.md - tasks)
     ↓
 
 3. Copy static templates
@@ -297,7 +297,7 @@ for stack in backend python ralph; do
   # Verify files exist
   [[ -f AGENTS.md ]] || echo "FAIL: AGENTS.md missing"
   [[ -f NEURONS.md ]] || echo "FAIL: NEURONS.md missing"
-  [[ -f workers/IMPLEMENTATION_PLAN.md ]] || echo "FAIL: workers/IMPLEMENTATION_PLAN.md missing"
+  [[ -f IMPLEMENTATION_PLAN.md ]] || echo "FAIL: IMPLEMENTATION_PLAN.md missing"
   
   # Verify generators executed
   grep -q "HIGH INTELLIGENCE" NEURONS.md || echo "FAIL: Generator didn't run"

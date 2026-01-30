@@ -124,9 +124,6 @@
 | find-and-replace | Bulk editing needed | [Bulk Edit Patterns](domains/code-quality/bulk-edit-patterns.md) |
 | sed | Stream editing needed | [Bulk Edit Patterns](domains/code-quality/bulk-edit-patterns.md) |
 | batch-editing | Mass changes needed | [Bulk Edit Patterns](domains/code-quality/bulk-edit-patterns.md) |
-| semantic-analysis | Logic bugs beyond syntax | [Semantic Code Review](domains/code-quality/semantic-code-review.md) |
-| llm-code-review | LLM-based code checking | [Semantic Code Review](domains/code-quality/semantic-code-review.md) |
-| code-intent-checking | Verify code matches description | [Semantic Code Review](domains/code-quality/semantic-code-review.md) |
 
 **Generic Error Handling:**
 
@@ -182,12 +179,11 @@ This repository serves as a **skills knowledge base** for RovoDev and parallel a
   - [Change Propagation](domains/ralph/change-propagation.md) - Template sync, knowledge persistence, verification checklists
   - [Bulk Edit Patterns](domains/code-quality/bulk-edit-patterns.md) - Bulk editing strategies and markdown auto-fix patterns
   - [Code Consistency](domains/code-quality/code-consistency.md) - Documentation accuracy, terminology, parsing consistency
-  - [Code Review Patterns](domains/code-quality/code-review-patterns.md) - Automated and manual code review strategies
   - [Config Patterns](domains/backend/config-patterns.md) - Portable configs, templates, environment variables
   - [Database Patterns](domains/backend/database-patterns.md) - Schema design, ORMs, query optimization, migrations, transactions
+  - [SQLite Schema/Test Alignment](domains/backend/sqlite-schema-test-alignment.md) - Keep schema, migrations, and pytest fixtures in lockstep (avoid missing table / NOT NULL drift)
   - [Markdown Patterns](domains/code-quality/markdown-patterns.md) - Lint rules (MD040, MD024, MD050), documentation accuracy
   - [Python Patterns](domains/languages/python/python-patterns.md) - datetime, f-strings, JSON handling, type hints, import scope
-  - [Semantic Code Review](domains/code-quality/semantic-code-review.md) - Context-aware code review and quality analysis
   - [Testing Patterns](domains/code-quality/testing-patterns.md) - Unit, integration, e2e testing across Jest, pytest, Go testing
   - [Test Coverage Patterns](domains/code-quality/test-coverage-patterns.md) - Coverage tracking, differential coverage, CI integration
   - [Research Patterns](domains/code-quality/research-patterns.md) - Systematic research methodology (CRAAP test, triangulation, source evaluation)
@@ -196,26 +192,17 @@ This repository serves as a **skills knowledge base** for RovoDev and parallel a
   - [Ralph Loop Architecture](domains/ralph/ralph-patterns.md) - How Ralph works internally (subagents, tool visibility, execution flow)
   - [Bootstrap Patterns](domains/ralph/bootstrap-patterns.md) - Project bootstrapping, scaffold templates, initialization flows
   - [Cache Debugging](domains/ralph/cache-debugging.md) - Cache troubleshooting, invalidation, performance analysis
-  - [Thread Search Patterns](domains/ralph/thread-search-patterns.md) - Search and analyze Ralph thread history
-  - [Tool Wrapper Patterns](domains/ralph/tool-wrapper-patterns.md) - Wrap external tools for Ralph integration
   - [Code Hygiene](domains/code-quality/code-hygiene.md) - Dead code removal, linting, formatting consistency
   - [Deployment Patterns](domains/infrastructure/deployment-patterns.md) - CI/CD, rollout strategies, environment management
   - [Disaster Recovery Patterns](domains/infrastructure/disaster-recovery-patterns.md) - Backup strategies, failover procedures, recovery testing
-  - [Discord Webhook Patterns](domains/infrastructure/discord-webhook-patterns.md) - Discord notifications and webhook integration
   - [Error Handling Patterns](domains/backend/error-handling-patterns.md) - Exception handling, error boundaries, retry strategies
   - [Observability Patterns](domains/infrastructure/observability-patterns.md) - Logging, metrics, tracing, alerting
-  - [Secrets Management](domains/infrastructure/secrets-management.md) - Secure credential storage and rotation
   - [Security Patterns](domains/infrastructure/security-patterns.md) - Input validation, secrets management, secure defaults
   - [State Management Patterns](domains/infrastructure/state-management-patterns.md) - React state, global stores, persistence
   - **[Frontend Development](domains/frontend/README.md)** - Frontend development overview
     - [Accessibility Patterns](domains/frontend/accessibility-patterns.md) - WCAG compliance, ARIA attributes, keyboard navigation, screen reader support
-    - [Component Architecture](domains/frontend/component-architecture.md) - Component design and organization patterns
     - [React Patterns](domains/frontend/react-patterns.md) - Component composition, hooks, state management, performance optimization
-    - [Vue Patterns](domains/frontend/vue-patterns.md) - Vue.js composition API, reactivity, lifecycle management
-  - **[Go Patterns](domains/languages/go/README.md)** - Go idioms, concurrency, error handling, testing patterns
-    - [Go Patterns](domains/languages/go/go-patterns.md) - Goroutines, channels, defer, interfaces, struct composition
   - **[JavaScript Patterns](domains/languages/javascript/README.md)** - Modern JavaScript (ES6+), async patterns, module systems
-    - [JavaScript Patterns](domains/languages/javascript/javascript-patterns.md) - Promises, async/await, destructuring, modules
   - **[TypeScript Patterns](domains/languages/typescript/README.md)** - Type system fundamentals, generics, advanced types, JavaScript integration
   - **[Shell Scripting](domains/languages/shell/README.md)** - Bash best practices, ShellCheck patterns, cleanup/traps
     - [Strict Mode](domains/languages/shell/strict-mode.md) - `set -euo pipefail` patterns
@@ -250,7 +237,6 @@ This repository serves as a **skills knowledge base** for RovoDev and parallel a
       - [Pricing Strategy](domains/marketing/strategy/pricing-strategy.md) - Design pricing models and pages
       - [Launch Strategy](domains/marketing/strategy/launch-strategy.md) - Plan product launches
       - [Marketing Ideas](domains/marketing/strategy/marketing-ideas.md) - Generate marketing ideas
-      - [Business Ideas](domains/marketing/strategy/business-ideas.md) - Generate and evaluate business ideas (market gaps, autonomy-first)
       - [Marketing Psychology](domains/marketing/strategy/marketing-psychology.md) - Apply psychology to marketing
       - [Competitor Alternatives](domains/marketing/strategy/competitor-alternatives.md) - Analyze competitors and positioning
     - **Growth**
@@ -303,15 +289,6 @@ This repository serves as a **skills knowledge base** for RovoDev and parallel a
 
 - **[Skills Index](index.md)** - Complete catalog of all available skills
 
-## See Also
-
-- **[index.md](index.md)** - Complete skills catalog
-- **[domains/README.md](domains/README.md)** - Domain-specific patterns overview
-- **[self-improvement/README.md](self-improvement/README.md)** - Gap capture and skill development protocol
-- **[playbooks/README.md](playbooks/README.md)** - Operational playbooks for common tasks
-- **[AGENTS.md](../AGENTS.md)** - Brain repository operational guide
-- **[workers/ralph/AGENTS.md](../workers/ralph/AGENTS.md)** - Ralph-specific guidance
-
 ### Playbooks (Multi-Step Workflows)
 
 - **[Playbooks Directory](playbooks/README.md)** - End-to-end workflows for complex tasks
@@ -363,7 +340,7 @@ brain/ (repository root)
 │   └── self-improvement/       # Gap capture & skill promotion system
 │       ├── README.md
 │       ├── GAP_CAPTURE_RULES.md
-│       ├── skills/self-improvement/GAP_BACKLOG.md
+│       ├── GAP_BACKLOG.md
 │       ├── SKILL_BACKLOG.md
 │       └── SKILL_TEMPLATE.md
 ├── templates/                   # Project scaffolding (shared)
@@ -399,11 +376,3 @@ bash tools/skill_freshness.sh --exit-on-stale
 - **Agent-first** - Optimized for programmatic consumption
 - **Reference-focused** - Knowledge, not executable skills
 - **Ralph Wiggum friendly** - Simple, obvious, no surprises
-
-## Related Documentation
-
-- **[NEURONS.md](../NEURONS.md)** - Brain repository structure map
-- **[README.md](../README.md)** - Getting started and overview
-- **[workers/ralph/AGENTS.md](../workers/ralph/AGENTS.md)** - Ralph operational guide
-- **[self-improvement/README.md](self-improvement/README.md)** - Gap capture and skill development protocol
-- **[docs/TOOLS.md](../docs/TOOLS.md)** - Available tools and utilities

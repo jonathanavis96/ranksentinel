@@ -18,9 +18,9 @@ Use these CLI tools for **token-efficient** searches:
 
 | Search Type | Command | Use Case |
 |------------|---------|----------|
-| THUNK by task ID | `grep "\*\*11.1.1\*\*" workers/ralph/workers/ralph/THUNK.md` | Find completed task by original ID |
-| THUNK by keyword | `grep -i "cache" workers/ralph/workers/ralph/THUNK.md` | Find tasks related to topic |
-| Recent completions | `tail -20 workers/ralph/workers/ralph/THUNK.md` | View latest completed tasks |
+| THUNK by task ID | `grep "\*\*11.1.1\*\*" workers/ralph/THUNK.md` | Find completed task by original ID |
+| THUNK by keyword | `grep -i "cache" workers/ralph/THUNK.md` | Find tasks related to topic |
+| Recent completions | `tail -20 workers/ralph/THUNK.md` | View latest completed tasks |
 | Git by commit msg | `git log --grep="cache" --oneline` | Find commits by keyword |
 | Git by file | `git log --oneline -- path/to/file.sh` | Track file history |
 | Git by author | `git log --author="ralph-brain" --oneline` | Filter by author |
@@ -28,18 +28,18 @@ Use these CLI tools for **token-efficient** searches:
 | Cache by tool | `sqlite3 cache.sqlite "SELECT * FROM tool_calls WHERE tool_name='grep' LIMIT 5;"` | Query tool usage |
 | Cache statistics | `sqlite3 cache.sqlite "SELECT tool_name, COUNT(*) FROM tool_calls GROUP BY tool_name;"` | Tool usage stats |
 
-## workers/ralph/THUNK.md Search Patterns
+## THUNK.md Search Patterns
 
 ### Find Task by Original ID
 
-When you know the task ID from workers/IMPLEMENTATION_PLAN.md:
+When you know the task ID from IMPLEMENTATION_PLAN.md:
 
 ```bash
 # Find task 11.1.1
-grep "\*\*11.1.1\*\*" workers/ralph/workers/ralph/THUNK.md
+grep "\*\*11.1.1\*\*" workers/ralph/THUNK.md
 
 # Find with context (5 lines before/after)
-grep -C 5 "\*\*11.1.1\*\*" workers/ralph/workers/ralph/THUNK.md
+grep -C 5 "\*\*11.1.1\*\*" workers/ralph/THUNK.md
 ```
 
 **Pattern explanation:** Task IDs are wrapped in `**ID**` in the Description column.
@@ -50,13 +50,13 @@ Find all tasks related to a topic:
 
 ```bash
 # Case-insensitive search
-grep -i "shellcheck" workers/ralph/workers/ralph/THUNK.md
+grep -i "shellcheck" workers/ralph/THUNK.md
 
 # Multiple keywords (OR)
-grep -E "shellcheck|markdownlint" workers/ralph/workers/ralph/THUNK.md
+grep -E "shellcheck|markdownlint" workers/ralph/THUNK.md
 
 # Multiple keywords (AND - both must appear)
-grep "shellcheck" workers/ralph/workers/ralph/THUNK.md | grep "templates"
+grep "shellcheck" workers/ralph/THUNK.md | grep "templates"
 ```
 
 ### Find Tasks in Era
@@ -65,23 +65,23 @@ Each era has a section header `## Era N: Description (Date)`:
 
 ```bash
 # List all eras
-grep "^## Era" workers/ralph/workers/ralph/THUNK.md
+grep "^## Era" workers/ralph/THUNK.md
 
 # Get tasks in Era 4
-sed -n '/^## Era 4:/,/^## Era 5:/p' workers/ralph/workers/ralph/THUNK.md
+sed -n '/^## Era 4:/,/^## Era 5:/p' workers/ralph/THUNK.md
 
 # Get current era (last section)
-sed -n '/^## Era [0-9]/h;${g;p;}' workers/ralph/workers/ralph/THUNK.md
+sed -n '/^## Era [0-9]/h;${g;p;}' workers/ralph/THUNK.md
 ```
 
 ### Get Next THUNK Number
 
 ```bash
 # Get last THUNK number
-tail -5 workers/ralph/workers/ralph/THUNK.md | grep "^|" | tail -1 | awk -F'|' '{print $2}' | tr -d ' '
+tail -5 workers/ralph/THUNK.md | grep "^|" | tail -1 | awk -F'|' '{print $2}' | tr -d ' '
 
 # Calculate next number (bash arithmetic)
-LAST=$(tail -5 workers/ralph/workers/ralph/THUNK.md | grep "^|" | tail -1 | awk -F'|' '{print $2}' | tr -d ' ')
+LAST=$(tail -5 workers/ralph/THUNK.md | grep "^|" | tail -1 | awk -F'|' '{print $2}' | tr -d ' ')
 NEXT=$((LAST + 1))
 echo "Next THUNK: $NEXT"
 ```
@@ -90,13 +90,13 @@ echo "Next THUNK: $NEXT"
 
 ```bash
 # Get all completion dates
-grep "^|" workers/ralph/workers/ralph/THUNK.md | awk -F'|' '{print $6}' | sort | uniq -c
+grep "^|" workers/ralph/THUNK.md | awk -F'|' '{print $6}' | sort | uniq -c
 
 # Tasks completed on specific date
-grep "2026-01-25" workers/ralph/workers/ralph/THUNK.md
+grep "2026-01-25" workers/ralph/THUNK.md
 
 # Tasks completed in date range
-grep "2026-01-2[3-5]" workers/ralph/workers/ralph/THUNK.md
+grep "2026-01-2[3-5]" workers/ralph/THUNK.md
 ```
 
 ## Git Search Patterns
@@ -223,10 +223,10 @@ sqlite3 artifacts/rollflow_cache/cache.sqlite \
 
 ```bash
 # 1. Find task in IMPLEMENTATION_PLAN
-grep "\*\*11.1.1\*\*" workers/workers/IMPLEMENTATION_PLAN.md
+grep "\*\*11.1.1\*\*" workers/IMPLEMENTATION_PLAN.md
 
 # 2. Find task in THUNK (completion record)
-grep "\*\*11.1.1\*\*" workers/ralph/workers/ralph/THUNK.md
+grep "\*\*11.1.1\*\*" workers/ralph/THUNK.md
 
 # 3. Find related commits
 git log --grep="11.1.1" --oneline
@@ -243,7 +243,7 @@ sqlite3 artifacts/rollflow_cache/cache.sqlite \
   "SELECT * FROM tool_calls WHERE timestamp > datetime('now', '-1 hour') ORDER BY timestamp DESC LIMIT 20;"
 
 # 2. Find related THUNK entries
-grep -i "cache" workers/ralph/workers/ralph/THUNK.md | tail -10
+grep -i "cache" workers/ralph/THUNK.md | tail -10
 
 # 3. Find related commits
 git log --grep="cache" --since="1 day ago" --oneline
@@ -256,10 +256,10 @@ cat artifacts/rollflow_cache/config.yml
 
 ```bash
 # 1. Check if task exists in THUNK
-grep "\*\*TASK_ID\*\*" workers/ralph/workers/ralph/THUNK.md || echo "Not completed"
+grep "\*\*TASK_ID\*\*" workers/ralph/THUNK.md || echo "Not completed"
 
 # 2. Check current status in PLAN
-grep "\*\*TASK_ID\*\*" workers/workers/IMPLEMENTATION_PLAN.md
+grep "\*\*TASK_ID\*\*" workers/IMPLEMENTATION_PLAN.md
 
 # 3. Check verifier output for related failures
 grep -i "task_keyword" .verify/latest.txt
@@ -278,10 +278,10 @@ sqlite3 artifacts/rollflow_cache/cache.sqlite \
 
 ```bash
 # Count tasks by priority
-grep "^|" workers/ralph/workers/ralph/THUNK.md | awk -F'|' '{print $4}' | sort | uniq -c
+grep "^|" workers/ralph/THUNK.md | awk -F'|' '{print $4}' | sort | uniq -c
 
 # Count tasks by era
-awk '/^## Era/{era=$0; next} /^|/{print era}' workers/ralph/workers/ralph/THUNK.md | sort | uniq -c
+awk '/^## Era/{era=$0; next} /^|/{print era}' workers/ralph/THUNK.md | sort | uniq -c
 
 # Average tasks per day
 TOTAL=$(grep -c "^|" workers/ralph/THUNK.md)
@@ -293,7 +293,7 @@ echo "scale=2; $TOTAL / $DAYS" | bc
 
 ```bash
 # Find tasks that were repeated (same description)
-grep "^|" workers/ralph/workers/ralph/THUNK.md | awk -F'|' '{print $5}' | sort | uniq -d
+grep "^|" workers/ralph/THUNK.md | awk -F'|' '{print $5}' | sort | uniq -d
 
 # Find files modified most often
 git log --format= --name-only | sort | uniq -c | sort -rn | head -20
@@ -306,7 +306,7 @@ git log --format="%s" | cut -d':' -f1 | sort | uniq -c | sort -rn
 
 ```bash
 # Export THUNK to CSV
-grep "^|" workers/ralph/workers/ralph/THUNK.md | sed 's/|/,/g' > thunk_export.csv
+grep "^|" workers/ralph/THUNK.md | sed 's/|/,/g' > thunk_export.csv
 
 # Export git log to JSON
 git log --pretty=format:'{"commit":"%H","date":"%ad","message":"%s"},' --date=iso > git_log.json
@@ -326,10 +326,10 @@ sqlite3 -header -csv artifacts/rollflow_cache/cache.sqlite \
 
 ```bash
 # WRONG - includes header separator
-tail -5 workers/ralph/workers/ralph/THUNK.md
+tail -5 workers/ralph/THUNK.md
 
 # RIGHT - table rows only
-tail -5 workers/ralph/workers/ralph/THUNK.md | grep "^|"
+tail -5 workers/ralph/THUNK.md | grep "^|"
 ```
 
 ### Git Grep Case Sensitivity

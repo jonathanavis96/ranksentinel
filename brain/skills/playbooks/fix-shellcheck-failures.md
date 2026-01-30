@@ -207,7 +207,7 @@ Co-authored-by: ralph-brain <ralph-brain@users.noreply.github.com>
 Brain-Repo: jonathanavis96/brain"
 ```
 
-**Anti-pattern:** ❌ Don't make separate commits for "mark task complete" or "log to THUNK". ✅ Include workers/ralph/THUNK.md and workers/IMPLEMENTATION_PLAN.md updates in the same commit.
+**Anti-pattern:** ❌ Don't make separate commits for "mark task complete" or "log to THUNK". ✅ Include THUNK.md and IMPLEMENTATION_PLAN.md updates in the same commit.
 
 ## Checkpoints
 

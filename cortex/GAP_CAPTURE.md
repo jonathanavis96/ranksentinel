@@ -1,6 +1,7 @@
 # Gap Capture - PROJECT_NAME
 
-Local gap capture for this project. Gaps are synced to brain's `skills/self-improvement/GAP_BACKLOG.md` via marker file protocol.
+Local gap capture for this project. Gaps are synced to brain's
+`skills/self-improvement/GAP_BACKLOG.md` via marker file protocol.
 
 ## How It Works
 

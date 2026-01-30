@@ -23,7 +23,7 @@
 # Read-only display of THUNK entries. Does not modify any files.
 
 create_new_era() {
-    echo "## Era: $1" >> workers/ralph/THUNK.md  # BUG: Modifies file!
+    echo "## Era: $1" >> THUNK.md  # BUG: Modifies file!
 }
 
 # ✅ Right - header accurately describes behavior
@@ -166,7 +166,7 @@ local cache_key=$(printf '%s' "$section|$task_label|$task_desc" | md5sum | cut -
 
 ```bash
 # ❌ Wrong - mixed formats across files
-# workers/ralph/THUNK.md:    2026/01/20
+# THUNK.md:    2026/01/20
 # NEURONS.md:  20 Jan 2026
 # THOUGHTS.md: January 20, 2026
 

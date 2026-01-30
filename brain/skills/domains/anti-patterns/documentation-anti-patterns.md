@@ -164,7 +164,7 @@ Large blocks of unformatted text without headings, lists, or visual breaks. Read
 ### Bad Example
 
 ```markdown
-The Ralph loop is a self-improving AI agent system that runs in PLAN and BUILD modes. In PLAN mode it reads the current state and creates an implementation plan with prioritized tasks. In BUILD mode it picks the first unchecked task and implements it, then commits the changes and logs completion to workers/ralph/THUNK.md. The loop alternates between PLAN and BUILD modes every 3 iterations. It also runs a verifier after each BUILD iteration to check acceptance criteria. If the verifier fails the agent must fix the issues before continuing. The system uses hash guards to protect critical files from modification. If a protected file needs changes the agent creates a SPEC_CHANGE_REQUEST.md and stops. The loop continues until all tasks are complete and outputs a completion sentinel.
+The Ralph loop is a self-improving AI agent system that runs in PLAN and BUILD modes. In PLAN mode it reads the current state and creates an implementation plan with prioritized tasks. In BUILD mode it picks the first unchecked task and implements it, then commits the changes and logs completion to THUNK.md. The loop alternates between PLAN and BUILD modes every 3 iterations. It also runs a verifier after each BUILD iteration to check acceptance criteria. If the verifier fails the agent must fix the issues before continuing. The system uses hash guards to protect critical files from modification. If a protected file needs changes the agent creates a SPEC_CHANGE_REQUEST.md and stops. The loop continues until all tasks are complete and outputs a completion sentinel.
 ```
 
 **Problem:** 9 sentences, 7 different topics, no visual structure.
@@ -185,7 +185,7 @@ The Ralph loop is a self-improving AI agent system that runs in two modes:
 
 - Picks first unchecked task
 - Implements changes
-- Commits and logs to workers/ralph/THUNK.md
+- Commits and logs to THUNK.md
 
 ### Safety Features
 
@@ -469,9 +469,9 @@ rg "(implementation plan|impl plan|task list)" docs/ --type md
 Pick the first action from the todo list...
 
 <!-- File: PROMPT.md -->
-Complete tasks from workers/IMPLEMENTATION_PLAN.md...
+Complete tasks from IMPLEMENTATION_PLAN.md...
 
-<!-- File: workers/ralph/THUNK.md -->
+<!-- File: THUNK.md -->
 | ID | Task | Priority | Work Item | Date |
 ```
 
@@ -484,15 +484,15 @@ Complete tasks from workers/IMPLEMENTATION_PLAN.md...
 
 ## Terminology
 
-- **Task:** Single unit of work in workers/IMPLEMENTATION_PLAN.md (e.g., "16.3.3")
+- **Task:** Single unit of work in IMPLEMENTATION_PLAN.md (e.g., "16.3.3")
 - **Subtask:** Hierarchical breakdown (e.g., "1.1.1", "1.1.2")
 - **Completion:** Task marked `[x]` after verifier confirms success
 
 <!-- Then use consistently -->
 
-Pick the first unchecked **task** from workers/IMPLEMENTATION_PLAN.md.
+Pick the first unchecked **task** from IMPLEMENTATION_PLAN.md.
 Complete the **task** and mark it `[x]`.
-Log **task** completion to workers/ralph/THUNK.md.
+Log **task** completion to THUNK.md.
 ```
 
 ### Prevention

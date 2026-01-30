@@ -20,15 +20,15 @@ A **gap** is missing brain capability that would have helped you complete a task
 Before logging ANY gap:
 
 1. Search `skills/` for existing matching skill
-2. Search `skills/self-improvement/skills/self-improvement/GAP_BACKLOG.md` for existing gap entry
+2. Search `skills/self-improvement/GAP_BACKLOG.md` for existing gap entry
 3. If found: **UPDATE existing entry** rather than creating new one
 
 ## Rule 2: Always Log Gaps
 
 If you used knowledge/procedure/tooling that isn't documented in `skills/`:
 
-1. Append entry to `skills/self-improvement/GAP_BACKLOG.md`
-2. Use the format specified in skills/self-improvement/GAP_BACKLOG.md
+1. Append entry to `GAP_BACKLOG.md`
+2. Use the format specified in GAP_BACKLOG.md
 3. Include evidence (paths, filenames, observations)
 
 ## Rule 3: Promotion Criteria
@@ -77,8 +77,8 @@ Projects capture gaps locally, then sync to brain. This avoids token cost of sca
 2. If found, reports pending gaps count
 3. Run `bash cortex/sync_gaps.sh` to:
    - Read each project's `cortex/GAP_CAPTURE.md`
-   - Deduplicate by title (skip if already in `skills/self-improvement/GAP_BACKLOG.md`)
-   - Append new gaps to `skills/self-improvement/GAP_BACKLOG.md`
+   - Deduplicate by title (skip if already in `GAP_BACKLOG.md`)
+   - Append new gaps to `GAP_BACKLOG.md`
    - Clear project's `GAP_CAPTURE.md` and remove marker
 
 ### Token Efficiency
@@ -103,7 +103,7 @@ Before ending any session where substantial knowledge was discussed, write a sum
 | Content Type | Write To |
 |--------------|----------|
 | Strategic decisions | `DECISIONS.md` or `cortex/DECISIONS.md` |
-| Knowledge gaps | `skills/self-improvement/skills/self-improvement/GAP_BACKLOG.md` |
+| Knowledge gaps | `skills/self-improvement/GAP_BACKLOG.md` |
 | Project context/goals | `THOUGHTS.md` |
 | Reusable patterns | `skills/domains/<topic>/<skill>.md` |
 | Research/meeting notes | `cortex/docs/` or project docs |
