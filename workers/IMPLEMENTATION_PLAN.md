@@ -423,7 +423,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 11: Analytics (GA4/GTM) + events + weekly operator digest
 
-- [ ] **11.1** Add GTM/GA4 integration
+- [x] **11.1** Add GTM/GA4 integration
   - **Goal:** Track conversions.
   - **AC:** GTM container ID comes from env config and loads correctly.
   - **If Blocked:** Use `gtag.js` directly with GA4 measurement ID.
