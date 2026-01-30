@@ -487,7 +487,7 @@ Brain skills (open those relevant to the current item):
 
 ### Task 14: QA + release
 
-- [ ] **14.1** QA checklist run
+- [x] **14.1** QA checklist run
   - **Goal:** Prevent obvious regressions.
   - **References:** `docs/websites/11_qa_acceptance.md`.
   - **AC:** Checklist is completed with pass/fail notes.
