@@ -37,6 +37,7 @@ jobs:
         working-directory: website
         env:
           NODE_ENV: production
+          NEXT_PUBLIC_BASE_PATH: /ranksentinel
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
