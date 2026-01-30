@@ -17,12 +17,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
   return (
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.webp" type="image/webp" />
+        <link rel="icon" href={`${basePath}/favicon.ico`} sizes="any" />
       </head>
       <body
         className={`${inter.variable} antialiased`}
