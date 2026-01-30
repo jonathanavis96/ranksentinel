@@ -22,7 +22,7 @@ export default function Home() {
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-[var(--color-headline)] max-w-5xl mx-auto leading-tight flex flex-wrap items-center justify-center gap-3">
                 <span>Catch SEO Issues</span>
                 <Image
-                  src="/ranksentinel-logo-icon.png"
+                  src="/ranksentinel-logo-icon.webp"
                   alt=""
                   width={32}
                   height={32}

@@ -10,9 +10,9 @@ import { Metadata } from 'next';
 
 export const siteConfig = {
   name: 'RankSentinel',
-  description: 'Automated SEO monitoring that catches broken links, sitemap changes, and robots.txt issues before they tank your rankings.',
+  description: 'Low-noise SEO monitoring that catches the changes that hurt rankings—before traffic drops. Weekly digests + daily critical alerts via email.',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://ranksentinel.com',
-  ogImage: '/og-image.png',
+  ogImage: '/og-image.webp',
   twitterHandle: '@ranksentinel',
 };
 
